@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                            http://www.springframework.org/schema/beans/spring-beans.xsd
+                            http://www.springframework.org/schema/context
+                            http://www.springframework.org/schema/context/spring-context-4.0.xsd
+                            http://www.springframework.org/schema/mvc
+                            http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">
+        <!--Might want to declare this via java annotation-->
+        <!--<context:annotation-config/>-->
+        <!--<mvc:annotation-driven />-->  <!--place mvc:annotation-driven either here or in on @config class, but not both-->
+        <context:annotation-config/>  
+        <!--<context:component-scan base-package="oxi.repositories, oxi.controllers, oxi.models, oxi.security"/>-->
+        <!--<context:component-scan base-package="oxi.repositories, oxi.controllers, oxi.models, oxi.security"/>-->
+        <context:component-scan base-package="classpath:repositories, classpath:controllers, classpath:models, classpath:security"/>
+        <!--<context:component-scan base-package="classpath:repositories.ContentRepository"/>
+        <context:component-scan base-package="org.springframework.hateoas.Resource"/>
+        <context:component-scan base-package="org.springframework.hateoas.ResourceAssembler"/>-->
+        <import resource="applicationContext-persistence.xml"/>
+        <import resource="applicationSpring-security.xml"/>
+
+    <beans profile="application">
+        <context:property-placeholder location="classpath:resources.application.properties"/>
+
+        <bean id="propertyPlaceHolderConfigurer"
+              class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
+        <bean id="userResourceAssembler" class="org.springframework.hateoas.ResourceAssembler"/>
+        <bean id="userResource" class="org.springframework.hateoas.Resource"/>
+    </beans>
+
+
+</beans>

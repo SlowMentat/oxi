@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+                xmlns:beans="http://www.springframework.org/schema/beans"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+                         http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.0.xsd">
+
+        <!--<http auto-config='true'>
+                <session-management>
+                        <concurrency-control max-sessions="1" />
+                </session-management>
+        </http>-->
+
+        <!--New stuff-->
+        <beans:bean id="methodSecurityExpressionHandler" class="oxi.security.CustomMethodSecurityExpressionHandler">
+                <!--<beans:property name="roleHierarchy" ref="roleHierarchy" />
+                <beans:property name="permissionEvaluator" ref="permissionEvaluator" />-->
+        </beans:bean>
+        <!--End of new stuff-->
+
+        <global-method-security secured-annotations="enabled"
+                                pre-post-annotations="enabled"
+                                authentication-manager-ref="defaultAuthenticationManager">
+                <expression-handler ref="methodSecurityExpressionHandler"/>
+        </global-method-security>
+
+        <!-- Session Management beans -->
+        <!--<http auto-config="false" entry-point-ref="http403EntryPoint">-->
+        <http auto-config="false" entry-point-ref="authenticationEntryPoint" disable-url-rewriting="true">
+                <csrf />
+                <intercept-url pattern="/login" access="hasRole('ROLE_ANONYMOUS')"/>
+                <intercept-url pattern="/**" access="hasRole('ROLE_USER')" />
+                <!--<custom-filter ref="ajaxTimeoutRedirectFilter" after="EXCEPTION_TRANSLATION_FILTER"/>-->
+                <custom-filter position="CONCURRENT_SESSION_FILTER" ref="concurrencyFilter" />
+                <!--<custom-filter position="EXCEPTION_TRANSLATION_FILTER" ref="exceptionTranslationFilter"/>-->
+                <custom-filter position="FORM_LOGIN_FILTER" ref="myAuthFilter" />
+                <custom-filter ref="csrfTokenBindingFilter" after="CSRF_FILTER"/>
+                <!--<session-management session-authentication-strategy-ref="sas"/>-->
+                <!--<form-login login-page='http://72.14.177.220/site.com/signin.html'
+                                username-parameter='username'
+                                password-parameter='password'/>-->
+                <logout logout-url="/logout" delete-cookies="JSESSIONID"/>
+
+                <headers>
+                </headers>
+        </http>
+
+        <beans:bean id="csrfTokenBindingFilter" class="com.allanditzel.springframework.security.web.csrf.CsrfTokenResponseHeaderBindingFilter"/>
+
+        <beans:bean id="ajaxTimeoutRedirectFilter" class="oxi.security.AjaxTimeoutRedirectFilter">
+                <!--<beans:property name="customSessionExpiredErrorCode" value="902"/>-->
+                <beans:property name="redirectLocation" value="http://72.14.177.220/gs-convert-jar-to-war-0.1.0/"/>
+        </beans:bean>
+
+        <!--******************AuthenticationManager******************-->
+        <authentication-manager alias="defaultAuthenticationManager">
+                <authentication-provider>
+                    <jdbc-user-service data-source-ref="dataSource"
+                                        users-by-username-query="select username, password, enabled from user where  username=?"
+                                        authorities-by-username-query="select username, role from user_roles where username=?"/>
+                </authentication-provider>
+        </authentication-manager>
+
+        <beans:bean id="http403EntryPoint" class="org.springframework.security.web.authentication.Http403ForbiddenEntryPoint">
+        </beans:bean>
+
+        <!--******************ExceptionTranslationFilter******************-->
+        <beans:bean id="exceptionTranslationFilter" class="org.springframework.security.web.access.ExceptionTranslationFilter">
+                <!--<beans:property name="authenticationEntryPoint" ref="authenticationEntryPoint"/>
+                <beans:property name="accessDeniedHandler" ref="accessDeniedHandler"/>-->
+                <beans:constructor-arg ref="authenticationEntryPoint"/>
+                <beans:property name="accessDeniedHandler" ref="accessDeniedHandler"/>
+        </beans:bean>
+
+        <!--<beans:bean id="authenticationEntryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
+                <beans:constructor-arg value=""/>
+                <beans:property name="loginFormUrl">
+                        <beans:value>http://72.14.177.220/site.com/signin.html</beans:value>
+                </beans:property>
+        </beans:bean>-->
+        <beans:bean id="authenticationEntryPoint" class="org.springframework.security.web.authentication.HttpStatusEntryPoint">
+            <beans:constructor-arg name="httpStatus" ref="httpStatus401" />
+        </beans:bean>
+
+
+        <beans:bean id="accessDeniedHandler" class="org.springframework.security.web.access.AccessDeniedHandlerImpl">
+                <beans:property name="errorPage" value="/accessDenied.html"/>
+        </beans:bean>
+        <!--*******************************************************-->
+
+
+
+        <beans:bean id="concurrencyFilter" class="org.springframework.security.web.session.ConcurrentSessionFilter">
+                <beans:constructor-arg name="sessionRegistry" ref="sessionRegistry"/>
+        </beans:bean>
+
+        <beans:bean id="myAuthFilter" class="org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter">
+                <beans:property name="sessionAuthenticationStrategy" ref="sas" />
+                <beans:property name="authenticationManager" ref="defaultAuthenticationManager" />
+        </beans:bean>
+
+        <beans:bean id="sas" class="org.springframework.security.web.authentication.session.ConcurrentSessionControlAuthenticationStrategy">
+                <beans:constructor-arg name="sessionRegistry" ref="sessionRegistry" />
+                <beans:property name="maximumSessions" value="1" />
+        </beans:bean>
+
+        <beans:bean id="sessionRegistry" class="org.springframework.security.core.session.SessionRegistryImpl" />
+
+        <beans:bean id="httpStatus401" class="org.springframework.http.HttpStatus" factory-method="valueOf">
+            <beans:constructor-arg>
+                <beans:value>UNAUTHORIZED</beans:value>
+            </beans:constructor-arg>
+        </beans:bean>
+</beans:beans>
