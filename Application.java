@@ -30,18 +30,45 @@ import org.springframework.security.core.*;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.session.*;
 import org.springframework.security.core.session.SessionRegistryImpl;
-
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import com.allanditzel.springframework.security.web.csrf.*;
+
 
 import java.util.*;
 
 //Standard annotions for any spring boot configuration class
 @Configuration
+//@ComponentScan(basePackages = {"classpath:controllers,classpath:models,classpath:security,classpath:repositories"})
+@ComponentScan(basePackages = {"oxi.controllers, oxi.models, oxi.security, oxi.repositories"})
+@EnableAutoConfiguration
+//@SpringBootApplication
+//Addition annotations
+@EntityScan(basePackages="oxi.models")
+@EnableJpaRepositories(basePackages="oxi.repositories")
+//@EnableJpaRepositories(basePackages={"oxi.repositories"})
+@EnableWebSecurity
+//@EnableWebMvc
+//@Import(RepositoryRestMvcConfiguration.class)
+@ImportResource("/WEB-INF/classes/applicationContext.xml")
+public class Application extends SpringBootServletInitializer{
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+	
+    @Override
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+        return application.sources(Application.class);
+        //return application.sources(new ClassPathXmlApplicationContext("resources/applicationContext.xml"));
+    }
+}
+
+/*@Configuration
 @ComponentScan(basePackages = {"classpath:controllers,classpath:models,classpath:security,classpath:repositories"})
 @EnableAutoConfiguration
 //Addition annotations
 @ImportResource("/WEB-INF/classes/applicationContext.xml")
-@EntityScan(basePackages="classpath:models")
+@EntityScan(basePackages="classpath:models") 
 @EnableJpaRepositories(basePackages="classpath:repositories")
 @EnableWebSecurity
 //@EnableWebMvc
@@ -57,4 +84,4 @@ public class Application extends SpringBootServletInitializer{
         return application.sources(Application.class);
         //return application.sources(new ClassPathXmlApplicationContext("resources/applicationContext.xml"));
     }
-}
+}*/

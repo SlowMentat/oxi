@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import oxi.jackson.*;
 
 @Entity
+@Table(name="outfit")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=Outfit.class)
 @JsonDeserialize(contentUsing=CustomOutfitDeserializer.class) 
 public class Outfit extends RelatedEntity implements Serializable

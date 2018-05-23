@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 @Entity
+@Table(name="profile")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=Profile.class)
 public class Profile extends RelatedEntity implements Serializable
 {
@@ -55,7 +56,6 @@ public class Profile extends RelatedEntity implements Serializable
 	//Constructor
 	public Profile(){
 	}
-	
 	
 	//Setters
 	public void setId(long id){this.id = id;}

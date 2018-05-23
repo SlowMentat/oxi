@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 @Entity
+@Table(name="picture")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="picture_id")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="picture_id", scope=Picture.class)
 public class Picture extends RelatedEntity implements Serializable{
@@ -36,12 +37,7 @@ public class Picture extends RelatedEntity implements Serializable{
 	
 	public Picture(){
 	}
-	/*
-	public Picture(String smalluri, String largeuri){
-		this.smalluri = smalluri;
-		this.largeuri = largeuri;
-	}
-	*/
+	
 	//Getters
 	public long getId(){return this.id;}
 	public String getSmalluri(){return this.smalluri;}

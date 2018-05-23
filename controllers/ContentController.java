@@ -58,6 +58,8 @@ import org.apache.logging.log4j.LogManager;
 
 import org.apache.commons.io.IOUtils;
 
+import org.springframework.stereotype.*;
+
 import org.springframework.security.core.*;
 import org.springframework.security.core.context.*;
 import org.springframework.security.core.userdetails.User;
@@ -69,8 +71,9 @@ import org.springframework.security.access.method.P;
 import org.springframework.data.rest.webmvc.*;
 
 //@RestController
-//@RequestMapping
-@RepositoryRestController
+@Controller
+@RequestMapping
+//@RepositoryRestController
 public class ContentController{
 	//Add Image
 	//@Autowired
@@ -84,14 +87,21 @@ public class ContentController{
 	private static String imgfolder = "/usr/images/";
 	
 	private ObjectMapper mapper = new ObjectMapper();
-	
+	//@Autowired
 	private ServletContext context;
+	//@Autowired
 	private ProfileRepository profileRep;
+	//@Autowired
 	private OutfitRepository outfitRep;	
-	private PictureRepository pictureRep;	
+	//@Autowired
+	private PictureRepository pictureRep;
+	//@Autowired	
 	private UserRepository userRep;	
+	//@Autowired
 	private ItemRepository itemRep;	
-	private HttpSession httpsession;	
+	//@Autowired
+	private HttpSession httpsession;
+	//@Autowired	
 	public static EntityManager em;
 
 	//@Autowired
@@ -108,7 +118,7 @@ public class ContentController{
 	*/
 	private UserDAO userDao;
 	
-
+/*
 	@Autowired
     public void setServletContext(ServletContext context){
         this.context=context;
@@ -153,7 +163,7 @@ public class ContentController{
 		public Picture getPicture(){return this.picture;}
 		public Outfit getOutfit(){return this.outfit;}
 		public Item[] getItems(){return this.items;}
-	}
+	}*/
 
 	//@PathVariable("img_id") int id,	
 	

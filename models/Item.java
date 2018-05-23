@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 @Entity
+@Table(name="item")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=Item.class)
 public class Item extends RelatedEntity implements Serializable{
 	@Transient
@@ -43,6 +44,7 @@ public class Item extends RelatedEntity implements Serializable{
 	
 	//Constructor
 	public Item(){
+
 	}
 	
 	//Setters

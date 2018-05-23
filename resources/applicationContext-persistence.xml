@@ -3,12 +3,14 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:jpa="http://www.springframework.org/schema/data/jpa"
        xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:util="http://www.springframework.org/schema/util"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa-1.0.xsd
-http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd">
+http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd">
 
 	<!-- Tell Spring Data JPA where your repository interfaces are -->
-	<jpa:repositories base-package="classpath:repositories"/>
+	<jpa:repositories base-package="oxi.repositories"/>
 
         <!--Enable annotation-driven transaction management-->
         <tx:annotation-driven proxy-target-class="true" transaction-manager="transactionManager"/>
@@ -38,15 +40,24 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
         <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
                 <property name="dataSource" ref="dataSource"/>
                 <property name="jpaVendorAdapter" ref="hibernateJpaVendorAdapter"/>
-                <property name="packagesToScan" value="classpath:models"/>
+                <property name="packagesToScan" value="oxi.models"/>
                 <property name="jpaProperties">
-                        <props>
-                                <prop key="hibernate.dialect">${hibernate.dialect}</prop>
-                                <prop key="hibernate.hbm2ddl.auto">${hibernate.hbm2ddl.auto}</prop>
-                                <prop key="hibernate.ejb.naming_strategy">${hibernate.ejb.naming_strategy}</prop>
-                                <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
-                                <prop key="hibernate.format_sql">${hibernate.format_sql}</prop>
-                        </props>
+                    <props>
+                            <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+                            <prop key="hibernate.hbm2ddl.auto">${hibernate.hbm2ddl.auto}</prop>
+                            <prop key="hibernate.implicit_naming_strategy">${hibernate.implicit_naming_strategy}</prop>
+                            <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+                            <prop key="hibernate.format_sql">${hibernate.format_sql}</prop>
+                    </props>
                 </property>
+                <!--<property name="jpaPropertyMap" ref="jpaPropertyMap"/>-->
         </bean>
+
+        <!--<util:map id="jpaPropertyMap" map-class="java.util.TreeMap">-->
+<!--            <entry key="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>-->
+<!--            <entry key="hibernate.hbm2ddl" value="update"/>-->
+<!--            <entry key="hibernate.ejb.naming_strategy" value="org.hibernate.cfg.ImprovedNamingStrategy"/>-->
+<!--            <entry key="hibernate.show_sql" value="true"/>-->
+<!--            <entry key="hibernate.format_sql" value="true"/>-->
+<!--       </util:map>-->
 </beans>

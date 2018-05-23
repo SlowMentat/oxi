@@ -10,20 +10,22 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 @Entity
-@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="user_id", scope=User.class)
-public class User extends ResourceSupport implements Serializable{
+@Table(name="user")
+@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=User.class)
+public class User extends RelatedEntity implements Serializable{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(User.class);
 	
 	@Id
-	@JsonProperty("user_id")
+	@JsonProperty("id")
 	@GeneratedValue(strategy=GenerationType.AUTO)
-	private long user_id;
+	private long id;
 	
 	//private byte[] picture;
 	private String email;
 	private String password;
 	private String username;
+	private boolean enabled;
 	
 	@OneToOne(mappedBy="user")
 	@RestResource(rel="client_0")
@@ -34,6 +36,9 @@ public class User extends ResourceSupport implements Serializable{
 	}
 	
 	//Setters
+	public void setId(long id){
+		this.id = id;
+	}
 	public void setEmail(String email){
 		this.email = email;
 	}
@@ -42,16 +47,23 @@ public class User extends ResourceSupport implements Serializable{
 		this.password = password;
 	}
 	
-	public void setProfile(Profile profile){
-		this.profile = profile;
-	}
-	
 	public void setUsername(String username){
 		this.username = username;
 	}
 
+	public void setEnabled(boolean enabled){
+		this.enabled = enabled;
+	}
+
+	public void setProfile(Profile profile){
+		this.profile = profile;
+	}
+
 	
 	//Getters
+	public long getId(){
+		return this.id;
+	}
 	public String getEmail(){
 		return this.email;
 	}
@@ -60,11 +72,15 @@ public class User extends ResourceSupport implements Serializable{
 		return this.password;
 	}
 	
-	public Profile getProfile(){
-		return this.profile;
-	}
-	
 	public String getUsername(){
 		return this.username;
+	}
+
+	public boolean getEnabled(){
+		return this.enabled;
+	}
+	
+	public Profile getProfile(){
+		return this.profile;
 	}
 }
