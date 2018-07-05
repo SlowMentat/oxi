@@ -5,10 +5,12 @@ import javax.persistence.CascadeType;
 import java.util.List;
 import java.util.ArrayList;
 import java.io.Serializable;
+import java.lang.*;
 import org.springframework.data.rest.core.annotation.*;
 import com.fasterxml.jackson.annotation.*;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.springframework.hateoas.*;
 
 @Entity
 @Table(name="item")
@@ -18,9 +20,9 @@ public class Item extends RelatedEntity implements Serializable{
 	private static final Logger logger = LogManager.getLogger(Item.class);
 	
 	@Id
-	@JsonProperty("id")
+	//@JsonProperty("id")
 	@GeneratedValue(strategy=GenerationType.AUTO)
-	private long id;
+	private Long Id;
 	private long positionx;
 	private long positiony;
 	private String link;
@@ -48,7 +50,7 @@ public class Item extends RelatedEntity implements Serializable{
 	}
 	
 	//Setters
-	public void setId(long id){this.id = id;}
+	public void setId(Long id){this.Id = id;}
 	public void setLocationx(long posx){this.positionx = posx;}
 	public void setLocationy(long posy){this.positiony = posy;}
 	public void setLink(String link){this.link = link;}	
@@ -70,7 +72,7 @@ public class Item extends RelatedEntity implements Serializable{
 	}
 	
 	//Getters
-	public long getId(){return this.id;}
+	public Long getId(){return this.Id;}
 	public long getPositionx(){return this.positionx;}
 	public long getPositiony(){return this.positiony;}
 	public String getLink(){return this.link;}	
@@ -95,7 +97,7 @@ public class Item extends RelatedEntity implements Serializable{
 	@Override
 	public String toString(){
 		logger.debug("building Item string");
-        StringBuilder sb = new StringBuilder("\nID: ").append(this.id)
+        StringBuilder sb = new StringBuilder("\nID: ").append(this.Id)
 			.append("\npositionx: ").append(this.positionx)
 			.append("\npositiony:").append(this.positiony)
 			.append("\nlink:").append(this.link)

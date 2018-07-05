@@ -11,12 +11,14 @@ import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.*;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import oxi.jackson.*;
+//import oxi.jackson.*;
+import org.springframework.hateoas.*;
+import java.lang.*;
 
 @Entity
 @Table(name="outfit")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=Outfit.class)
-@JsonDeserialize(contentUsing=CustomOutfitDeserializer.class) 
+//@JsonDeserialize(contentUsing=CustomOutfitDeserializer.class) 
 public class Outfit extends RelatedEntity implements Serializable
 {
 	@Transient
@@ -24,8 +26,8 @@ public class Outfit extends RelatedEntity implements Serializable
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
-	@JsonProperty("id")
-	private long id;
+	//@JsonProperty("id")
+	private Long Id;
 	private int likes;
 	private String comments;
 	/*@OneToOne
@@ -51,7 +53,7 @@ public class Outfit extends RelatedEntity implements Serializable
 	}
 	
 	//Setters
-	public void setId(long id){this.id = id;}
+	public void setId(Long id){this.Id = id;}
 	public void setLikes(int likes){this.likes = likes;}		
 	public void setComments(String comments){this.comments = comments;}	
 	public void setCoverpicture(String uri){this.coverpicuri = uri;}	
@@ -89,7 +91,7 @@ public class Outfit extends RelatedEntity implements Serializable
 	}
 	
 	//Getters
-	public long getId(){return this.id;} 
+	public Long getId(){return this.Id;} 
 	public int getLikes(){return this.likes;}	
 	public String getComments(){return this.comments;}	
 	public Profile getProfile(){return this.profile;}
@@ -127,7 +129,7 @@ public class Outfit extends RelatedEntity implements Serializable
 	
 	@Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("\nID: ").append(this.id)
+        StringBuilder sb = new StringBuilder("\nId: ").append(this.Id)
 			.append("\nlikes: ").append(this.likes)
 			.append("\ncomments:").append(this.comments)
 			.append("\ncoverpic:").append(this.coverpicuri)

@@ -53,3 +53,58 @@ public class UserPhotoControlloer{
 		}
 	}
 }*/	
+
+
+
+
+	/*@Autowired
+	private OutfitRepository outfitRepo;
+	@Autowired
+	private RepositoryEntityLinks links;
+    @Autowired 
+    private PagedResourcesAssembler<OutfitProjection> assembler;*/
+
+    /**
+    * Single DTO
+    */
+    /*@GetMapping("/{id}/outfit")
+    public ResponseEntity<?> getDto(@PathVariable("id") Long outfitId) {
+        OutfitProjection dto = outfitRepo.getDto(outfitId);
+        
+        return ResponseEntity.ok(toResource(dto));
+    }*/
+    
+    /**
+    * List of DTO
+    */
+    /*@GetMapping("/outfits")
+    public ResponseEntity<?> getDtos() {
+        List<OutfitProjection> dtos = outfitRepo.getDtos();
+    
+        Link listSelfLink = links.linkFor(Outfit.class).slash("/outfit").withSelfRel();
+        List<?> resources = dtos.stream().map(this::toResource).collect(toList());
+
+        return ResponseEntity.ok(new Resources<>(resources, listSelfLink));
+    }*/
+
+    /**
+    * Paged list of DTO
+    */
+    /*@GetMapping("/outfitPaged")
+    public ResponseEntity<?> getDtosPaged(Pageable pageable) {
+        Page<OutfitProjection> dtos = outfitRepo.getDtos(pageable);
+
+        Link pageSelfLink = links.linkFor(Outfit.class).slash("/outfitPaged").withSelfRel();
+        PagedResources<?> resources = assembler.toResource(dtos, this::toResource, pageSelfLink);
+
+        return ResponseEntity.ok(resources);
+    }*/
+/*
+    private ResourceSupport toResource(OutfitProjection projection) {
+        OutfitDto dto = new OutfitDto(projection.getId(), projection.getLikes(), projection.getComments(), projection.getContents(), projection.getCoverpicuri());
+        
+        Link contentsLink = links.linkToCollectionResource(Content).withRel("contents");
+        Link selfLink = links.linkForSingleResource(Outfit).slash("/outfit").withSelfRel();
+        
+        return new Resource<>(dto, contentsLink, selfLink);
+    }*/

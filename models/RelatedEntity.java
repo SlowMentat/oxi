@@ -5,7 +5,7 @@ import java.io.Serializable;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-public class RelatedEntity implements Relational
+public class RelatedEntity extends EntityDao implements Relational
 {
 	private static final Logger logger = LogManager.getLogger(RelatedEntity.class);
 	

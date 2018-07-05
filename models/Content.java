@@ -6,9 +6,11 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.io.Serializable;
+import java.lang.*;
 import org.springframework.data.rest.core.annotation.*;
 import com.fasterxml.jackson.annotation.*;
 //import com.fasterxml.jackson.annotation.ObjectIdGenerators.*;
+import org.springframework.hateoas.*;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -18,14 +20,14 @@ import org.apache.logging.log4j.LogManager;
 @Table(name="content")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="content_id")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope=Content.class)
-public class Content extends RelatedEntity implements Serializable{
+public class Content extends RelatedEntity implements Serializable, Identifiable<Long>{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Content.class);
 
 	@Id
-	@JsonProperty("id")
+	//@JsonProperty("id")
 	@GeneratedValue(strategy=GenerationType.AUTO)
-	private long id;
+	private Long Id;
 	
 	private String coverpicuri;
 	
@@ -56,7 +58,7 @@ public class Content extends RelatedEntity implements Serializable{
 	}
 	
 	//Setters==========================================================================	
-	public void setId(long id){this.id = id;}
+	public void setId(Long id){this.Id = id;}
 	public void setCoverpicuri(String uri){this.coverpicuri = uri;}	
 	public void setOutfit(Outfit outfit){
 		/*logger.warn("SETTING OUTFIT");
@@ -93,7 +95,7 @@ public class Content extends RelatedEntity implements Serializable{
 	}
 	
 	//Getters==========================================================================	
-	public long getId(){return this.id;}
+	public Long getId(){return this.Id;}
 	public String getCoverpicuri(){return this.coverpicuri;}
 	public Outfit getOutfit(){
 		logger.warn("GETTING OUTFIT");
@@ -146,7 +148,7 @@ public class Content extends RelatedEntity implements Serializable{
 	@Override 
 	public String toString(){
 		logger.debug("building Content string");
-        StringBuilder sb = new StringBuilder("\nID: ").append(this.id)
+        StringBuilder sb = new StringBuilder("\nId: ").append(this.Id)
 			.append("\ncoverpicuri: ").append(this.coverpicuri)
 			.append("\noutfits: [");
 		if(this.outfit != null){
@@ -155,17 +157,18 @@ public class Content extends RelatedEntity implements Serializable{
 		}else{
 			logger.debug("profile.outfits is null");
 		}
+		sb.append("]");
 		sb.append("\nitems: [");
 		if(this.items != null){
 			for (Item item: this.items) {
 				logger.debug("building item string");
-				sb.append("\n	").append(item.getId());
+				sb.append("	").append(item.getId());
 			}
-			sb.append("]");
 		}else{
 			logger.debug("Content.items is null");
 		}
-		sb.append("\npicture: ").append(this.picture);
+		sb.append("]");
+		sb.append("\npicture: {").append(this.picture).append("\n}");
         return sb.toString();
 	}
 }

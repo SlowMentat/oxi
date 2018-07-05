@@ -3,10 +3,12 @@ package oxi.models;
 import javax.persistence.*;
 import java.util.List;
 import java.io.Serializable;
+import java.lang.*;
 import com.fasterxml.jackson.annotation.*;
 import org.springframework.data.rest.core.annotation.*;
 import org.springframework.hateoas.*;
 import org.apache.logging.log4j.Logger;
+import org.springframework.hateoas.*;
 import org.apache.logging.log4j.LogManager;
 
 @Entity
@@ -17,9 +19,9 @@ public class User extends RelatedEntity implements Serializable{
 	private static final Logger logger = LogManager.getLogger(User.class);
 	
 	@Id
-	@JsonProperty("id")
+	//@JsonProperty("id")
 	@GeneratedValue(strategy=GenerationType.AUTO)
-	private long id;
+	private Long Id;
 	
 	//private byte[] picture;
 	private String email;
@@ -36,8 +38,8 @@ public class User extends RelatedEntity implements Serializable{
 	}
 	
 	//Setters
-	public void setId(long id){
-		this.id = id;
+	public void setId(Long id){
+		this.Id = id;
 	}
 	public void setEmail(String email){
 		this.email = email;
@@ -61,8 +63,8 @@ public class User extends RelatedEntity implements Serializable{
 
 	
 	//Getters
-	public long getId(){
-		return this.id;
+	public Long getId(){
+		return this.Id;
 	}
 	public String getEmail(){
 		return this.email;

@@ -1,4 +1,4 @@
-package oxi.jackson;
+/*package oxi.jackson;
 
 import oxi.models.*;
 import java.io.IOException;
@@ -37,6 +37,6 @@ public class CustomOutfitDeserializer extends StdDeserializer<Outfit>{
 		/*for (; elements.hasNext();) {
             String type = elements.next().toString();
 			
-        }*/
+        }
 	}
-} 
+} */

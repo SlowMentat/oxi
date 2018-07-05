@@ -8,11 +8,13 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.io.Serializable;
+import java.lang.*;
 import org.springframework.data.rest.core.annotation.*;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.*;
-import oxi.jackson.*;
+//import oxi.jackson.*;
 import org.apache.logging.log4j.Logger;
+import org.springframework.hateoas.*;
 import org.apache.logging.log4j.LogManager;
 
 @Entity
@@ -24,9 +26,9 @@ public class Profile extends RelatedEntity implements Serializable
 	private static final Logger logger = LogManager.getLogger(Profile.class);
 	
 	@Id
-	@JsonProperty("id")
+	//@JsonProperty("id")
 	@GeneratedValue(strategy=GenerationType.AUTO)
-	private long id;
+	private Long Id;
 	private String alias;
 	private String country;
 	private String city;
@@ -58,7 +60,7 @@ public class Profile extends RelatedEntity implements Serializable
 	}
 	
 	//Setters
-	public void setId(long id){this.id = id;}
+	public void setId(Long id){this.Id = id;}
 	public void setAlias(String alias){logger.warn("adding alias"); this.alias = alias;}	
 	public void setCountry(String country){this.country = country;}	
 	public void setCity(String city){this.city = city;}	
@@ -83,7 +85,7 @@ public class Profile extends RelatedEntity implements Serializable
 	}
 	
 	//Getters
-	public long getId(){return this.id;}
+	public Long getId(){return this.Id;}
 	public String getAlias(){return this.alias;}	
 	public String getCountry(){return this.country;}	
 	public String getCity(){return this.city;}	
@@ -163,7 +165,7 @@ public class Profile extends RelatedEntity implements Serializable
 	@Override
     public String toString() {
 		logger.debug("building profile string");
-        StringBuilder sb = new StringBuilder("\nID: ").append(this.id)
+        StringBuilder sb = new StringBuilder("\nID: ").append(this.Id)
 			.append("\nalias: ").append(this.alias)
 			.append("\ncountry:").append(this.country)
 			.append("\ncity:").append(this.city)

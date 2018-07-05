@@ -27,15 +27,15 @@
         <!--=========================================-->
 
         <!--This category contains all messages written by Hibernate. You can use this to analyze unspecific issues or to find categories used by Hibernate.  Be careful, setting this category to a fine log level might create a lot of log output.-->
-        <Logger name="org.hibernate" level="debug" additivity="false">
+        <Logger name="org.hibernate" level="warn" additivity="false">
             <AppenderRef ref="ConsoleAppender" />
         </Logger>
         <!-- All SQL statements executed via JDBC are written to this log category.  You can use it together with org.hibernate.type.descriptor.sql to get more information about the JDBC parameters and results.-->
-        <Logger name="org.hibernate.SQL" level="debug" additivity="false">
+        <Logger name="org.hibernate.SQL" level="warn" additivity="false">
             <AppenderRef ref="ConsoleAppender" />
         </Logger>
         <!--Hibernate writes the values bound to the JDBC parameters and extracted from the JDBC results to this log category.  This category should be used together with org.hibernate.SQL to also log the SQL statements.-->
-        <Logger name="org.hibernate.type.descriptor.sql" level="debug" additivity="false">
+        <Logger name="org.hibernate.type.descriptor.sql" level="warn" additivity="false">
             <AppenderRef ref="ConsoleAppender" />
         </Logger>
         <!--Hibernate logs the state at flush time of max. 20 entities to this log category.-->
@@ -70,7 +70,10 @@
         <Logger name="com.fasterxml.jackson" level="debug" additivity="false">
             <AppenderRef ref="ConsoleAppender" />
         </Logger>
-
+         <Logger name="org.springframework.data.rest.webmvc.jsonorg.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module" level="trace" additivity="false">
+            <AppenderRef ref="ConsoleAppender" />
+        </Logger>
+        
 
         <!--========================================-->
         <!--============    Spring Msc   ===========-->
@@ -82,10 +85,19 @@
         <Logger name="org.springframework.spring-webmvc" level="warn" additivity="false">
             <AppenderRef ref="ConsoleAppender" />
         </Logger>
-        <Logger name="org.springframework.data.spring-data-rest-webmvc" level="warn" additivity="false">
+        <Logger name="org.springframework.data.spring-data-rest-webmvc" level="debug" additivity="false">
             <AppenderRef ref="ConsoleAppender" />
         </Logger>
-        <Root level="warn">
+        <Logger name="oxi.controllers" level="debug" additivity="false">
+            <AppenderRef ref="ConsoleAppender" />
+        </Logger>
+        <Logger name="oxi.models.dto" level="debug" additivity="false">
+            <AppenderRef ref="ConsoleAppender" />
+        </Logger>
+        <Logger name="oxi.services" level="debug" additivity="false">
+            <AppenderRef ref="ConsoleAppender" />
+        </Logger>
+        <Root level="debug">
             <AppenderRef ref="ConsoleAppender" />
         </Root>
     </Loggers>
