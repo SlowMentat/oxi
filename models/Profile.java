@@ -20,7 +20,7 @@ import org.apache.logging.log4j.LogManager;
 @Entity
 @Table(name="profile")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=Profile.class)
-public class Profile extends RelatedEntity implements Serializable
+public class Profile extends RelatedEntity implements Serializable, Identifiable<Long>
 {
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Profile.class);
@@ -60,6 +60,7 @@ public class Profile extends RelatedEntity implements Serializable
 	}
 	
 	//Setters
+	//@Override
 	public void setId(Long id){this.Id = id;}
 	public void setAlias(String alias){logger.warn("adding alias"); this.alias = alias;}	
 	public void setCountry(String country){this.country = country;}	
@@ -85,6 +86,7 @@ public class Profile extends RelatedEntity implements Serializable
 	}
 	
 	//Getters
+	//@Override
 	public Long getId(){return this.Id;}
 	public String getAlias(){return this.alias;}	
 	public String getCountry(){return this.country;}	

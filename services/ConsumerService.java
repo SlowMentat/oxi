@@ -2,6 +2,8 @@ package oxi.services;
 
 import java.lang.*;
 import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.io.*;
 import java.util.ArrayList;
 import java.io.Serializable;
@@ -11,14 +13,16 @@ import oxi.models.*;
 import oxi.repositories.*;
 import oxi.util.assemblers.*;
 import oxi.models.dto.*;
+import oxi.models.projection.*;
 
 import org.springframework.stereotype.*;
 import org.springframework.web.multipart.*;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.transaction.annotation.*;
-import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.*;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.data.domain.*;
+import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -27,36 +31,27 @@ import org.apache.logging.log4j.LogManager;
 @Service
 public class ConsumerService implements ClientService{
 	//Repositories
-	@Autowired
-	private OutfitRepository outfitRep;
-	@Autowired
-	private ContentRepository contentRep;
-	@Autowired
-	private ItemRepository itemRep;
-	@Autowired
-	private PictureRepository pictureRep;
-	@Autowired
-	private ProfileRepository profileRep;
-	
+	@Autowired private OutfitRepository outfitRep;
+	@Autowired private ContentRepository contentRep;
+	@Autowired private ItemRepository itemRep;
+	@Autowired private PictureRepository pictureRep;
+	@Autowired private ProfileRepository profileRep;
+
 	//Resource Assemblers
-	@Autowired 
-	private OutfitResourceAssembler outfitRA;
-	@Autowired 
-	private ContentResourceAssembler contentRA;
-	@Autowired 
-	private ItemResourceAssembler itemRA;
-	@Autowired 
-	private PictureResourceAssembler pictureRA;
-	@Autowired 
-	private ProfileResourceAssembler profileRA;
-	@Autowired 
-	private UserResourceAssembler userRA;
+	//@Autowired 
+	//private OutfitResourceAssembler outfitRA;
+	@Autowired private ContentResourceAssembler contentRA;
+	@Autowired private ItemResourceAssembler itemRA;
+	@Autowired private PictureResourceAssembler pictureRA;
+	@Autowired private ProfileResourceAssembler profileRA;
+	@Autowired private UserResourceAssembler userRA;
 
 	//Paged Resource Assemblers 
-	@Autowired
-	private PagedResourcesAssembler<Outfit> outfitPRA;
-	@Autowired 
-	private PagedResourcesAssembler<Item> itemPRA;
+	@Autowired private PagedResourcesAssembler<Outfit> outfitPRA;
+	@Autowired private PagedResourcesAssembler<OutfitDto> outfitPRAP;
+	@Autowired private PagedResourcesAssembler<Item> itemPRA;
+
+	@Autowired private RepositoryEntityLinks links;
 
 	private static final Logger logger = LogManager.getLogger(ConsumerService.class);
 	private static String imgfolder = "/usr/images/";
@@ -82,7 +77,7 @@ public class ConsumerService implements ClientService{
 	@param Long specifying id of outfit to retreive
 	@return OutfitDto which extends ResourceSupport
 	*/
-	public OutfitDto readOutfit(Long id){
+	/*public OutfitDto readOutfit(Long id){
 		//TODO:  ???need a customized json serialization to replace HAL links with raw data.
 		logger.debug("Reading Outfit (id=" + id + ")");
 		OutfitDto outfitResource = outfitRA.toResource(outfitRep.getOne(id));
@@ -95,7 +90,57 @@ public class ConsumerService implements ClientService{
 		// Tell PAR to use the user assembler for individual items.
 		PagedResources<OutfitDto> pagedOutfitResource = outfitPRA.toResource(outfits, outfitRA);
 		return pagedOutfitResource;
+	}*/
+
+
+	//EXPERIMENT
+	/*
+	Makes call to DAL retreiving outfit resource
+	@param Long specifying id of outfit to retreive
+	@return OutfitDto which extends ResourceSupport
+	*/
+	public ResourceSupport readOutfit(Long outfitId){
+		//TODO:  ???need a customized json serialization to replace HAL links with raw data.
+		logger.debug("Reading Outfit (id=" + outfitId + ")");
+		//logger.debug("OutfitResource:  " + outfitResource);
+		return null;//this.toResource(outfitRep.findById(outfitId));
 	}
+
+	public PagedResources<?> readOutfits(Long profileId, Pageable pageable){
+		Page<OutfitDto> outfits = outfitRep.findByProfileId(profileId, pageable);
+		logger.debug("outfits return from repository: \n" + outfits);
+		// Tell PAR to use the user assembler for individual items.
+		PagedResources<?> pagedOutfitResource = outfitPRAP.toResource(outfits, this::toResource);
+		return pagedOutfitResource;
+	}
+
+	/*public List<?> readOutfits(Long profileId, Pageable pageable){
+		List<OutfitDto> outfits = outfitRep.findByProfileId(profileId);
+		logger.debug("outfits return from repository: \n" + outfits);
+		// Tell PAR to use the user assembler for individual items.
+		List<?> outfitResources = outfits.stream().map(this::toResource).collect(Collectors.toList());
+		//List<?> pagedOutfitResources = outfitPRAP.toResource(outfits, this::toResource);
+		logger.debug("outfitResources = " + outfitResources);
+		return outfitResources;
+	}*/
+
+	private ResourceSupport toResource(OutfitDto dto){		
+		//Link outfitLink = null;// links.linkForSingleResource(dto).withRel("outfit");
+		//Link selfLink = links.linkForSingleResource(dto).withSelfRel();
+		return new Resource<>(dto/*, outfitLink, selfLink*/);
+	}
+
+	/*private ResourceSupport toResource(OutfitProjection projection){
+		//OutfitDto dto = new OutfitDto(projection.getId(), projection.getLikes(), projection.getComments(), projection.getContents(), projection.getCoverpicuri());
+		OutfitDto dto = new OutfitDto(projection.getId(), projection.getLikes(), projection.getComments(), projection.getContents(), projection.getCoverpicuri());		
+		Link outfitLink = links.linkForSingleResource(projection).withRel("outfit");
+		Link selfLink = links.linkForSingleResource(projection).withSelfRel();
+		return new Resource<>(dto, outfitLink, selfLink);
+		/*OutfitDto dto = new OutfitDto(projection.getOutfit());		
+		Link outfitLink = links.linkForSingleResource(projection.getOutfit()).withRel("outfit");
+		Link selfLink = links.linkForSingleResource(projection.getOutfit()).withSelfRel();
+		return new Resource<>(dto, outfitLink, selfLink);
+	}*/
 	//=====================================================================================
 
 	/*

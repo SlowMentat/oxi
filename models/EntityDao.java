@@ -9,5 +9,5 @@ public class EntityDao implements Identifiable<Long>
 
 	public Long getId(){return this.Id;}
 
-	public void setId(Long Id){this.Id = Id;}
+	public void setId(Long id){this.Id = id;}
 }

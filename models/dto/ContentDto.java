@@ -15,7 +15,7 @@ import org.apache.logging.log4j.LogManager;
 
 
 @Relation(value = "content", collectionRelation = "contents")
-public class ContentDto extends ResourceSupport
+public class ContentDto extends ResourceSupport implements Serializable
 {
 	private static final Logger logger = LogManager.getLogger(ContentDto.class);
 	//private Long id;

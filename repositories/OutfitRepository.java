@@ -12,21 +12,29 @@ import org.springframework.data.repository.query.Param;
 import java.util.*;
 
 import oxi.models.projection.OutfitProjection;
+import oxi.models.dto.*;
 
 @RepositoryRestResource(collectionResourceRel="Outfit", path="outfit")
-public interface OutfitRepository extends JpaRepository<Outfit, Long>{
+public interface OutfitRepository extends JpaRepository<Outfit, Long>, OutfitRepositoryCustom{
 	
 
-	@Query(value = "SELECT * FROM outfit WHERE profile_id = ?1", nativeQuery = true)
-	List<Outfit> findByProfileId(long profileid);
+	/*@Query(value = "SELECT * FROM outfit WHERE profile_id = ?1", nativeQuery = true)
+	List<Outfit> findByProfileId(Long profileid);*/
 
-	/*@RestResource(exported = false)
-	@Query(value = "SELECT * FROM outfit WHERE id = ?1", nativeQuery = true)
-	OutfitProjection getOneDto(long id);
+	//@RestResource(exported = false)
+	//@Query(value = "SELECT * FROM outfit WHERE id = ?1", nativeQuery = true)
+	///@Query("SELECT new oxi.models.dto.OutfitDto(o.Id, o.likes, o.comments, o.contents, o.coverpicuri) FROM Outfit AS o WHERE o.Id = ?1")
+	@Query("SELECT o FROM Outfit AS o WHERE o.id = ?1")
+	OutfitProjection findById(Long Id);
 
-	@RestResource(exported = false)
-	//@Query(value = "SELECT o as outfit, WHERE id = ?1", nativeQuery = true)
-	Page<OutfitProjection> findAll(Pageable pageable);*/
+	//@RestResource(exported = false)
+	//@Query(value = "SELECT * FROM outfit \n#pageable\n", countQuery = "SELECT count(*) FROM outfit", nativeQuery = true)
+	/*@Query(value = "SELECT * FROM outfit \n#pageable\n", 
+		countQuery = "SELECT count(*) FROM outfit", 
+		nativeQuery = true)*/
+	///@Query(value = "SELECT new oxi.models.dto.OutfitDto(o.Id, o.likes, o.comments, c, o.coverpicuri) FROM Outfit AS o JOIN o.contents c")
+	/*@Query("SELECT o FROM Outfit o WHERE o.profile.Id = ?1")
+	List<OutfitProjection> findByProfileId(Long Id, Pageable pageable);*/
 
 
 

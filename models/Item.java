@@ -15,7 +15,7 @@ import org.springframework.hateoas.*;
 @Entity
 @Table(name="item")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=Item.class)
-public class Item extends RelatedEntity implements Serializable{
+public class Item extends RelatedEntity implements Serializable, Identifiable<Long>{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Item.class);
 	
@@ -50,6 +50,7 @@ public class Item extends RelatedEntity implements Serializable{
 	}
 	
 	//Setters
+	//@Override
 	public void setId(Long id){this.Id = id;}
 	public void setLocationx(long posx){this.positionx = posx;}
 	public void setLocationy(long posy){this.positiony = posy;}
@@ -72,6 +73,7 @@ public class Item extends RelatedEntity implements Serializable{
 	}
 	
 	//Getters
+	//@Override
 	public Long getId(){return this.Id;}
 	public long getPositionx(){return this.positionx;}
 	public long getPositiony(){return this.positiony;}

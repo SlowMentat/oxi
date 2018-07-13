@@ -61,7 +61,7 @@ import java.util.*;
 @EntityScan(basePackages="oxi.models")
 @EnableJpaRepositories(basePackages="oxi.repositories")
 @EnableWebSecurity
-@EnableHypermediaSupport(type = HypermediaType.Collections)
+@EnableHypermediaSupport(type = HypermediaType.HAL)
 //@EnableWebMvc
 @ImportResource("/WEB-INF/classes/applicationContext.xml")
 public class Application extends SpringBootServletInitializer{

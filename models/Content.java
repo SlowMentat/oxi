@@ -15,6 +15,7 @@ import org.springframework.hateoas.*;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
+import oxi.models.projection.ContentProjection;
 
 @Entity
 @Table(name="content")

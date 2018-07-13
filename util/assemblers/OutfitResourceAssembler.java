@@ -1,4 +1,4 @@
-package oxi.util.assemblers;
+/*package oxi.util.assemblers;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -27,13 +27,13 @@ public class OutfitResourceAssembler extends ResourceAssemblerSupport<Outfit, Ou
 		logger.debug("OutfitDto resource:  " + resource);
 
 		//TDO:  map properties
-		resource.setLikes(outfit.getLikes());
-		resource.setComments(outfit.getComments());
-		resource.setContents(outfit.getContents());
-		resource.setCoverpicuri(outfit.getCoverpicuri());
+		//resource.setLikes(outfit.getLikes());
+		//resource.setComments(outfit.getComments());
+		//resource.setContents(outfit.getContents());
+		//resource.setCoverpicuri(outfit.getCoverpicuri());
 
 		//TODO:  add paged resource linkes
 		return resource;
 	}
-}
+}*/
 

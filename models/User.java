@@ -14,7 +14,7 @@ import org.apache.logging.log4j.LogManager;
 @Entity
 @Table(name="user")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=User.class)
-public class User extends RelatedEntity implements Serializable{
+public class User extends RelatedEntity implements Serializable, Identifiable<Long>{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(User.class);
 	
@@ -38,6 +38,7 @@ public class User extends RelatedEntity implements Serializable{
 	}
 	
 	//Setters
+	//@Override
 	public void setId(Long id){
 		this.Id = id;
 	}
@@ -63,6 +64,7 @@ public class User extends RelatedEntity implements Serializable{
 
 	
 	//Getters
+	//@Override
 	public Long getId(){
 		return this.Id;
 	}

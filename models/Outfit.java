@@ -15,11 +15,13 @@ import org.apache.logging.log4j.LogManager;
 import org.springframework.hateoas.*;
 import java.lang.*;
 
+import oxi.models.projection.OutfitProjection;
+
 @Entity
 @Table(name="outfit")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=Outfit.class)
 //@JsonDeserialize(contentUsing=CustomOutfitDeserializer.class) 
-public class Outfit extends RelatedEntity implements Serializable
+public class Outfit extends RelatedEntity implements Serializable, Identifiable<Long>
 {
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Outfit.class);
@@ -27,7 +29,7 @@ public class Outfit extends RelatedEntity implements Serializable
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	//@JsonProperty("id")
-	private Long Id;
+	private Long id;
 	private int likes;
 	private String comments;
 	/*@OneToOne
@@ -51,12 +53,22 @@ public class Outfit extends RelatedEntity implements Serializable
 	//Constructor
 	public Outfit(){
 	}
+
+	public Outfit(long id, int likes, String comments, List<Content> contents, String coverpicuri){
+		//super();
+		this.id = id;
+		this.likes = likes;
+		this.comments = comments;
+		this.contents = contents;
+		this.coverpicuri = coverpicuri;
+	}
 	
 	//Setters
-	public void setId(Long id){this.Id = id;}
+	//@Override
+	public void setId(Long id){this.id = id;}
 	public void setLikes(int likes){this.likes = likes;}		
 	public void setComments(String comments){this.comments = comments;}	
-	public void setCoverpicture(String uri){this.coverpicuri = uri;}	
+	public void setCoverpicuri(String uri){this.coverpicuri = uri;}	
 	public void setProfile(Profile profile){
 		
 		/*//Check if there is already a Profile Object associated with this Order Object.
@@ -91,7 +103,8 @@ public class Outfit extends RelatedEntity implements Serializable
 	}
 	
 	//Getters
-	public Long getId(){return this.Id;} 
+	//@Override
+	public Long getId(){return this.id;} 
 	public int getLikes(){return this.likes;}	
 	public String getComments(){return this.comments;}	
 	public Profile getProfile(){return this.profile;}
@@ -129,7 +142,7 @@ public class Outfit extends RelatedEntity implements Serializable
 	
 	@Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("\nId: ").append(this.Id)
+        StringBuilder sb = new StringBuilder("\nId: ").append(this.id)
 			.append("\nlikes: ").append(this.likes)
 			.append("\ncomments:").append(this.comments)
 			.append("\ncoverpic:").append(this.coverpicuri)

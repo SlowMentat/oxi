@@ -27,11 +27,11 @@
         <!--=========================================-->
 
         <!--This category contains all messages written by Hibernate. You can use this to analyze unspecific issues or to find categories used by Hibernate.  Be careful, setting this category to a fine log level might create a lot of log output.-->
-        <Logger name="org.hibernate" level="warn" additivity="false">
+        <Logger name="org.hibernate" level="debug" additivity="false">
             <AppenderRef ref="ConsoleAppender" />
         </Logger>
         <!-- All SQL statements executed via JDBC are written to this log category.  You can use it together with org.hibernate.type.descriptor.sql to get more information about the JDBC parameters and results.-->
-        <Logger name="org.hibernate.SQL" level="warn" additivity="false">
+        <Logger name="org.hibernate.SQL" level="debug" additivity="false">
             <AppenderRef ref="ConsoleAppender" />
         </Logger>
         <!--Hibernate writes the values bound to the JDBC parameters and extracted from the JDBC results to this log category.  This category should be used together with org.hibernate.SQL to also log the SQL statements.-->
@@ -39,7 +39,7 @@
             <AppenderRef ref="ConsoleAppender" />
         </Logger>
         <!--Hibernate logs the state at flush time of max. 20 entities to this log category.-->
-        <Logger name="org.hibernate.pretty" level="warn" additivity="false">
+        <Logger name="org.hibernate.pretty" level="debug" additivity="false">
             <AppenderRef ref="ConsoleAppender" />
         </Logger>
         <!--    Information about second level cache activities is written to this log category.-->
@@ -56,6 +56,10 @@
         </Logger>
         <!--    Hibernate writes the DDL SQL queries executed during schema migration to this log category.-->
         <Logger name="org.hibernate.tool.hbm2ddl" level="warn" additivity="false">
+            <AppenderRef ref="ConsoleAppender" />
+        </Logger>
+
+        <Logger name="org.hibernate.transform" level="warn" additivity="false">
             <AppenderRef ref="ConsoleAppender" />
         </Logger>
 
@@ -95,6 +99,14 @@
             <AppenderRef ref="ConsoleAppender" />
         </Logger>
         <Logger name="oxi.services" level="debug" additivity="false">
+            <AppenderRef ref="ConsoleAppender" />
+        </Logger>
+
+         <Logger name="oxi.repositories" level="debug" additivity="false">
+            <AppenderRef ref="ConsoleAppender" />
+        </Logger>
+
+         <Logger name="org.springframework.core.convert.support" level="debug" additivity="false">
             <AppenderRef ref="ConsoleAppender" />
         </Logger>
         <Root level="debug">

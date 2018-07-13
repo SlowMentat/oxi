@@ -21,9 +21,9 @@ import org.springframework.data.domain.*;
 
 @Service
 public interface ClientService{
-	public void saveOutfit(Outfit outfit);
+	/*public void saveOutfit(Outfit outfit);
 	public ResourceSupport readOutfit(Long id);
 	public PagedResources<OutfitDto> readOutfits(Pageable p);
-	public String savePhoto(MultipartHttpServletRequest data);
+	public String savePhoto(MultipartHttpServletRequest data);*/
 	//public T readEntityAsResource(Long id);
 }
