@@ -1,4 +1,4 @@
-package oxi.util.assemblers;
+/*package oxi.util.assemblers;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -35,4 +35,4 @@ public class ContentResourceAssembler extends ResourceAssemblerSupport<Content, 
 		//TODO:  add paged resource linkes
 		return resource;
 	}
-}
+}*/

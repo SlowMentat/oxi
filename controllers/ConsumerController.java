@@ -140,17 +140,17 @@ public class ConsumerController{
 
 	//@PreAuthorize("#name == principal.username")
 	//@Secured({"ROLE_ANONYMOUS"})
-	@RestResource(exported = true)
+	/*@RestResource(exported = true)
 	@RequestMapping(value="/content/{id}", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public HttpEntity<ContentDto> readContent(@PathVariable("id") Long id){
 		return new ResponseEntity<>(consumerService.readContent(id), HttpStatus.OK);
-	}
-
-	/*@RestResource(exported = true)
-	@RequestMapping(value = "/contents", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<PagedResources<ContentDto>> readOutfits(@PageableDefault Pageable pageable){
-		return new ResponseEntity<>(consumerService.readContents(pageable), HttpStatus.OK);
 	}*/
+
+	@RestResource(exported = true)
+	@RequestMapping(value = "/contents/{outfitId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> readOutfits(@PathVariable("outfitId") Long outfitId/*, @PageableDefault Pageable pageable*/){
+		return new ResponseEntity<List<?>>(consumerService.readContents(outfitId), HttpStatus.OK);
+	}
 
 
 	/*
@@ -169,7 +169,7 @@ public class ConsumerController{
 
 	//@PreAuthorize("#name == principal.username")
 	//@Secured({"ROLE_ANONYMOUS"})
-	@RestResource(exported = true)
+	/*@RestResource(exported = true)
 	@RequestMapping(value="/item/{id}", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public HttpEntity<ItemDto> readItem(@PathVariable("id") Long id){
 		return new ResponseEntity<>(consumerService.readItem(id), HttpStatus.OK);
@@ -179,7 +179,7 @@ public class ConsumerController{
 	@RequestMapping(value = "/items", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<PagedResources<ItemDto>> readItems(@PageableDefault Pageable pageable){
 		return new ResponseEntity<>(consumerService.readItems(pageable), HttpStatus.OK);
-	}
+	}*/
 
 
 	/*

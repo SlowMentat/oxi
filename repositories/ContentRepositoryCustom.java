@@ -1,7 +1,7 @@
 package oxi.repositories;
 
 import oxi.models.projection.OutfitProjection;
-import oxi.models.dto.OutfitDto;
+import oxi.models.dto.ContentDto;
 import oxi.models.*;
 
 import java.lang.*;
@@ -12,7 +12,7 @@ import org.springframework.data.jpa.repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-public interface OutfitRepositoryCustom /*extends PagingAndSortingRepository<Outfit, Long>*/{
+public interface ContentRepositoryCustom /*extends PagingAndSortingRepository<Outfit, Long>*/{
 	@Query(value="")
-	Page<OutfitDto> findByProfileId(Long id, Pageable pageable);
+	List<ContentDto> findByOutfitId(Long id);
 }

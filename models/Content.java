@@ -28,7 +28,7 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 	@Id
 	//@JsonProperty("id")
 	@GeneratedValue(strategy=GenerationType.AUTO)
-	private Long Id;
+	private Long id;
 	
 	private String coverpicuri;
 	
@@ -59,7 +59,7 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 	}
 	
 	//Setters==========================================================================	
-	public void setId(Long id){this.Id = id;}
+	public void setId(Long id){this.id = id;}
 	public void setCoverpicuri(String uri){this.coverpicuri = uri;}	
 	public void setOutfit(Outfit outfit){
 		/*logger.warn("SETTING OUTFIT");
@@ -96,7 +96,7 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 	}
 	
 	//Getters==========================================================================	
-	public Long getId(){return this.Id;}
+	public Long getId(){return this.id;}
 	public String getCoverpicuri(){return this.coverpicuri;}
 	public Outfit getOutfit(){
 		logger.warn("GETTING OUTFIT");
@@ -149,7 +149,7 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 	@Override 
 	public String toString(){
 		logger.debug("building Content string");
-        StringBuilder sb = new StringBuilder("\nId: ").append(this.Id)
+        StringBuilder sb = new StringBuilder("\nId: ").append(this.id)
 			.append("\ncoverpicuri: ").append(this.coverpicuri)
 			.append("\noutfits: [");
 		if(this.outfit != null){

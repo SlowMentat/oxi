@@ -23,8 +23,8 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<Lo
 	//@JsonProperty("id")
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private Long Id;
-	private long positionx;
-	private long positiony;
+	private Long positionx;
+	private Long positiony;
 	private String link;
 	private String type;
 	private String size;
@@ -52,8 +52,8 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<Lo
 	//Setters
 	//@Override
 	public void setId(Long id){this.Id = id;}
-	public void setLocationx(long posx){this.positionx = posx;}
-	public void setLocationy(long posy){this.positiony = posy;}
+	public void setLocationx(Long posx){this.positionx = posx;}
+	public void setLocationy(Long posy){this.positiony = posy;}
 	public void setLink(String link){this.link = link;}	
 	public void setType(String type){this.type = type;}	
 	public void setSize(String size){this.size = size;}	
@@ -75,8 +75,8 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<Lo
 	//Getters
 	//@Override
 	public Long getId(){return this.Id;}
-	public long getPositionx(){return this.positionx;}
-	public long getPositiony(){return this.positiony;}
+	public Long getPositionx(){return this.positionx;}
+	public Long getPositiony(){return this.positiony;}
 	public String getLink(){return this.link;}	
 	public String getType(){return this.type;}	
 	public String getSize(){return this.size;}

@@ -54,7 +54,7 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 	public Outfit(){
 	}
 
-	public Outfit(long id, int likes, String comments, List<Content> contents, String coverpicuri){
+	public Outfit(Long id, int likes, String comments, List<Content> contents, String coverpicuri){
 		//super();
 		this.id = id;
 		this.likes = likes;
@@ -142,7 +142,7 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 	
 	@Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("\nId: ").append(this.id)
+        StringBuilder sb = new StringBuilder("\nid: ").append(this.id)
 			.append("\nlikes: ").append(this.likes)
 			.append("\ncomments:").append(this.comments)
 			.append("\ncoverpic:").append(this.coverpicuri)

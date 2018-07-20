@@ -40,8 +40,8 @@ public class ConsumerService implements ClientService{
 	//Resource Assemblers
 	//@Autowired 
 	//private OutfitResourceAssembler outfitRA;
-	@Autowired private ContentResourceAssembler contentRA;
-	@Autowired private ItemResourceAssembler itemRA;
+	//@Autowired private ContentResourceAssembler contentRA;
+	//@Autowired private ItemResourceAssembler itemRA;
 	@Autowired private PictureResourceAssembler pictureRA;
 	@Autowired private ProfileResourceAssembler profileRA;
 	@Autowired private UserResourceAssembler userRA;
@@ -124,12 +124,6 @@ public class ConsumerService implements ClientService{
 		return outfitResources;
 	}*/
 
-	private ResourceSupport toResource(OutfitDto dto){		
-		//Link outfitLink = null;// links.linkForSingleResource(dto).withRel("outfit");
-		//Link selfLink = links.linkForSingleResource(dto).withSelfRel();
-		return new Resource<>(dto/*, outfitLink, selfLink*/);
-	}
-
 	/*private ResourceSupport toResource(OutfitProjection projection){
 		//OutfitDto dto = new OutfitDto(projection.getId(), projection.getLikes(), projection.getComments(), projection.getContents(), projection.getCoverpicuri());
 		OutfitDto dto = new OutfitDto(projection.getId(), projection.getLikes(), projection.getComments(), projection.getContents(), projection.getCoverpicuri());		
@@ -148,12 +142,17 @@ public class ConsumerService implements ClientService{
 	@param Long specifying id of content to retreive
 	@return ContentDto which extends ResourceSupport
 	*/
-	public ContentDto readContent(Long id){
+	/*public ContentDto readContent(Long id){
 		//TODO:  ???need a customized json serialization to replace HAL links with raw data.
 		logger.debug("Reading Content (id=" + id + ")");
 		ContentDto contentResource = contentRA.toResource(contentRep.getOne(id));
 		logger.debug("OutfitResource:  " + contentResource);
 		return contentResource;
+	}*/
+
+	public List<?> readContents(Long outfitId){
+		List<ContentDto> contents = contentRep.findByOutfitId(outfitId);
+		return contents.stream().map(this::toResource).collect(Collectors.toList());
 	}
 
 	/*
@@ -173,7 +172,7 @@ public class ConsumerService implements ClientService{
 	@param Long specifying id of item to retreive
 	@return ItemDto which extends ResourceSupport
 	*/
-	public ItemDto readItem(Long id){
+	/*public ItemDto readItem(Long id){
 		//TODO:  ???need a customized json serialization to replace HAL links with raw data.
 		logger.debug("Reading Item (id=" + id + ")");
 		ItemDto itemResource = itemRA.toResource(itemRep.getOne(id));
@@ -186,7 +185,7 @@ public class ConsumerService implements ClientService{
 		// Tell PAR to use the user assembler for individual items.
 		PagedResources<ItemDto> pagedItemResource = itemPRA.toResource(items, itemRA);
 		return pagedItemResource;
-	}
+	}*/
 	/*
 	Makes call to data access layer (DAL) inserting new item resource into database.
 	@param Item 
@@ -266,5 +265,11 @@ public class ConsumerService implements ClientService{
 		}else{
 			return;
 		}
+	}
+
+	private <T extends Identifiable<Long>> ResourceSupport toResource(T dto){		
+		//Link outfitLink = null;// links.linkForSingleResource(dto).withRel("outfit");
+		//SLink selfLink = links.linkForSingleResource(dto).withSelfRel();
+		return new Resource<T>(dto/*, null, selfLink*/);
 	}
 }

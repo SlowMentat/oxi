@@ -36,14 +36,14 @@ public class OutfitDto implements OutfitProjection, Serializable, Identifiable<L
 	private Long id;
 	private int likes;
 	private String comments;
-	private List<Content> contents;
+	private List<ContentDto> contents;
 	private String coverpicuri;
 
 	/*public OutfitDto(){
 
 	}*/
 
-	public OutfitDto(Long id, int likes, String comments, List<Content> contents, String coverpicuri){
+	public OutfitDto(Long id, int likes, String comments, List<ContentDto> contents, String coverpicuri){
 		//super();
 		this.id = id;
 		this.likes = likes;
@@ -57,14 +57,14 @@ public class OutfitDto implements OutfitProjection, Serializable, Identifiable<L
 	public int getLikes(){return this.likes;}
 	public String getComments(){return this.comments;}
 	//Profile getProfile();
-	public List<Content> getContents(){return this.contents;}
+	public List<ContentDto> getContents(){return this.contents;}
 	public String getCoverpicuri(){return this.coverpicuri;}
 
 	//Setters
 	public void setId(Long id){this.id = id;}
 	public void setLikes(int likes){this.likes = likes;}
 	public void setComments(String comments){this.comments = comments;}
-	public void setContents(List<Content> contents){logger.debug("contents[] = " + contents); this.contents = contents;}
+	public void setContents(List<ContentDto> contents){logger.debug("contents[] = " + contents); this.contents = contents;}
 	public void setCoverpicuri(String coverpicuri){this.coverpicuri = coverpicuri;}
 	
 }

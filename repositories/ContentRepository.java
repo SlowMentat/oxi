@@ -8,7 +8,7 @@ import org.springframework.data.rest.core.annotation.*;
 import org.springframework.data.domain.*;
 
 @RepositoryRestResource(collectionResourceRel="Content", path="content")
-public interface ContentRepository extends JpaRepository<Content, Long>{
+public interface ContentRepository extends JpaRepository<Content, Long>, ContentRepositoryCustom{
 	/*@RestResource(exported = false)
 	@Query(value = "SELECT * FROM content WHERE id = ?1", nativeQuery = true)
 	ContentProjection getOneDto(long id);*/

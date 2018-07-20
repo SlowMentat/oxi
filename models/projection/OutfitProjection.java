@@ -1,6 +1,7 @@
 package oxi.models.projection;
 
 import oxi.models.*;
+import oxi.models.dto.ContentDto;
 import oxi.models.projection.ContentProjection;
 import java.lang.*;
 import java.util.List;
@@ -16,7 +17,7 @@ public interface OutfitProjection /*extends Identifiable<Long>*/{
 	public int getLikes();
 	public String getComments();
 	//Profile getProfile();
-	public List<Content> getContents();
+	public List<ContentDto> getContents();
 	public String getCoverpicuri();
 
 	//Setters
