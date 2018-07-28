@@ -1,58 +1,44 @@
-/*package oxi.controllers;
- 
-import com.jl.crm.services.*;
+package oxi.controllers;
+
+import oxi.services.ConsumerService;
+
+/*import com.jl.crm.services.*;*/
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
- 
-import javax.inject.Inject;
+import org.springframework.beans.factory.annotation.*;
+
 import java.net.URI;
 import java.util.Collections;
+import java.io.*;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 @Controller
-@RequestMapping(value="/photo")
 public class UserPhotoControlloer{
-	
-	//@Secure({"ROLE_USER"})
-	@RequestMapping(method = RequestMethod.POST)
-	HttpEntity WritePhoto(@PathVariable long user, MultipartHttpServletRequest file) throws Throwable {
-		logger.debug("Hitting uploadImage method!");
-		// write it
-		byte bytesForProfilePhoto[] = FileCopyUtils.copyToByteArray(file.getInputStream());
-		MediaType mt = MediaType.parseMediaType(file.getContentType());
-		this.crmService.writeUserProfilePhoto(user, mt, bytesForProfilePhoto);
+	@Autowired
+	private ConsumerService consumerService;
+	private static final Logger logger = LogManager.getLogger(UserPhotoControlloer.class);
 
-		if(!file.isEmpty()){
-			File imgpath = null;
-			try{
-				imgpath = File.createTempFile("lrg",".jpg", new File(imgfolder));
-			}catch(Exception e){
-				return e.toString();
-			}
-			//tring fullfilename = imgpath + filename;			
-			//insert new image entry in database
-			try{
-				byte[] bytes = file.getBytes();
-				BufferedOutputStream ostream = new BufferedOutputStream(new FileOutputStream(imgpath));
-				ostream.write(bytes);
-				ostream.close();
-				
-				//update image database
-				return "file \"" + imgpath.toString() + "\" successfully uploaded";
-			}catch(Exception e){
-				return "Failed to upload file " + imgpath.toString();
-			}
-		}else{
-			return "File is empty";
-		}
+	@RequestMapping(value="/uploadPhoto", method=RequestMethod.POST)
+	public void uploadImage(MultipartHttpServletRequest requestData){
+		String imageUrl = consumerService.saveImage(requestData);
+		//create new Picture Record with imageUrl
+		//logger.debug("Image filename = " + imageUrl);
 	}
-}*/	
+	
+	@RequestMapping(value="/image/{filename}", method=RequestMethod.GET)
+	public ResponseEntity<byte[]> getImage(@PathVariable String filename) throws IOException{
+		byte[] image = consumerService.getImage(filename);
+		logger.debug("image = " + image);
+		return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
+	}
+}
 
 
 

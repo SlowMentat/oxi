@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.io.*;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.io.Serializable;
 import org.apache.commons.io.IOUtils;
@@ -55,6 +56,9 @@ public class ConsumerService implements ClientService{
 
 	private static final Logger logger = LogManager.getLogger(ConsumerService.class);
 	private static String imgfolder = "/usr/images/";
+
+	//private final FileOutputStream fos = null;
+	private InputStream iStream = null;
 
 	public ConsumerService(){
 
@@ -223,12 +227,23 @@ public class ConsumerService implements ClientService{
 	}
 
 	//=====================================================================================
+
+	@Transactional
+	private void savePicture(String imgFileName){
+		if(imgFileName != null){
+			Picture picture = new Picture();
+			picture.setLargeuri(imgFileName);
+			pictureRep.saveAndFlush(picture);
+		}else{
+			return;
+		}
+	}
 	/*
 	saves jpeg data to filesystem
 	@param MulitpartHttpServletRequest data 
 	@return String indicating generated filename.
 	*/
-	public String savePhoto(MultipartHttpServletRequest data){
+	public String saveImage(MultipartHttpServletRequest data){
 		logger.debug("Hitting uploadImage method!");
 		Iterator<String> itr = data.getFileNames();
 		MultipartFile file = data.getFile(itr.next());
@@ -256,15 +271,25 @@ public class ConsumerService implements ClientService{
 		}
 	}
 
-	@Transactional
-	private void savePicture(String imgFileName){
-		if(imgFileName != null){
-			Picture picture = new Picture();
-			picture.setLargeuri(imgFileName);
-			pictureRep.saveAndFlush(picture);
-		}else{
-			return;
+	/*public Resource getThumbnail(String filename){
+
+	}*/
+
+	public byte[] getImage(String filename/*, HttpServletResponse response*/){
+		//Path file = Paths.get(imgfolder+filename);
+		byte[] image = null;
+		logger.debug("in ConsumerService.getImage()");
+		try{
+			iStream = new FileInputStream(imgfolder + filename + ".jpg");
+			image = IOUtils.toByteArray(iStream);
+			logger.debug("image byte[] length = " + image.length);
+			return image;
+			/*Files.copy(file, response.getOutputStream());
+			response.getOutputStream.flush();*/
+		}catch(IOException e){
+			logger.debug(e);
 		}
+		return image;
 	}
 
 	private <T extends Identifiable<Long>> ResourceSupport toResource(T dto){		

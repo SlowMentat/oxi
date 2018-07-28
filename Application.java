@@ -53,14 +53,14 @@ import java.util.*;
 
 //Standard annotions for any spring boot configuration class
 @Configuration
-@ComponentScan(basePackages = {"oxi.controllers, oxi.models, oxi.security, oxi.repositories, oxi.services, oxi.util.assemblers, oxi.models.dto"})
+@ComponentScan(basePackages = {"oxi.controllers, oxi.models, oxi.repositories, oxi.services, oxi.util.assemblers, oxi.models.dto"})//removed oxi.security
 @EnableAutoConfiguration
 //@SpringBootApplication
 //Addition annotations
 @EnableSpringDataWebSupport
 @EntityScan(basePackages="oxi.models")
 @EnableJpaRepositories(basePackages="oxi.repositories")
-@EnableWebSecurity
+//@EnableWebSecurity
 @EnableHypermediaSupport(type = HypermediaType.HAL)
 //@EnableWebMvc
 @ImportResource("/WEB-INF/classes/applicationContext.xml")

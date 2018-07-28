@@ -88,11 +88,15 @@ public class ConsumerController{
 	//@Secured ({"ROLE_USER"})
 	@RequestMapping(value="/uploadPhoto", method=RequestMethod.POST)
 	public void uploadImage(MultipartHttpServletRequest requestData){
-		String imageUrl = consumerService.savePhoto(requestData);
+		String imageUrl = consumerService.saveImage(requestData);
 		//create new Picture Record with imageUrl
 		logger.debug("Image filename = " + imageUrl);
 	}
 	
+	@RequestMapping(value="/image/{filename}", method=RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
+	public @ResponseBody byte[] getImage(@PathVariable String filename) throws IOException{
+		return consumerService.getImage(filename);
+	}
 	/*
 	******************************************************************
 	HTTP Request handling methods (GET and POST) for OUTFIT resource
