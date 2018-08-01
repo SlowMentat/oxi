@@ -73,7 +73,30 @@ public class ConsumerService implements ClientService{
 	@Transactional
 	public void saveOutfit(Outfit outfit){
 		logger.debug("saving Outfit");
-		outfitRep.saveAndFlush(outfit);
+		int contentsCount = outfit.getContents().size();
+		if(contentsCount > 0){			
+			int n=0;
+			//ArrayList of ids generated when persisting to database
+			List<Content> persistedContents = new ArrayList<Content>(contentsCount);
+			//Before persisting outfit entity, persist all nested entities
+			for(Content content : outfit.getContents()){
+				/*for(Item item : content.getItems()){
+					itemRep.saveAndFlush(item);
+				}*/
+				if(content.getPicture() != null) pictureRep.saveAndFlush(content.getPicture());
+				persistedContents.add(contentRep.saveAndFlush(content));
+			}
+			//outfit.setContents(persistedContents);			
+			Outfit persistedOutfit = outfitRep.saveAndFlush(outfit);
+			for(Content content : persistedContents){
+				logger.debug("calling Outfit.addContent with persisted Content parameter :");
+				logger.debug(content);
+				persistedOutfit.addContent(content);
+			}
+			outfitRep.saveAndFlush(persistedOutfit);
+		}else{
+			logger.warn("Rejecting Outfit entity. Outfit entity contains no Content childeren. Outfit entity must have at least 1 Content child entity");
+		}
 	}
 
 	/*

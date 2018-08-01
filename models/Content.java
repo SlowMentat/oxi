@@ -49,6 +49,7 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 	
 	@OneToOne(cascade=CascadeType.ALL, mappedBy="content")
 	@RestResource(rel="vendor_1")
+	@JsonProperty("picture")
 	@JsonIdentityReference(alwaysAsId=true)	
 	@JsonBackReference
 	private Picture picture;

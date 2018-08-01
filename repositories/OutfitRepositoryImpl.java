@@ -107,6 +107,7 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 			.addEntity("i", Item.class)
 			.setParameterList("outfitIdList", idToOutfitDtoMap.keySet())
 			.list();
+
 		for(Object[] tuple : contentItemTuples){
 			//put <key, value> into HasMap
 			content = (Content)tuple[0];
@@ -119,6 +120,7 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 			if(item != null) items.add(new ItemDto(item.getId(), item.getPositionx(), item.getPositiony(), item.getLink(), item.getType(), item.getSize()));
 			contentToItemMap.put(content, items);
 		}
+		
 		for(Content c : contentToItemMap.keySet()){
 			idToOutfitDtoMap.get(c.getOutfit().getId()).getContents().add(new ContentDto(c.getId(), c.getCoverpicuri(), contentToItemMap.get(c)));
 			//contentDtos.add(new ContentDto(c.getId(), c.getCoverpicuri(), contentToItemMap.get(c)));
