@@ -5,6 +5,7 @@ import oxi.models.*;
 import java.lang.*;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.UUID;
 import java.io.Serializable;
 import org.springframework.hateoas.core.*;
 import org.springframework.hateoas.ResourceSupport;
@@ -18,7 +19,7 @@ import lombok.Data;
 
 //@Data
 //@Relation(value = "outfit", collectionRelation = "outfits")
-public class OutfitDto implements OutfitProjection, Serializable, Identifiable<Long>
+public class OutfitDto implements OutfitProjection, Serializable, Identifiable<String>
 {
 	private static final Logger logger = LogManager.getLogger(OutfitDto.class);
 	/*private final Outfit outfit;
@@ -33,7 +34,7 @@ public class OutfitDto implements OutfitProjection, Serializable, Identifiable<L
 
 
 	//private static final Logger logger = LogManager.getLogger(OutfitDto.class);*/
-	private Long id;
+	private String id;
 	private int likes;
 	private String comments;
 	private List<ContentDto> contents;
@@ -43,7 +44,7 @@ public class OutfitDto implements OutfitProjection, Serializable, Identifiable<L
 
 	}*/
 
-	public OutfitDto(Long id, int likes, String comments, List<ContentDto> contents, String coverpicuri){
+	public OutfitDto(String id, int likes, String comments, List<ContentDto> contents, String coverpicuri){
 		//super();
 		this.id = id;
 		this.likes = likes;
@@ -53,7 +54,7 @@ public class OutfitDto implements OutfitProjection, Serializable, Identifiable<L
 	}
 	//Getters
 	@Override
-	public Long getId(){return this.id;}
+	public String getId(){return this.id;}
 	public int getLikes(){return this.likes;}
 	public String getComments(){return this.comments;}
 	//Profile getProfile();
@@ -61,7 +62,7 @@ public class OutfitDto implements OutfitProjection, Serializable, Identifiable<L
 	public String getCoverpicuri(){return this.coverpicuri;}
 
 	//Setters
-	public void setId(Long id){this.id = id;}
+	public void setId(String id){this.id = id;}
 	public void setLikes(int likes){this.likes = likes;}
 	public void setComments(String comments){this.comments = comments;}
 	public void setContents(List<ContentDto> contents){logger.debug("contents[] = " + contents); this.contents = contents;}

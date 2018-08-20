@@ -5,6 +5,7 @@ import javax.persistence.CascadeType;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.UUID;
 import java.io.Serializable;
 import java.lang.*;
 import org.springframework.data.rest.core.annotation.*;
@@ -15,21 +16,27 @@ import org.springframework.hateoas.*;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
+import org.hibernate.annotations.GenericGenerator;
+
 import oxi.models.projection.ContentProjection;
 
 @Entity
 @Table(name="content")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="content_id")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope=Content.class)
-public class Content extends RelatedEntity implements Serializable, Identifiable<Long>{
+public class Content extends RelatedEntity implements Serializable{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Content.class);
 
 	@Id
-	//@JsonProperty("id")
-	@GeneratedValue(strategy=GenerationType.AUTO)
-	private Long id;
-	
+	@JsonProperty("id")
+	@GeneratedValue(generator = "uuid2")
+	@GenericGenerator(name = "uuid2", strategy = "uuid2")
+	@Column(columnDefinition = "BINARY(16)")
+	private UUID id;
+
+	@Column(name = "id_text", updatable = false, insertable = false)
+	private String idText;	
 	private String coverpicuri;
 	
 	@ManyToOne(cascade=CascadeType.ALL)
@@ -60,7 +67,8 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 	}
 	
 	//Setters==========================================================================	
-	public void setId(Long id){this.id = id;}
+	public void setId(UUID id){this.id = id;}
+	//public void setIdText(String idText){this.idText = idText;}
 	public void setCoverpicuri(String uri){this.coverpicuri = uri;}	
 	public void setOutfit(Outfit outfit){
 		/*logger.warn("SETTING OUTFIT");
@@ -97,7 +105,8 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 	}
 	
 	//Getters==========================================================================	
-	public Long getId(){return this.id;}
+	public UUID getId(){return this.id;}
+	public String getIdText(){return this.idText;}
 	public String getCoverpicuri(){return this.coverpicuri;}
 	public Outfit getOutfit(){
 		logger.warn("GETTING OUTFIT");

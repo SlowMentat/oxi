@@ -14,5 +14,5 @@ import org.springframework.data.domain.Pageable;
 
 public interface ContentRepositoryCustom /*extends PagingAndSortingRepository<Outfit, Long>*/{
 	@Query(value="")
-	List<ContentDto> findByOutfitId(Long id);
+	List<ContentDto> findByOutfitId(UUID id);
 }

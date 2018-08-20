@@ -44,11 +44,11 @@ import com.fasterxml.jackson.databind.*;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.UUID;
 import java.io.Serializable;
 
 import oxi.models.*;
 import oxi.repositories.*;
-import oxi.dao.*;
 import oxi.models.dto.*;
 import oxi.models.projection.*;
 import oxi.services.ConsumerService;
@@ -111,10 +111,10 @@ public class ConsumerController{
 	}
 
 	//@PreAuthorize("#name == principal.username")
-	//@Secured({"ROLE_ANONYMOUS"})
+	@Secured({"READ_PRIVILEGE", "WRITE_PRIVILEGE"})
 	@RestResource(exported = true)
 	@RequestMapping(value="/outfit/{id}", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public HttpEntity<?> readOutfit(@PathVariable("id") Long id){
+	public HttpEntity<?> readOutfit(@PathVariable("id") String id){
 		return new ResponseEntity<>(consumerService.readOutfit(id), HttpStatus.OK);
 	}
 
@@ -125,7 +125,7 @@ public class ConsumerController{
 	}*/
 	@RestResource(exported = true)
 	@RequestMapping(value = "/outfits/{profileId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> readOutfits(@PathVariable("profileId") Long profileId, @PageableDefault Pageable pageable){
+	public ResponseEntity<?> readOutfits(@PathVariable("profileId") String profileId, @PageableDefault Pageable pageable){
 		return new ResponseEntity<PagedResources<?>>(consumerService.readOutfits(profileId, pageable), HttpStatus.OK);
 	}
 
@@ -152,7 +152,7 @@ public class ConsumerController{
 
 	@RestResource(exported = true)
 	@RequestMapping(value = "/contents/{outfitId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> readOutfits(@PathVariable("outfitId") Long outfitId/*, @PageableDefault Pageable pageable*/){
+	public ResponseEntity<?> readOutfits(@PathVariable("outfitId") String outfitId/*, @PageableDefault Pageable pageable*/){
 		return new ResponseEntity<List<?>>(consumerService.readContents(outfitId), HttpStatus.OK);
 	}
 
@@ -163,7 +163,7 @@ public class ConsumerController{
 	******************************************************************
 	*/
 	//@Secured({"ROLE_USER"})
-	@Transactional
+	//@Transactional
 	@RestResource(exported = true)
 	@RequestMapping(value="/item", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public void uploadItem(@RequestBody Item item){
@@ -203,8 +203,21 @@ public class ConsumerController{
 	//@Secured({"ROLE_ANONYMOUS"})
 	@RestResource(exported = true)
 	@RequestMapping(value="/profile/{id}", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public HttpEntity<ProfileDto> readProfile(@PathVariable("id") Long id){
+	public HttpEntity<ProfileDto> readProfile(@PathVariable("id") String id){
 		return new ResponseEntity<>(consumerService.readProfile(id), HttpStatus.OK);
 	}
+
+
+
+	/*@RequestMapping(value="/createUser", method=RequestMethod.POST)
+	public void createUser(@RequestParam String email, @RequestParam String password, @RequestParam(required = false) String username){
+		consumerService.provisionUser(new UserDto(email, password, username));
+	}*/
+	@Secured({"ROLE_ANONYMOUS"})
+	@RequestMapping(value="/createUser", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> createUser(@RequestBody UserDto userDto){
+		return consumerService.provisionUser(userDto);
+	}
+
 
 }

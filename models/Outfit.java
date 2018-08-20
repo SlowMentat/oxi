@@ -4,6 +4,7 @@ import javax.persistence.*;
 import javax.persistence.CascadeType;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.UUID;
 import java.io.Serializable;
 import org.springframework.data.rest.core.annotation.*;
 import com.fasterxml.jackson.annotation.*;
@@ -11,6 +12,8 @@ import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.*;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+
+import org.hibernate.annotations.GenericGenerator;
 //import oxi.jackson.*;
 import org.springframework.hateoas.*;
 import java.lang.*;
@@ -21,15 +24,20 @@ import oxi.models.projection.OutfitProjection;
 @Table(name="outfit")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=Outfit.class)
 //@JsonDeserialize(contentUsing=CustomOutfitDeserializer.class) 
-public class Outfit extends RelatedEntity implements Serializable, Identifiable<Long>
+public class Outfit extends RelatedEntity implements Serializable
 {
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Outfit.class);
 	
 	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
-	//@JsonProperty("id")
-	private Long id;
+	@GeneratedValue(generator = "uuid2")
+	@GenericGenerator(name = "uuid2", strategy = "uuid2")
+	@Column(columnDefinition = "BINARY(16)")
+	@JsonProperty("id")
+	private UUID id;
+
+	@Column(name = "id_text", updatable = false, insertable = false)
+	private String idText;	
 	private int likes;
 	private String comments;
 	/*@OneToOne
@@ -49,12 +57,15 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 	@JsonIdentityReference(alwaysAsId=true)
 	//@JsonManagedReference
 	private Profile profile;
+
+	/*@Column(name = "profile_id_text", updatable = false)
+	private String profileText;*/
 	
 	//Constructor
 	public Outfit(){
 	}
 
-	public Outfit(Long id, int likes, String comments, List<Content> contents, String coverpicuri){
+	public Outfit(UUID id, int likes, String comments, List<Content> contents, String coverpicuri){
 		//super();
 		this.id = id;
 		this.likes = likes;
@@ -65,10 +76,12 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 	
 	//Setters
 	//@Override
-	public void setId(Long id){this.id = id;}
+	public void setId(UUID id){this.id = id;}
+	//public void setIdText(String idText){this.idText = idText;}
 	public void setLikes(int likes){this.likes = likes;}		
 	public void setComments(String comments){this.comments = comments;}	
 	public void setCoverpicuri(String uri){this.coverpicuri = uri;}	
+	//set the binary and text profile ids and assures that changes are propogated to all child entity objects
 	public void setProfile(Profile profile){
 		
 		/*//Check if there is already a Profile Object associated with this Order Object.
@@ -89,7 +102,9 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 		}*/
 		//this.profile = (Profile)this.setManyToOneParent(profile, this.profile, this);
 		this.profile = this.<Profile, Outfit>setManyToOneParent(profile, this.profile, this);
+		//this.profileText = this.<Profile, Outfit>setManyToOneParent(profile, this.profileText, this);
 		if(this.profile == null) logger.debug("Outfit.profile is null");
+		//if(this.profile == null) logger.debug("Outfit.profileText is null");
 		//else logger.debug("Outfit's profile variable:  " + this.toString());
 	}	
 	public void setContents(List<Content> contents){
@@ -104,7 +119,8 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 	
 	//Getters
 	//@Override
-	public Long getId(){return this.id;} 
+	public UUID getId(){return this.id;} 
+	public String getIdText(){return this.idText;}
 	public int getLikes(){return this.likes;}	
 	public String getComments(){return this.comments;}	
 	public Profile getProfile(){return this.profile;}

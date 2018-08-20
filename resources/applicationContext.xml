@@ -20,7 +20,7 @@
         <context:component-scan base-package="org.springframework.hateoas.Resource"/>
         <context:component-scan base-package="org.springframework.hateoas.ResourceAssembler"/>-->
         <import resource="applicationContext-persistence.xml"/>
-        <!--<import resource="applicationSpring-security.xml"/>-->
+        <import resource="applicationSpring-security.xml"/>
 
     <beans profile="application">
         <context:property-placeholder location="classpath:resources.application.properties"/>

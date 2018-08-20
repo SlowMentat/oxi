@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.transaction.annotation.*;
 
 import javax.persistence.PersistenceContext;
 import javax.persistence.EntityManager;
@@ -32,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.stream.Collectors;
+import java.util.UUID;
 
 import org.hibernate.Session;
 import org.hibernate.type.LongType;
@@ -54,7 +56,7 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 
 	}*/
 
-	public Page<OutfitDto> findByProfileId(Long id, Pageable pageable){
+	public Page<OutfitDto> findByProfileId(UUID id, Pageable pageable){
 		Session session = entityManager.unwrap(Session.class);	
 		Outfit outfit;
 		Content content;
@@ -64,7 +66,7 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 		ArrayList<ItemDto> items;
 		//HashMap used to build OutfitDTO with nested List<Content>
 		HashMap<Outfit, ArrayList<Content>> outfitToContentMap = new HashMap<Outfit, ArrayList<Content>>();
-		HashMap<Long, OutfitDto> idToOutfitDtoMap = new HashMap<Long, OutfitDto>();
+		HashMap<UUID, OutfitDto> idToOutfitDtoMap = new HashMap<UUID, OutfitDto>();
 		HashMap<Content, ArrayList<ItemDto>> contentToItemMap = new HashMap<Content, ArrayList<ItemDto>>();
 		//Example 553. Hibernate native query selecting entities with joined one-to-many association
 		String outfitQ = "select {o.*} from outfit o where o.profile_id = :id";
@@ -86,7 +88,7 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 			.uniqueResult();
 
 		//values used as a Parameter List in the cotnentItemQ SQL query
-		List<Long> outfitIds = new ArrayList(toIntExact(outfitCount));
+		//List<Long> outfitIds = new ArrayList(toIntExact(outfitCount));
 
 		List<Outfit> outfitTuples = session.createSQLQuery(outfitQ)
 			.addEntity("o", Outfit.class)
@@ -94,14 +96,18 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 			.setMaxResults(pageable.getPageSize())
 			.setParameter("id", id)
 			.list();
-
+		logger.debug("outfitTuples Size = ");
+		logger.debug(outfitTuples.size());
 		//Populates hastable with id columns as key and outfitDto object as value.
 		//Assumes rows with unique id's to be returned from query
 		for(Outfit o : outfitTuples){
 			//Outfit o = (Outfit)tuple[0];
-			idToOutfitDtoMap.put(o.getId(), new OutfitDto(o.getId(), o.getLikes(), o.getComments(), new ArrayList<ContentDto>(5), o.getCoverpicuri()));
+			logger.debug("outfit id_text:");
+			logger.debug(o.getIdText());
+			idToOutfitDtoMap.put(o.getId(), new OutfitDto(o.getIdText(), o.getLikes(), o.getComments(), new ArrayList<ContentDto>(5), o.getCoverpicuri()));
 		}
-
+		logger.debug("idToOutfitDtoMap keyset = ");
+		logger.debug(idToOutfitDtoMap.keySet());
 		List<Object[]> contentItemTuples = session.createSQLQuery(contentItemQ)
 			.addEntity("c", Content.class)
 			.addEntity("i", Item.class)
@@ -117,12 +123,12 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 			}else{
 				items = contentToItemMap.get(content);
 			}			
-			if(item != null) items.add(new ItemDto(item.getId(), item.getPositionx(), item.getPositiony(), item.getLink(), item.getType(), item.getSize()));
+			if(item != null) items.add(new ItemDto(item.getIdText(), item.getPositionx(), item.getPositiony(), item.getLink(), item.getType(), item.getSize()));
 			contentToItemMap.put(content, items);
 		}
-		
+
 		for(Content c : contentToItemMap.keySet()){
-			idToOutfitDtoMap.get(c.getOutfit().getId()).getContents().add(new ContentDto(c.getId(), c.getCoverpicuri(), contentToItemMap.get(c)));
+			idToOutfitDtoMap.get(c.getOutfit().getId()).getContents().add(new ContentDto(c.getIdText(), c.getCoverpicuri(), contentToItemMap.get(c)));
 			//contentDtos.add(new ContentDto(c.getId(), c.getCoverpicuri(), contentToItemMap.get(c)));
 			logger.debug("content.outfit = " + c.getOutfit());
 			//outfitDtos.add
@@ -132,4 +138,15 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 
 		return pagedOutfitDtos;//outfitDtos;
 	}
+
+	/*@Transactional
+	public Outfit save(Outfit outfit){
+		entityManager.persist(outfit);
+		return outfit;*/
+		/*outfitDto outfitdto = new OutfitDto();
+		outfitdto.setId(outfit.id);
+		for(Content content : outfit.getContents()){
+			outfitdto.getContents().add(contentDto)
+		}*/
+	//}
 }

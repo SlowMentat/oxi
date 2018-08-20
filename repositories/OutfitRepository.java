@@ -15,7 +15,7 @@ import oxi.models.projection.OutfitProjection;
 import oxi.models.dto.*;
 
 @RepositoryRestResource(collectionResourceRel="Outfit", path="outfit")
-public interface OutfitRepository extends JpaRepository<Outfit, Long>, OutfitRepositoryCustom{
+public interface OutfitRepository extends JpaRepository<Outfit, UUID>, OutfitRepositoryCustom{
 	
 
 	/*@Query(value = "SELECT * FROM outfit WHERE profile_id = ?1", nativeQuery = true)
@@ -25,7 +25,7 @@ public interface OutfitRepository extends JpaRepository<Outfit, Long>, OutfitRep
 	//@Query(value = "SELECT * FROM outfit WHERE id = ?1", nativeQuery = true)
 	///@Query("SELECT new oxi.models.dto.OutfitDto(o.Id, o.likes, o.comments, o.contents, o.coverpicuri) FROM Outfit AS o WHERE o.Id = ?1")
 	@Query("SELECT o FROM Outfit AS o WHERE o.id = ?1")
-	OutfitProjection findById(Long Id);
+	OutfitProjection findById(UUID Id);
 
 	//@RestResource(exported = false)
 	//@Query(value = "SELECT * FROM outfit \n#pageable\n", countQuery = "SELECT count(*) FROM outfit", nativeQuery = true)

@@ -2,6 +2,8 @@ package oxi.models;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.UUID;
+import java.util.Collection;
 import java.io.Serializable;
 import java.lang.*;
 import com.fasterxml.jackson.annotation.*;
@@ -11,80 +13,83 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.hateoas.*;
 import org.apache.logging.log4j.LogManager;
 
+import org.hibernate.annotations.GenericGenerator;
+
 @Entity
 @Table(name="user")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=User.class)
-public class User extends RelatedEntity implements Serializable, Identifiable<Long>{
+public class User extends RelatedEntity implements Serializable, Identifiable<UUID>{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(User.class);
 	
 	@Id
 	//@JsonProperty("id")
-	@GeneratedValue(strategy=GenerationType.AUTO)
-	private Long Id;
+	@GeneratedValue(generator = "uuid2")
+	@GenericGenerator(name = "uuid2", strategy = "uuid2")
+	@Column(columnDefinition = "BINARY(16)")
+	private UUID Id;
 	
+	@Column(name = "id_text", updatable = false, insertable = false)
+	private String idText;	
 	//private byte[] picture;
 	private String email;
 	private String password;
 	private String username;
 	private boolean enabled;
+    //private boolean tokenExpired;
 	
 	@OneToOne(mappedBy="user")
 	@RestResource(rel="client_0")
 	private Profile profile;
 	
+	@ManyToMany
+    @JoinTable( 
+        name = "users_roles", 
+        joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), 
+        inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id")) 
+    private Collection<Role> roles;
+
 	//Constructor
 	public User(){
 	}
 	
 	//Setters
 	//@Override
-	public void setId(Long id){
-		this.Id = id;
-	}
-	public void setEmail(String email){
-		this.email = email;
-	}
-	
-	public void setPassword(String password){
-		this.password = password;
-	}
-	
-	public void setUsername(String username){
-		this.username = username;
-	}
-
-	public void setEnabled(boolean enabled){
-		this.enabled = enabled;
-	}
-
-	public void setProfile(Profile profile){
-		this.profile = profile;
-	}
+	public void setId(UUID id){this.Id = id;}
+	//public void setIdText(String idText){this.idText = idText;}
+	public void setEmail(String email){this.email = email;}	
+	public void setPassword(String password){this.password = password;}	
+	public void setUsername(String username){this.username = username;}
+	public void setEnabled(boolean enabled){this.enabled = enabled;}
+	public void setProfile(Profile profile){this.profile = profile;}
+	//public void setTokenExpired(boolean isExpired){this.tokenExpired = isExpired};
+	public void setRoles(Collection<Role> roles){this.roles = roles;}
+	/*public void setRoles(List<Role> roles){
+		this.roles = this.<Role, User>setManyToManyParents(roles, this.roles, this);
+	}*/
 
 	
 	//Getters
 	//@Override
-	public Long getId(){
-		return this.Id;
+	public UUID getId(){return this.Id;}
+	public String getIdText(){return this.idText;}
+	public String getEmail(){return this.email;}	
+	public String getPassword(){return this.password;}	
+	public String getUsername(){return this.username;}
+	public boolean getEnabled(){return this.enabled;}	
+	public Profile getProfile(){return this.profile;}
+	//public boolean getTokenExpired(){return this.tokenExpired;}
+	public Collection<Role> getRoles(){return this.roles;}
+	/*@Override 
+	public <T extends Relational> void internalAddChild(T targetChild){
+		if(this.roles == null){
+			logger.debug("instantiating new List<T>");
+			this.roles = new ArrayList<Role>();
+		}
+		this.roles.add((Role)targetChild);
 	}
-	public String getEmail(){
-		return this.email;
-	}
-	
-	public String getPassword(){
-		return this.password;
-	}
-	
-	public String getUsername(){
-		return this.username;
-	}
-
-	public boolean getEnabled(){
-		return this.enabled;
-	}
-	
-	public Profile getProfile(){
-		return this.profile;
-	}
+	@Override
+	public <T extends Relational> void internalRemoveChild(T targetChild){
+		this.roles.remove((Role)targetChild);
+	}*/
 }

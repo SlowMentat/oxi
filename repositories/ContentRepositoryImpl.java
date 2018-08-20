@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.stream.Collectors;
+import java.util.UUID;
 
 import org.hibernate.Session;
 import org.hibernate.type.LongType;
@@ -54,7 +55,7 @@ public class ContentRepositoryImpl implements ContentRepositoryCustom {
 
 	}*/
 
-	public List<ContentDto> findByOutfitId(Long id){
+	public List<ContentDto> findByOutfitId(UUID id){
 		Session session = entityManager.unwrap(Session.class);
 		Content content;
 		Item item;
@@ -87,12 +88,12 @@ public class ContentRepositoryImpl implements ContentRepositoryCustom {
 			}else{
 				items = contentToItemMap.get(content);
 			}
-			if(item != null) items.add(new ItemDto(item.getId(), item.getPositionx(), item.getPositiony(), item.getLink(), item.getType(), item.getSize()));
+			if(item != null) items.add(new ItemDto(item.getIdText(), item.getPositionx(), item.getPositiony(), item.getLink(), item.getType(), item.getSize()));
 			contentToItemMap.put(content, items);
 		}
 
 		for(Content c : contentToItemMap.keySet()){
-			contentDtos.add(new ContentDto(c.getId(), c.getCoverpicuri(), contentToItemMap.get(c)));
+			contentDtos.add(new ContentDto(c.getIdText(), c.getCoverpicuri(), contentToItemMap.get(c)));
 		}
 
 		return contentDtos;//outfitDtos;

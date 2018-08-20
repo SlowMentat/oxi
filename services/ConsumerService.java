@@ -4,9 +4,12 @@ import java.lang.*;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.Arrays;
 import java.io.*;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.UUID;
 import java.io.Serializable;
 import org.apache.commons.io.IOUtils;
 
@@ -24,9 +27,19 @@ import org.springframework.hateoas.*;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.data.domain.*;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.hibernate.SessionFactory;
+import org.hibernate.Session;
+
+import org.springframework.security.crypto.bcrypt.*;
 
 
 @Service
@@ -37,6 +50,8 @@ public class ConsumerService implements ClientService{
 	@Autowired private ItemRepository itemRep;
 	@Autowired private PictureRepository pictureRep;
 	@Autowired private ProfileRepository profileRep;
+	@Autowired private UserRepository userRep;
+	@Autowired private RoleRepository roleRep;
 
 	//Resource Assemblers
 	//@Autowired 
@@ -45,7 +60,7 @@ public class ConsumerService implements ClientService{
 	//@Autowired private ItemResourceAssembler itemRA;
 	@Autowired private PictureResourceAssembler pictureRA;
 	@Autowired private ProfileResourceAssembler profileRA;
-	@Autowired private UserResourceAssembler userRA;
+	//@Autowired private UserResourceAssembler userRA;
 
 	//Paged Resource Assemblers 
 	@Autowired private PagedResourcesAssembler<Outfit> outfitPRA;
@@ -60,6 +75,17 @@ public class ConsumerService implements ClientService{
 	//private final FileOutputStream fos = null;
 	private InputStream iStream = null;
 
+	@Autowired
+	@PersistenceContext
+	private EntityManager entityManager;
+
+	/*@Autowired
+	SessionFactory sessionFactory;*/
+
+	@Autowired
+	private BCryptPasswordEncoder passwordEncoder;
+
+
 	public ConsumerService(){
 
 	}
@@ -73,27 +99,24 @@ public class ConsumerService implements ClientService{
 	@Transactional
 	public void saveOutfit(Outfit outfit){
 		logger.debug("saving Outfit");
+		//Session session = sessionFactory.getCurrentSession();
 		int contentsCount = outfit.getContents().size();
-		if(contentsCount > 0){			
+		if(contentsCount > 0){
+			logger.debug("outfit = ");
+			logger.debug(outfit);
 			int n=0;
-			//ArrayList of ids generated when persisting to database
-			List<Content> persistedContents = new ArrayList<Content>(contentsCount);
-			//Before persisting outfit entity, persist all nested entities
-			for(Content content : outfit.getContents()){
-				/*for(Item item : content.getItems()){
-					itemRep.saveAndFlush(item);
-				}*/
-				if(content.getPicture() != null) pictureRep.saveAndFlush(content.getPicture());
-				persistedContents.add(contentRep.saveAndFlush(content));
+			//List<UUID> contentIds = new ArrayList<UUID>(contentsCount);
+			List<Content> contents = new ArrayList<Content>(contentsCount);
+			for(Content c : outfit.getContents()){
+				entityManager.persist(c);
+				contents.add(c);
 			}
-			//outfit.setContents(persistedContents);			
-			Outfit persistedOutfit = outfitRep.saveAndFlush(outfit);
-			for(Content content : persistedContents){
-				logger.debug("calling Outfit.addContent with persisted Content parameter :");
-				logger.debug(content);
-				persistedOutfit.addContent(content);
+			for(Content c : contents){
+				outfit.addContent(c);
 			}
-			outfitRep.saveAndFlush(persistedOutfit);
+			entityManager.persist(outfit);
+			logger.debug("outfit after persist = ");
+			logger.debug(outfit);
 		}else{
 			logger.warn("Rejecting Outfit entity. Outfit entity contains no Content childeren. Outfit entity must have at least 1 Content child entity");
 		}
@@ -126,15 +149,16 @@ public class ConsumerService implements ClientService{
 	@param Long specifying id of outfit to retreive
 	@return OutfitDto which extends ResourceSupport
 	*/
-	public ResourceSupport readOutfit(Long outfitId){
+	public ResourceSupport readOutfit(String outfitId){
 		//TODO:  ???need a customized json serialization to replace HAL links with raw data.
 		logger.debug("Reading Outfit (id=" + outfitId + ")");
 		//logger.debug("OutfitResource:  " + outfitResource);
 		return null;//this.toResource(outfitRep.findById(outfitId));
 	}
 
-	public PagedResources<?> readOutfits(Long profileId, Pageable pageable){
-		Page<OutfitDto> outfits = outfitRep.findByProfileId(profileId, pageable);
+	public PagedResources<?> readOutfits(String profileId, Pageable pageable){
+
+		Page<OutfitDto> outfits = outfitRep.findByProfileId(UUID.fromString(profileId), pageable);
 		logger.debug("outfits return from repository: \n" + outfits);
 		// Tell PAR to use the user assembler for individual items.
 		PagedResources<?> pagedOutfitResource = outfitPRAP.toResource(outfits, this::toResource);
@@ -177,8 +201,8 @@ public class ConsumerService implements ClientService{
 		return contentResource;
 	}*/
 
-	public List<?> readContents(Long outfitId){
-		List<ContentDto> contents = contentRep.findByOutfitId(outfitId);
+	public List<?> readContents(String outfitId){
+		List<ContentDto> contents = contentRep.findByOutfitId(UUID.fromString(outfitId));
 		return contents.stream().map(this::toResource).collect(Collectors.toList());
 	}
 
@@ -230,12 +254,40 @@ public class ConsumerService implements ClientService{
 	@param Long specifying id of profile to retreive
 	@return ProfileDto which extends ResourceSupport
 	*/
-	public ProfileDto readProfile(Long id){
+	public ProfileDto readProfile(String id){
 		//TODO:  ???need a customized json serialization to replace HAL links with raw data.
 		logger.debug("Reading Profile (id=" + id + ")");
-		ProfileDto profileResource = profileRA.toResource(profileRep.getOne(id));
+		ProfileDto profileResource = profileRA.toResource(profileRep.getOne(UUID.fromString(id)));
 		logger.debug("profileResource:  " + profileResource);
 		return profileResource;
+	}
+
+
+	@Transactional
+	public ResponseEntity<?> provisionUser(UserDto userDto){
+		try{
+			String conflicts = "";
+			//check if data exists
+			conflicts += (userRep.findByEmail(userDto.getEmail()) != null) ? "email " : "";
+			conflicts += (userRep.findByUsername(userDto.getUsername()) != null) ? "username " : "";
+			if(conflicts.compareTo("") != 0){
+				return new ResponseEntity("Fields: " + conflicts, HttpStatus.CONFLICT);
+			}
+
+			User user = new User();
+			user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+			user.setEmail(userDto.getEmail());
+			user.setUsername(userDto.getUsername());
+			user.setRoles(Arrays.asList(roleRep.findByName("ROLE_USER")));
+			user.setEnabled(true);
+			userRep.saveAndFlush(user);	
+
+			//Set User roles
+						
+			return new ResponseEntity(HttpStatus.OK);
+		}catch(Exception e){
+			return new ResponseEntity("Our servers seem to have freyed a bit.\nPlease wait a moment and try your request agian.", HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 
 	/*
@@ -261,6 +313,7 @@ public class ConsumerService implements ClientService{
 			return;
 		}
 	}
+
 	/*
 	saves jpeg data to filesystem
 	@param MulitpartHttpServletRequest data 
@@ -315,7 +368,7 @@ public class ConsumerService implements ClientService{
 		return image;
 	}
 
-	private <T extends Identifiable<Long>> ResourceSupport toResource(T dto){		
+	private <T extends Identifiable<String>> ResourceSupport toResource(T dto){		
 		//Link outfitLink = null;// links.linkForSingleResource(dto).withRel("outfit");
 		//SLink selfLink = links.linkForSingleResource(dto).withSelfRel();
 		return new Resource<T>(dto/*, null, selfLink*/);

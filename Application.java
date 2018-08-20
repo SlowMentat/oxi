@@ -1,6 +1,7 @@
 package oxi;
 
 import oxi.configs.*;
+import oxi.services.CustomUserDetailsService;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.*;
@@ -41,6 +42,7 @@ import org.springframework.security.core.*;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.session.*;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 
 import com.allanditzel.springframework.security.web.csrf.*;
 
@@ -48,19 +50,22 @@ import oxi.controllers.*;
 import oxi.models.dto.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.*;
+import java.security.SecureRandom;
 
 import java.util.*;
+import java.util.Arrays;
 
 //Standard annotions for any spring boot configuration class
 @Configuration
-@ComponentScan(basePackages = {"oxi.controllers, oxi.models, oxi.repositories, oxi.services, oxi.util.assemblers, oxi.models.dto"})//removed oxi.security
+@ComponentScan(basePackages = {"oxi.configs, oxi.controllers, oxi.models, oxi.repositories, oxi.services, oxi.util.assemblers, oxi.models.dto, oxi.security, oxi.components"})//removed oxi.security
 @EnableAutoConfiguration
 //@SpringBootApplication
 //Addition annotations
 @EnableSpringDataWebSupport
 @EntityScan(basePackages="oxi.models")
 @EnableJpaRepositories(basePackages="oxi.repositories")
-//@EnableWebSecurity
+@EnableWebSecurity
 @EnableHypermediaSupport(type = HypermediaType.HAL)
 //@EnableWebMvc
 @ImportResource("/WEB-INF/classes/applicationContext.xml")
@@ -78,21 +83,34 @@ public class Application extends SpringBootServletInitializer{
         return application.sources(Application.class);
     }
 
-    /*//DI constructor arguments for GenericResourceAssembler
-    @Bean
-    public Class<?> resourceSupport(){
-        return OutfitDto.class;
-    }
-    @Bean
-    public Class<?> controllerClass(){
-        return ConsumerController.class;
-    }*/
-
-
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer objectMapperBuilder() {
         return builder -> builder.configure(_halObjectMapper);
     }
 
-    //
+    @Bean 
+    public BCryptPasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder(11, new SecureRandom());
+    }
+
+
+    //configuration for 
+    @Autowired 
+    private CustomUserDetailsService customUserDetailsService;
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+    @Bean
+    public DaoAuthenticationProvider authProvider(){
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(customUserDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder);
+        return authProvider;
+    }
+
+    /*@Bean
+    public ByteArrayHttpMessageConverter byteArrayHttpMessageConverter() {
+        ByteArrayHttpMessageConverter byteArrayHttpMC = new ByteArrayHttpMessageConverter();
+        byteArrayHttpMC.setSupportedMediaTypes(getImageMediaTypes());
+        return byteArrayHttpMC;
+    }*/
 }

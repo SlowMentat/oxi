@@ -8,7 +8,7 @@ import org.springframework.data.domain.*;
 import java.util.*;
 
 @RepositoryRestResource(collectionResourceRel="Item", path="item")
-public interface ItemRepository extends JpaRepository<Item, Long>{
+public interface ItemRepository extends JpaRepository<Item, UUID>{
 	
 	@RestResource(exported=true, path="byid", rel="SearchAllById")
 	@Query(value = "SELECT * FROM item WHERE profile_id = ?1", nativeQuery = true)

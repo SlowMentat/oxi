@@ -4,6 +4,7 @@ import javax.persistence.*;
 import javax.persistence.CascadeType;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.UUID;
 import java.io.Serializable;
 import java.lang.*;
 import org.springframework.data.rest.core.annotation.*;
@@ -12,17 +13,23 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.springframework.hateoas.*;
 
+import org.hibernate.annotations.GenericGenerator;
+
 @Entity
 @Table(name="item")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=Item.class)
-public class Item extends RelatedEntity implements Serializable, Identifiable<Long>{
+public class Item extends RelatedEntity implements Serializable, Identifiable<UUID>{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Item.class);
 	
 	@Id
 	//@JsonProperty("id")
-	@GeneratedValue(strategy=GenerationType.AUTO)
-	private Long Id;
+	@GeneratedValue(generator = "uuid2")
+	@GenericGenerator(name = "uuid2", strategy = "uuid2")
+	@Column(columnDefinition = "BINARY(16)")
+	private UUID Id;
+	@Column(name = "id_text", updatable = false, insertable = false)
+	private String idText;
 	private Long positionx;
 	private Long positiony;
 	private String link;
@@ -51,7 +58,8 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<Lo
 	
 	//Setters
 	//@Override
-	public void setId(Long id){this.Id = id;}
+	public void setId(UUID id){this.Id = id;}
+	//public void setIdText(String idText){this.idText = idText;}
 	public void setLocationx(Long posx){this.positionx = posx;}
 	public void setLocationy(Long posy){this.positiony = posy;}
 	public void setLink(String link){this.link = link;}	
@@ -74,7 +82,8 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<Lo
 	
 	//Getters
 	//@Override
-	public Long getId(){return this.Id;}
+	public UUID getId(){return this.Id;}
+	public String getIdText(){return this.idText;}
 	public Long getPositionx(){return this.positionx;}
 	public Long getPositiony(){return this.positiony;}
 	public String getLink(){return this.link;}	

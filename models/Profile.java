@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.UUID;
 import java.io.Serializable;
 import java.lang.*;
 import org.springframework.data.rest.core.annotation.*;
@@ -17,18 +18,25 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.hateoas.*;
 import org.apache.logging.log4j.LogManager;
 
+import org.hibernate.annotations.GenericGenerator;
+
 @Entity
 @Table(name="profile")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=Profile.class)
-public class Profile extends RelatedEntity implements Serializable, Identifiable<Long>
+public class Profile extends RelatedEntity implements Serializable, Identifiable<UUID>
 {
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Profile.class);
 	
 	@Id
+	@GeneratedValue(generator = "uuid2")
+	@GenericGenerator(name = "uuid2", strategy = "uuid2")
+	@Column(columnDefinition = "BINARY(16)")
 	//@JsonProperty("id")
-	@GeneratedValue(strategy=GenerationType.AUTO)
-	private Long Id;
+	private UUID Id;
+
+	@Column(name = "id_text", updatable = false, insertable = false)
+	private String idText;	
 	private String alias;
 	private String country;
 	private String city;
@@ -61,7 +69,8 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	
 	//Setters
 	//@Override
-	public void setId(Long id){this.Id = id;}
+	public void setId(UUID id){this.Id = id;}
+	//public void setIdText(String idText){this.idText = idText;}
 	public void setAlias(String alias){logger.warn("adding alias"); this.alias = alias;}	
 	public void setCountry(String country){this.country = country;}	
 	public void setCity(String city){this.city = city;}	
@@ -87,7 +96,8 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	
 	//Getters
 	//@Override
-	public Long getId(){return this.Id;}
+	public UUID getId(){return this.Id;}
+	public String getIdText(){return this.idText;}
 	public String getAlias(){return this.alias;}	
 	public String getCountry(){return this.country;}	
 	public String getCity(){return this.city;}	

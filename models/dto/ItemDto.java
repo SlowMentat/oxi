@@ -5,6 +5,7 @@ import oxi.models.*;
 import java.lang.*;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.UUID;
 import java.io.Serializable;
 import org.springframework.hateoas.core.*;
 import org.springframework.hateoas.ResourceSupport;
@@ -12,16 +13,16 @@ import org.springframework.hateoas.Identifiable;
 
 
 @Relation(value = "item", collectionRelation = "items")
-public class ItemDto implements Serializable, Identifiable<Long>
+public class ItemDto implements Serializable, Identifiable<String>
 {
-	private Long id;
+	private String id;
 	private Long positionx;
 	private Long positiony;
 	private String link;
 	private String type;
 	private String size;
 
-	public ItemDto(Long id, Long positionx, Long positiony, String link, String type, String size){
+	public ItemDto(String id, Long positionx, Long positiony, String link, String type, String size){
 		super();
 		this.id = id;
 		this.positionx = positionx;
@@ -32,7 +33,7 @@ public class ItemDto implements Serializable, Identifiable<Long>
 	}
 
 	//Setters
-	public void setId(Long id){this.id = id;}
+	public void setId(String id){this.id = id;}
 	public void getPositionx(Long posx){this.positionx = posx;}
 	public void getPositiony(Long posy){this.positiony = posy;}
 	public void setLink(String link){this.link = link;}	
@@ -43,7 +44,7 @@ public class ItemDto implements Serializable, Identifiable<Long>
 	
 	//Getters
 	@Override
-	public Long getId(){return this.id;}
+	public String getId(){return this.id;}
 	public Long getPositionx(){return this.positionx;}
 	public Long getPositiony(){return this.positiony;}
 	public String getLink(){return this.link;}	

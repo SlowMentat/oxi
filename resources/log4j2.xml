@@ -14,10 +14,20 @@
         <!--=========================================-->
         <!--============   Spring Security   ========-->
         <!--=========================================-->
-        <Logger name="oxi.security" level="warn" additivity="false">
+        <Logger name="oxi.security" level="debug" additivity="false">
             <AppenderRef ref="ConsoleAppender" />
         </Logger>
-        <Logger name="org.springframework.security" level="warn" additivity="false">
+        <Logger name="org.springframework.security" level="debug" additivity="false">
+            <AppenderRef ref="ConsoleAppender" />
+        </Logger>
+        <Logger name="oxi.security.CsrfSecurityRequestMatcher" level="debug" additivity="false">
+            <AppenderRef ref="ConsoleAppender" />
+        </Logger>
+
+        <!--=========================================-->
+        <!--============    Services    ============-->
+        <!--=========================================-->
+        <Logger name="oxi.services.CustomUserDetailsService" level="debug" additivity="false">
             <AppenderRef ref="ConsoleAppender" />
         </Logger>
 
