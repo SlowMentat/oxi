@@ -24,7 +24,7 @@ import oxi.models.projection.OutfitProjection;
 @Table(name="outfit")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=Outfit.class)
 //@JsonDeserialize(contentUsing=CustomOutfitDeserializer.class) 
-public class Outfit extends RelatedEntity implements Serializable
+public class Outfit extends RelatedEntity implements OutfitDao
 {
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Outfit.class);
@@ -75,14 +75,18 @@ public class Outfit extends RelatedEntity implements Serializable
 	}
 	
 	//Setters
-	//@Override
+
 	public void setId(UUID id){this.id = id;}
 	//public void setIdText(String idText){this.idText = idText;}
+
 	public void setLikes(int likes){this.likes = likes;}		
+
 	public void setComments(String comments){this.comments = comments;}	
+
 	public void setCoverpicuri(String uri){this.coverpicuri = uri;}	
 	//set the binary and text profile ids and assures that changes are propogated to all child entity objects
-	public void setProfile(Profile profile){
+
+	public <T extends ProfileDao> void setProfile(T profile){
 		
 		/*//Check if there is already a Profile Object associated with this Order Object.
 		//If so remove Remove this outfit object from the refereced Profile object's List<Outfit>
@@ -101,13 +105,14 @@ public class Outfit extends RelatedEntity implements Serializable
 			logger.warn("Profile reference (after adding outfit):  " + this.profile.toString());
 		}*/
 		//this.profile = (Profile)this.setManyToOneParent(profile, this.profile, this);
-		this.profile = this.<Profile, Outfit>setManyToOneParent(profile, this.profile, this);
+		this.profile = this.<Profile, Outfit>setManyToOneParentByType(profile, this.profile, this, this.profile.getOutfits());
 		//this.profileText = this.<Profile, Outfit>setManyToOneParent(profile, this.profileText, this);
 		if(this.profile == null) logger.debug("Outfit.profile is null");
 		//if(this.profile == null) logger.debug("Outfit.profileText is null");
 		//else logger.debug("Outfit's profile variable:  " + this.toString());
 	}	
-	public void setContents(List<Content> contents){
+
+	public <T extends ContentDao> void setContents(List<T> contents){
 		logger.debug("Setting contents list in Outfit entity");
 		this.contents = contents;
 	}	
@@ -118,13 +123,19 @@ public class Outfit extends RelatedEntity implements Serializable
 	}
 	
 	//Getters
-	//@Override
+	@Override
 	public UUID getId(){return this.id;} 
+
 	public String getIdText(){return this.idText;}
+
 	public int getLikes(){return this.likes;}	
+
 	public String getComments(){return this.comments;}	
-	public Profile getProfile(){return this.profile;}
-	public List<Content> getContents(){return this.contents;}
+
+	public <T extends ProfileDao> T getProfile(){return this.profile;}
+
+	public <T extends ContentDao> List<T> getContents(){return this.contents;}
+
 	public String getCoverpicuri(){return this.coverpicuri;}
 	
 	//Auxillary methods

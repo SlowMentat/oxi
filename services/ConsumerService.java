@@ -254,12 +254,30 @@ public class ConsumerService implements ClientService{
 	@param Long specifying id of profile to retreive
 	@return ProfileDto which extends ResourceSupport
 	*/
-	public ProfileDto readProfile(String id){
+	public ProfileDto readProfile(String username){
 		//TODO:  ???need a customized json serialization to replace HAL links with raw data.
-		logger.debug("Reading Profile (id=" + id + ")");
-		ProfileDto profileResource = profileRA.toResource(profileRep.getOne(UUID.fromString(id)));
-		logger.debug("profileResource:  " + profileResource);
-		return profileResource;
+		logger.debug("Reading Profile (id=" + username + ")");
+		return (ProfileDTO)profileRep.findByUsername(username);
+	}
+
+	@Transactional
+	public ProfileDto createProfile(ProfileProjection profileDto){
+		logger.debu("Creating new profile");
+		Profile profile = (Profile)profileDto;
+		profile = profileRep.saveAndFlush(profile);
+		profileDto = (ProfileDto)profile;
+		profileDto.setId(profile.getIdText());
+		return profileDto;
+	}
+
+	@Transactional
+	public ProfileDto editProfile(ProfileProjection profileDto){
+		Profile profile = (Profile)profileDto;
+		profile.setId(new UUID.fromString(profileDto.getId));
+		profile = profileRep.save(entityManager.Merger(profile));
+		profileDto = (PrfofileDto)profile;
+		profileDto.setId(profile.getIdText());
+		return profileDto;
 	}
 
 

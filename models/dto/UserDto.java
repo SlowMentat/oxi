@@ -13,12 +13,13 @@ import org.springframework.hateoas.Identifiable;
 
 
 @Relation(value = "user", collectionRelation = "users")
-public class UserDto implements Serializable
+public class UserDto implements UserProjection
 {
+	private String id;
 	private String email;
 	private String password;
 	private String username;
-	private Profile profile;
+	private ProfileProjection profile;
 
 	public UserDto(){
 		super();
@@ -31,16 +32,26 @@ public class UserDto implements Serializable
 	}
 
 	//Getters
-	//public UUID getId(){return this.Id;}
+	@Override
+	public String getId(){return this.id;}
+	
 	public String getEmail(){return this.email;}
+	
 	public String getPassword(){return this.password;}
+	
 	public String getUsername(){return this.username;}
-	public Profile getProfile(){return this.profile;}
+	
+	public ProfileProjection getProfile(){return this.profile;}
 
 	//Setters
-	//public void setId(UUID id){this.Id = id;}
-	/*public void setEmail(String email){this.email = email;}
+	
+	public void setId(String id){this.id = id;}
+	
+	public void setEmail(String email){this.email = email;}
+	
 	public void setPassword(String password){this.password = password;}
+	
 	public void setUsername(String username){this.username = username;}
-	public void setProfile(Profile profile){this.profile = profile;}*/
+	
+	public void setProfile(ProfileProjection profile){this.profile = profile;}
 }

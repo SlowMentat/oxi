@@ -1,5 +1,6 @@
 package oxi.models;
 
+
 import javax.persistence.*;
 import javax.persistence.CascadeType;
 import java.util.List;
@@ -24,7 +25,8 @@ import oxi.models.projection.ContentProjection;
 @Table(name="content")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="content_id")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope=Content.class)
-public class Content extends RelatedEntity implements Serializable{
+public class Content extends RelatedEntity implements ContentDao
+{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Content.class);
 
@@ -67,10 +69,13 @@ public class Content extends RelatedEntity implements Serializable{
 	}
 	
 	//Setters==========================================================================	
+	@Override 
 	public void setId(UUID id){this.id = id;}
 	//public void setIdText(String idText){this.idText = idText;}
+	@Override 
 	public void setCoverpicuri(String uri){this.coverpicuri = uri;}	
-	public void setOutfit(Outfit outfit){
+	@Override 
+	public <T extends OutfitDao> void setOutfit(T outfit){
 		/*logger.warn("SETTING OUTFIT");
 		this.outfit = outfit;
 		if(!this.outfit.getContents().contains(this)){
@@ -79,7 +84,8 @@ public class Content extends RelatedEntity implements Serializable{
 		}*/
 		this.outfit = (Outfit)this.setManyToOneParent(outfit, this.outfit, this);
 	}	
-	public void setPicture(Picture picture){
+	@Override 
+	public <T extends PictureDao> void setPicture(T picture){
 		logger.warn("SETTING PICURE");
 		this.picture = picture;
 		/*if (this.picture != null){		
@@ -93,7 +99,8 @@ public class Content extends RelatedEntity implements Serializable{
 			logger.warn("!!PICTURE IS NULL!!");
 		}*/
 	}	
-	public void setItems(List<Item> items){
+	@Override 
+	public <T extends ItemDao> void setItems(List<T> items){
 		logger.debug("Setting items list in Content entity");
 		this.items = this.<Item, Content>setManyToManyParents(items, this.items, this);
 	}
@@ -105,14 +112,19 @@ public class Content extends RelatedEntity implements Serializable{
 	}
 	
 	//Getters==========================================================================	
+	@Override 
 	public UUID getId(){return this.id;}
+	@Override 
 	public String getIdText(){return this.idText;}
+	@Override 
 	public String getCoverpicuri(){return this.coverpicuri;}
-	public Outfit getOutfit(){
+	@Override 
+	public <T extends OutfitDao> T getOutfit(){
 		logger.warn("GETTING OUTFIT");
 		return this.outfit;
 	}
-	public Picture getPicture(){
+	@Override 
+	public <T extends PictureDao> T getPicture(){
 		logger.warn("GETTING PICURE");
 		return this.picture;
 	}
@@ -120,9 +132,9 @@ public class Content extends RelatedEntity implements Serializable{
 	public List<Item> getItems(){
 		logger.warn("GETTING items MAP");
 		return this.items;
-	}*/
-	
-	public List<Item> getItems(){
+	}*/	
+	@Override 
+	public <T extends ItemDao> List<T> getItems(){
 		logger.warn("GETTING items MAP");
 		return this.items;
 	}

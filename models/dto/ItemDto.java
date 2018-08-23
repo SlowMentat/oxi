@@ -1,11 +1,9 @@
 package oxi.models.dto;
 
 import oxi.models.projection.*;
-import oxi.models.*;
 import java.lang.*;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.UUID;
 import java.io.Serializable;
 import org.springframework.hateoas.core.*;
 import org.springframework.hateoas.ResourceSupport;
@@ -13,7 +11,7 @@ import org.springframework.hateoas.Identifiable;
 
 
 @Relation(value = "item", collectionRelation = "items")
-public class ItemDto implements Serializable, Identifiable<String>
+public class ItemDto implements ItemProjection
 {
 	private String id;
 	private Long positionx;
@@ -33,23 +31,38 @@ public class ItemDto implements Serializable, Identifiable<String>
 	}
 
 	//Setters
+
 	public void setId(String id){this.id = id;}
+
 	public void getPositionx(Long posx){this.positionx = posx;}
+
 	public void getPositiony(Long posy){this.positiony = posy;}
+
 	public void setLink(String link){this.link = link;}	
+
 	public void setType(String type){this.type = type;}	
+
 	public void setSize(String size){this.size = size;}	
-	//public void setProfile(Profile profile){this.profile = profile;}	
-	//public void setContents(List<Content> contents){this.contents = contents;}
+
+	public <T extends ProfileProjection> void setProfile(T profile){this.profile = profile;}	
+
+	public <T extends ContentProjection> void setContents(List<T> contents){this.contents = contents;}
 	
 	//Getters
 	@Override
 	public String getId(){return this.id;}
+
 	public Long getPositionx(){return this.positionx;}
+
 	public Long getPositiony(){return this.positiony;}
+
 	public String getLink(){return this.link;}	
+
 	public String getType(){return this.type;}	
+
 	public String getSize(){return this.size;}
-	//public List<Content> getContents(){return this.contents;}
-	//public Profile getProfile(){return this.profile;}
+
+	public <T extends ProfileProjection> T getProfile(){return this.profile;}
+
+	public <T extends ContentProjection> List<T> getContents(){return this.contents;}
 }

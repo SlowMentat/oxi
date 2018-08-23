@@ -5,7 +5,7 @@ import java.io.Serializable;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-public class RelatedEntity implements Relational
+public class RelatedEntity implements Relational 
 {
 	private static final Logger logger = LogManager.getLogger(RelatedEntity.class);
 	
@@ -34,6 +34,22 @@ public class RelatedEntity implements Relational
 			logger.debug("Parent reference (before adding child):  " + parent.toString());
 			logger.debug("Adding Child to List<Child> property of Parent object");
 			parent.internalAddChild(childEntity);
+			logger.debug("Parent reference (after adding child):  " + parent.toString());
+		}
+		return parent;
+	}
+
+	public <T extends Relational, S extends Relational> T setManyToOneParentByType(T parent, T currentParent, S childEntity, List<S> childEntities){
+		if(currentParent != null){
+			logger.debug("Removing Child object from List<Child> property of Parent object");
+			currentParent.internalRemoveChildByType(childEntity, T.class, childEntities);
+		}
+		logger.warn("Referencing Child.parent to Parent object");
+		//currentParent = parent;
+		if(parent != null){
+			logger.debug("Parent reference (before adding child):  " + parent.toString());
+			logger.debug("Adding Child to List<Child> property of Parent object");
+			parent.internalAddChildByType(childEntity, T.class, childEntities);
 			logger.debug("Parent reference (after adding child):  " + parent.toString());
 		}
 		return parent;
@@ -89,4 +105,15 @@ public class RelatedEntity implements Relational
 	public <T extends Relational> void internalRemoveChild(T child/*, List<T> currentChilderen*/){
 		/*currentChilderen.remove(child);*/
 	}
+
+	@Override
+	public <T extends Relational> void internalAddChildByType(T targetChild, Class<T> childClass, List<Class<T>> childList){
+
+	}
+
+	@Override
+	public <T extends Relational> void internalRemoveChildByType(T targetChild, Class<T> childClass, List<Class<T>> childList){
+
+	}
+
 }

@@ -17,7 +17,8 @@ import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Table(name="role")
-public class Role extends RelatedEntity implements Serializable, Identifiable<Long>{  
+public class Role extends RelatedEntity implements RoleDao
+{  
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -42,14 +43,15 @@ public class Role extends RelatedEntity implements Serializable, Identifiable<Lo
 	private Collection<Privilege> privileges;   
 
 	//Getter
+	@Override
 	public Long getId(){return this.id;}
 	public String getName(){return this.name;}
-	public Collection<Privilege> getPrivileges(){return this.privileges;}
+	public <T extends PrivilegeDao> Collection<T> getPrivileges(){return this.privileges;}
 
 	//Setter
 	public void setId(Long id){this.id = id;}
 	public void setName(String name){this.name = name;}
-	public void setPrivileges(Collection<Privilege> privileges){this.privileges = privileges;}
+	public <T extends PrivilegeDao> void setPrivileges(Collection<T> privileges){this.privileges = privileges;}
 	/*public void setContents(List<Privilege> privileges){
 		this.privileges = this.<Privilege, Role>setManyToManyParents(privileges, this.privileges, this);
 	}

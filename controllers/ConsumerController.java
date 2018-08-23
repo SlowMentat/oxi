@@ -191,20 +191,28 @@ public class ConsumerController{
 	HTTP Request handling methods (GET and POST) for PROFILE resource
 	******************************************************************
 	*/
-	//@Secured({"ROLE_USER"})
+	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
 	@RequestMapping(value="/profile", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public void uploadProfile(@RequestBody Profile profile){
+	public ResponseEntity<?> postProfile(@RequestBody ProfileDto profile){
 		logger.debug("Request Body Received: " + profile);
-		consumerService.saveProfile(profile);
+		return new ResponseEntity<?>(consumerService.createProfile(profile));
+	}
+
+	@Secured({"ROLE_USER"})
+	@RestResource(exported = true)
+	@RequestMapping(value="/profile", method=RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> putProfile(@RequestBody ProfileDto profile){
+		logger.debug("Request Body Received: " + profile);
+		return new ResponseEntity<?>(consumerService.editProfile(profile));
 	}
 
 	//@PreAuthorize("#name == principal.username")
-	//@Secured({"ROLE_ANONYMOUS"})
+	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
-	@RequestMapping(value="/profile/{id}", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public HttpEntity<ProfileDto> readProfile(@PathVariable("id") String id){
-		return new ResponseEntity<>(consumerService.readProfile(id), HttpStatus.OK);
+	@RequestMapping(value="/profile/{name}", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getProfile(@PathVariable("name") String id){
+		return new ResponseEntity<?>(consumerService.readUserProfile(name), HttpStatus.OK);
 	}
 
 
