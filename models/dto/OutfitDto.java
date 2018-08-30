@@ -17,9 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import lombok.Data;
 
 
-//@Data
-//@Relation(value = "outfit", collectionRelation = "outfits")
-public class OutfitDto implements OutfitProjection, Serializable, Identifiable<String>
+public class OutfitDto implements Serializable, Identifiable<String>
 {
 	private static final Logger logger = LogManager.getLogger(OutfitDto.class);
 	/*private final Outfit outfit;

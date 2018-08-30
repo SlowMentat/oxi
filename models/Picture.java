@@ -27,7 +27,7 @@ public class Picture extends RelatedEntity implements Serializable, Identifiable
 	@GeneratedValue(generator = "uuid2")
 	@GenericGenerator(name = "uuid2", strategy = "uuid2")
 	@Column(columnDefinition = "BINARY(16)")
-	private UUID Id;
+	private UUID id;
 
 	@Column(name = "id_text", updatable = false, insertable = false)
 	private String idText;	
@@ -47,7 +47,7 @@ public class Picture extends RelatedEntity implements Serializable, Identifiable
 	
 	//Getters
 	//@Override
-	public UUID getId(){return this.Id;}
+	public UUID getId(){return this.id;}
 	public String getIdText(){return this.idText;}
 	public String getSmalluri(){return this.smalluri;}
 	public String getLargeuri(){return this.largeuri;}
@@ -55,7 +55,7 @@ public class Picture extends RelatedEntity implements Serializable, Identifiable
 	
 	//Setters
 	//@Override
-	public void setId(UUID id){this.Id = id;}
+	public void setId(UUID id){this.id = id;}
 	//public void setIdText(String idText){this.idText = idText;}
 	public void setSmalluri(String smalluri){this.smalluri = smalluri;}
 	public void setLargeuri(String largeuri){this.largeuri = largeuri;}
@@ -73,7 +73,7 @@ public class Picture extends RelatedEntity implements Serializable, Identifiable
 	@Override
 	public String toString(){
 		logger.debug("building Picture string");
-        StringBuilder sb = new StringBuilder("\nid: ").append(this.Id)
+        StringBuilder sb = new StringBuilder("\nid: ").append(this.id)
 			.append("\nsmalluri: ").append(this.smalluri)
 			.append("\nlargeuri:").append(this.largeuri)
 			.append("\ncontent: ");

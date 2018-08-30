@@ -33,18 +33,30 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	@GenericGenerator(name = "uuid2", strategy = "uuid2")
 	@Column(columnDefinition = "BINARY(16)")
 	//@JsonProperty("id")
-	private UUID Id;
+	private UUID id;
 
 	@Column(name = "id_text", updatable = false, insertable = false)
-	private String idText;	
-	private String alias;
+	private String idText;
+	private String username;
 	private String country;
-	private String city;
-	private String birthday;
-	private int height;
-	private int chest;
-	private int waist;
-	private int hip;
+	private String dateOfBirth;
+	private String bodyShape;
+	private boolean mens;
+	private boolean womens;
+	private float height;
+	private float neck;
+	private float fullShoulder;
+	private float halfShoulder;
+	private float chest;
+	private float waist;
+	private float hip;
+	private float sleeve;
+	private float frontLength;
+	private float backLength;
+	private float pantOutseam;
+	private float pantInseam;
+	private float thigh;
+	private float calf;
 	
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="profile")
 	@RestResource(rel="outfits")
@@ -68,17 +80,49 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	}
 	
 	//Setters
-	//@Override
-	public void setId(UUID id){this.Id = id;}
-	//public void setIdText(String idText){this.idText = idText;}
-	public void setAlias(String alias){logger.warn("adding alias"); this.alias = alias;}	
-	public void setCountry(String country){this.country = country;}	
-	public void setCity(String city){this.city = city;}	
-	public void setBirthday(String birthday){this.birthday = birthday;}	
-	public void setHeight(int height){this.height = height;}	
-	public void setChest(int chest){this.chest = chest;}	
-	public void setWaist(int waist){this.waist = waist;}	
-	public void setHip(int hip){this.hip = hip;}	
+
+	public void setId(UUID id){this.id = id;}
+
+	public void setUsername(String username){logger.warn("adding username"); this.username = username;}
+	
+	public void setCountry(String country){this.country = country;}
+	
+	public void setDateOfBirth(String dateOfBirth){this.dateOfBirth = dateOfBirth;}
+	
+	public void setBodyShape(String bodyShape){this.bodyShape = bodyShape;}
+
+	public void setMens(boolean mens){this.mens = mens;}
+	
+	public void setWomens(boolean womens){this.womens = womens;}
+
+	public void setHeight(float height){this.height = height;}
+	
+	public void setNeck(float neck){this.neck = neck;}
+
+	public void setFullShoulder(float fullShoulder){this.fullShoulder = fullShoulder;}
+
+	public void setHalfShoulder(float halfShoulder){this.halfShoulder = halfShoulder;}
+
+	public void setChest(float chest){this.chest = chest;}
+	
+	public void setWaist(float waist){this.waist = waist;}
+	
+	public void setHip(float hip){this.hip = hip;}
+	
+	public void setSleeve(float sleeve){this.sleeve = sleeve;}
+
+	public void setFrontLength(float FrontLength){this.frontLength = frontLength;}
+
+	public void setBackLength(float BackLength){this.backLength = backLength;}
+
+	public void setPantOutseam(float pantOutseam){this.pantOutseam = pantOutseam;}
+
+	public void setPantInseam(float pantInseam){this.pantInseam = pantInseam;}
+
+	public void setThigh(float thigh){this.thigh = thigh;}
+
+	public void setCalf(float calf){this.calf = calf;}
+
 	//Try to consolidate these methods
 	public void setOutfits(List<Outfit> outfits){
 		logger.warn("adding outfits list to Profile entity");
@@ -94,18 +138,52 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 		//if (outfit.getProfile() != this) outfit.setProfile(this);
 	}
 	
-	//Getters
-	//@Override
-	public UUID getId(){return this.Id;}
+		//Getters
+	@Override
+	public UUID getId(){return this.id;}
+
 	public String getIdText(){return this.idText;}
-	public String getAlias(){return this.alias;}	
-	public String getCountry(){return this.country;}	
-	public String getCity(){return this.city;}	
-	public String getBirthday(){return this.birthday;}
-	public int getHeight(){return this.height;}	
-	public int getChest(){return this.chest;}	
-	public int getWaist(){return this.waist;}	
-	public int getHip(){return this.hip;}
+
+	public String getUsername(){return this.username;}
+	
+	public String getCountry(){return this.country;}
+	
+	public String getDateOfBirth(){return this.dateOfBirth;}
+	
+	public String getBodyShape(){return this.bodyShape;}
+
+	public boolean getMens(){return this.mens;}
+	
+	public boolean getWomens(){return this.womens;}
+
+	public float getHeight(){return this.height;}
+	
+	public float getNeck(){return this.neck;}
+
+	public float getFullShoulder(){return this.fullShoulder;}
+
+	public float getHalfShoulder(){return this.halfShoulder;}
+
+	public float getChest(){return this.chest;}
+	
+	public float getWaist(){return this.waist;}
+	
+	public float getHip(){return this.hip;}
+	
+	public float getSleeve(){return this.sleeve;}
+
+	public float getFrontLength(){return this.frontLength;}
+
+	public float getBackLength(){return this.backLength;}
+
+	public float getPantOutseam(){return this.pantOutseam;}
+
+	public float getPantInseam(){return this.pantInseam;}
+
+	public float getThigh(){return this.thigh;}
+
+	public float getCalf(){return this.calf;}
+
 	public List<Outfit> getOutfits(){
 		//return Collections.unmodifiableList(this.outfits);
 		logger.debug("returning outfits: " + outfits.toString());
@@ -166,27 +244,59 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 		this.outfits.remove(outfit);
 	}
 	*/
-	public void setItems(List<Item> item){
+	public void setItems(List<Item> items){
 		this.items = items;
 	}
 	
 	public void setUser(User user){
 		this.user = user;
+
+		logger.debug("adding user to Profile entity");
+		if(user != null){
+			this.user = user;
+			addUser(user);
+		}else{
+			logger.error("user must not be empty.  Setting user to null.");
+			this.user = null;
+		}
+	}
+
+	public void addUser(User user){
+		if(user != null){
+			logger.warn("linking user to profile");
+			user.setProfile(this);
+		}else{
+			logger.warn("user is null");
+		}
 	}
 	
-	@Override
+	/*@Override
     public String toString() {
 		logger.debug("building profile string");
-        StringBuilder sb = new StringBuilder("\nID: ").append(this.Id)
-			.append("\nalias: ").append(this.alias)
+        StringBuilder sb = new StringBuilder("");
+		if(this.id != null) sb.append("\nid: ").append(this.id.toString());
+    	sb.append("\nusername: ").append(this.username)
 			.append("\ncountry:").append(this.country)
-			.append("\ncity:").append(this.city)
-			.append("\nbirthday:").append(this.birthday)
+			.append("\ndatOfBirth:").append(this.dateOfBirth)
+			.append("\nbodyShape:").append(this.bodyShape)
+			.append("\nmens:").append(this.mens)
+			.append("\nwomens:").append(this.womens)
 			.append("\nheight:").append(this.height)
+			.append("\nneck:").append(this.neck)
+			.append("\nfullShoulder:").append(this.fullShoulder)
+			.append("\nhalfShoulder:").append(this.halfShoulder)
 			.append("\nchest:").append(this.chest)
 			.append("\nwaist:").append(this.waist)
 			.append("\nhip:").append(this.hip)
-		.append("\noutfits: [");
+			.append("\nsleeve").append(this.sleeve)
+			.append("\nfrontLength:").append(this.frontLength)
+			.append("\nbackLength:").append(this.backLength)
+			.append("\npantOutseam:").append(this.pantOutseam)
+			.append("\npantInseam:").append(this.pantInseam)
+			.append("\nthigh:").append(this.thigh)
+			.append("\ncalf:").append(this.calf)
+			.append("\nUser:").append(this.user.toString())
+			.append("\noutfits: [");
 		if(this.outfits != null){
 			for (Outfit outfit: this.outfits) {
 				logger.debug("building outfit string");
@@ -196,6 +306,16 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 		}else{
 			logger.debug("profile.outfits is null");
 		}
-        return sb.toString();
-    }
+		sb.append("\nitems: [");
+		if(this.items != null){
+			for (Item item: this.items) {
+				logger.debug("building item string");
+				sb.append("\n	").append(item.getId());
+			}
+			sb.append("]");
+		}else{
+			logger.debug("profile.outfits is null");
+		}
+		return sb.toString();
+    }*/
 }

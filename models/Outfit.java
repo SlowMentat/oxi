@@ -24,7 +24,7 @@ import oxi.models.projection.OutfitProjection;
 @Table(name="outfit")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=Outfit.class)
 //@JsonDeserialize(contentUsing=CustomOutfitDeserializer.class) 
-public class Outfit extends RelatedEntity implements Serializable
+public class Outfit extends RelatedEntity implements Serializable, Identifiable<UUID>
 {
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Outfit.class);

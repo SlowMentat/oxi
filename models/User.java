@@ -27,7 +27,7 @@ public class User extends RelatedEntity implements Serializable, Identifiable<UU
 	@GeneratedValue(generator = "uuid2")
 	@GenericGenerator(name = "uuid2", strategy = "uuid2")
 	@Column(columnDefinition = "BINARY(16)")
-	private UUID Id;
+	private UUID id;
 	
 	@Column(name = "id_text", updatable = false, insertable = false)
 	private String idText;	
@@ -55,7 +55,7 @@ public class User extends RelatedEntity implements Serializable, Identifiable<UU
 	
 	//Setters
 	//@Override
-	public void setId(UUID id){this.Id = id;}
+	public void setId(UUID id){this.id = id;}
 	//public void setIdText(String idText){this.idText = idText;}
 	public void setEmail(String email){this.email = email;}	
 	public void setPassword(String password){this.password = password;}	
@@ -71,7 +71,7 @@ public class User extends RelatedEntity implements Serializable, Identifiable<UU
 	
 	//Getters
 	//@Override
-	public UUID getId(){return this.Id;}
+	public UUID getId(){return this.id;}
 	public String getIdText(){return this.idText;}
 	public String getEmail(){return this.email;}	
 	public String getPassword(){return this.password;}	
@@ -80,16 +80,18 @@ public class User extends RelatedEntity implements Serializable, Identifiable<UU
 	public Profile getProfile(){return this.profile;}
 	//public boolean getTokenExpired(){return this.tokenExpired;}
 	public Collection<Role> getRoles(){return this.roles;}
+	
+	//Add User instance to Profile's parent reference
 	/*@Override 
 	public <T extends Relational> void internalAddChild(T targetChild){
-		if(this.roles == null){
-			logger.debug("instantiating new List<T>");
-			this.roles = new ArrayList<Role>();
+		if(this.profile == null){
+			logger.debug("instantiating new Profile");
+			this.profile = new ArrayList<Role>();
 		}
-		this.roles.add((Role)targetChild);
+		this.profile.add((User)targetChild);
 	}
 	@Override
 	public <T extends Relational> void internalRemoveChild(T targetChild){
-		this.roles.remove((Role)targetChild);
+		this.profile.remove((User)targetChild);
 	}*/
 }

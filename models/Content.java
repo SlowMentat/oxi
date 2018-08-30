@@ -24,7 +24,7 @@ import oxi.models.projection.ContentProjection;
 @Table(name="content")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="content_id")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope=Content.class)
-public class Content extends RelatedEntity implements Serializable{
+public class Content extends RelatedEntity implements Serializable, Identifiable<UUID>{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Content.class);
 

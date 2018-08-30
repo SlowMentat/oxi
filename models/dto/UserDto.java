@@ -12,8 +12,7 @@ import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Identifiable;
 
 
-@Relation(value = "user", collectionRelation = "users")
-public class UserDto implements Serializable
+public class UserDto implements Serializable, Identifiable<String>
 {
 	private String email;
 	private String password;
@@ -21,7 +20,6 @@ public class UserDto implements Serializable
 	private Profile profile;
 
 	public UserDto(){
-		super();
 	}
 
 	public UserDto(String email, String password, String username){
@@ -31,7 +29,8 @@ public class UserDto implements Serializable
 	}
 
 	//Getters
-	//public UUID getId(){return this.Id;}
+	@Override
+	public String getId(){return null;}
 	public String getEmail(){return this.email;}
 	public String getPassword(){return this.password;}
 	public String getUsername(){return this.username;}

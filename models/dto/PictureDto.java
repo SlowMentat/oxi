@@ -12,26 +12,25 @@ import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Identifiable;
 
 
-@Relation(value = "picture", collectionRelation = "pictures")
-public class PictureDto extends ResourceSupport
+public class PictureDto implements Serializable, Identifiable<String>
 {
-	private UUID Id;	
+	private String id;	
 	private String smalluri;
 	private String largeuri;
 	private Content content;
 	
 	public PictureDto(){
-		super();
 	}
 	
 	//Getters
-	//public UUID getId(){return this.Id;}
+	@Override
+	public String getId(){return this.id;}
 	public String getSmalluri(){return this.smalluri;}
 	public String getLargeuri(){return this.largeuri;}
 	public Content getContent(){return this.content;}
 	
 	//Setters
-	//public void setId(UUID id){this.Id = id;}
+	public void setId(String id){this.id = id;}
 	public void setSmalluri(String smalluri){this.smalluri = smalluri;}
 	public void setLargeuri(String largeuri){this.largeuri = largeuri;}
 	public void setContent(Content content){this.content = content;}

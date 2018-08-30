@@ -15,7 +15,7 @@ import org.apache.commons.io.IOUtils;
 
 import oxi.models.*;
 import oxi.repositories.*;
-import oxi.util.assemblers.*;
+//import oxi.util.assemblers.*;
 import oxi.models.dto.*;
 import oxi.models.projection.*;
 
@@ -58,8 +58,8 @@ public class ConsumerService implements ClientService{
 	//private OutfitResourceAssembler outfitRA;
 	//@Autowired private ContentResourceAssembler contentRA;
 	//@Autowired private ItemResourceAssembler itemRA;
-	@Autowired private PictureResourceAssembler pictureRA;
-	@Autowired private ProfileResourceAssembler profileRA;
+	//@Autowired private PictureResourceAssembler pictureRA;
+	//@Autowired private ProfileResourceAssembler profileRA;
 	//@Autowired private UserResourceAssembler userRA;
 
 	//Paged Resource Assemblers 
@@ -156,9 +156,10 @@ public class ConsumerService implements ClientService{
 		return null;//this.toResource(outfitRep.findById(outfitId));
 	}
 
-	public PagedResources<?> readOutfits(String profileId, Pageable pageable){
-
-		Page<OutfitDto> outfits = outfitRep.findByProfileId(UUID.fromString(profileId), pageable);
+	public PagedResources<?> readOutfits(String username, Pageable pageable){
+		logger.debug("username = " + username);
+		Profile profile = profileRep.findByUsername(username);
+		Page<OutfitDto> outfits = outfitRep.findByProfileId(profile.getId(), pageable);
 		logger.debug("outfits return from repository: \n" + outfits);
 		// Tell PAR to use the user assembler for individual items.
 		PagedResources<?> pagedOutfitResource = outfitPRAP.toResource(outfits, this::toResource);
@@ -254,12 +255,86 @@ public class ConsumerService implements ClientService{
 	@param Long specifying id of profile to retreive
 	@return ProfileDto which extends ResourceSupport
 	*/
-	public ProfileDto readProfile(String id){
-		//TODO:  ???need a customized json serialization to replace HAL links with raw data.
-		logger.debug("Reading Profile (id=" + id + ")");
-		ProfileDto profileResource = profileRA.toResource(profileRep.getOne(UUID.fromString(id)));
-		logger.debug("profileResource:  " + profileResource);
-		return profileResource;
+
+	private static ProfileDto copyToProfileDto(Profile profile){
+		return new ProfileDto(
+			profile.getId().toString(),
+			profile.getUsername(),
+			profile.getCountry(),
+			profile.getDateOfBirth(),
+			profile.getBodyShape(),
+			profile.getMens(),
+			profile.getWomens(),
+			profile.getHeight(),
+			profile.getNeck(),
+			profile.getFullShoulder(),
+			profile.getHalfShoulder(),
+			profile.getChest(),
+			profile.getWaist(),
+			profile.getHip(),
+			profile.getSleeve(),
+			profile.getFrontLength(),
+			profile.getBackLength(),
+			profile.getPantOutseam(),
+			profile.getPantInseam(),
+			profile.getThigh(),
+			profile.getCalf()
+			); 
+	}
+	private static Profile copyToProfile(ProfileDto profileDto){
+		Profile profile = new Profile();
+		logger.debug("starting copy.");
+		if(!profileDto.getId().isEmpty() && profileDto.getId() != null) profile.setId(UUID.fromString(profileDto.getId()));
+		profile.setUsername(profileDto.getUsername());
+		profile.setCountry(profileDto.getCountry());
+		profile.setDateOfBirth(profileDto.getDateOfBirth());
+		profile.setBodyShape(profileDto.getBodyShape());
+		profile.setMens(profileDto.getMens());
+		profile.setWomens(profileDto.getWomens());
+		profile.setHeight(profileDto.getHeight());
+		profile.setNeck(profileDto.getNeck());
+		profile.setFullShoulder(profileDto.getFullShoulder());
+		profile.setHalfShoulder(profileDto.getHalfShoulder());
+		profile.setChest(profileDto.getChest());
+		profile.setWaist(profileDto.getWaist());
+		profile.setHip(profileDto.getHip());
+		profile.setSleeve(profileDto.getSleeve());
+		profile.setFrontLength(profileDto.getFrontLength());
+		profile.setBackLength(profileDto.getBackLength());
+		profile.setPantOutseam(profileDto.getPantOutseam());
+		profile.setPantInseam(profileDto.getPantInseam());
+		profile.setThigh(profileDto.getThigh());
+		profile.setCalf(profileDto.getCalf());
+		logger.debug("finished copy.");
+		return profile;
+	}
+
+	public ProfileDto readProfile(String username) throws Exception{
+		logger.debug("Reading Profile (id=" + username + ")");
+		Profile profile = profileRep.findByUsername(username);
+		if (profile == null) throw new Exception("The spicified user does cannot be found");
+		return copyToProfileDto(profile);
+	}
+
+	@Transactional
+	public ProfileDto createProfile(ProfileDto profileDto, String username) throws Exception{
+		logger.debug("Creating new profile");
+		Profile profile = copyToProfile(profileDto);
+		//logger.debug(profile.toString());
+		entityManager.persist(profile);
+		profile.setUser(userRep.findByUsername(username));
+		entityManager.persist(profile);
+		Profile idProfile = profileRep.saveAndFlush(profile);//entityManager.flush();
+		//if(profile == null) throw new Exception("Could not create profile");
+		return copyToProfileDto(idProfile);
+	}
+
+	@Transactional
+	public ProfileDto updateProfile(ProfileDto profileDto) throws Exception{
+		if (profileDto.getId() == null || profileDto.getId().isEmpty()) throw new Exception("invalid id");
+		Profile profile = copyToProfile(profileDto);
+		profile = profileRep.save(entityManager.merge(profile));
+		return copyToProfileDto(profile);
 	}
 
 
@@ -284,7 +359,7 @@ public class ConsumerService implements ClientService{
 
 			//Set User roles
 						
-			return new ResponseEntity(HttpStatus.OK);
+			return new ResponseEntity(user.getUsername(), HttpStatus.OK);
 		}catch(Exception e){
 			return new ResponseEntity("Our servers seem to have freyed a bit.\nPlease wait a moment and try your request agian.", HttpStatus.INTERNAL_SERVER_ERROR);
 		}

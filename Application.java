@@ -13,6 +13,7 @@ import org.springframework.boot.autoconfigure.jackson.*;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import org.springframework.web.servlet.config.annotation.*;//latest addition
+import org.springframework.http.*;
 import org.springframework.web.servlet.*;//latest addition
 import org.springframework.web.*;
 
@@ -67,7 +68,7 @@ import java.util.Arrays;
 @EnableJpaRepositories(basePackages="oxi.repositories")
 @EnableWebSecurity
 @EnableHypermediaSupport(type = HypermediaType.HAL)
-//@EnableWebMvc
+@EnableWebMvc
 @ImportResource("/WEB-INF/classes/applicationContext.xml")
 public class Application extends SpringBootServletInitializer{
 
@@ -106,11 +107,4 @@ public class Application extends SpringBootServletInitializer{
         authProvider.setPasswordEncoder(passwordEncoder);
         return authProvider;
     }
-
-    /*@Bean
-    public ByteArrayHttpMessageConverter byteArrayHttpMessageConverter() {
-        ByteArrayHttpMessageConverter byteArrayHttpMC = new ByteArrayHttpMessageConverter();
-        byteArrayHttpMC.setSupportedMediaTypes(getImageMediaTypes());
-        return byteArrayHttpMC;
-    }*/
 }

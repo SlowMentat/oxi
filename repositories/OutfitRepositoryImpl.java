@@ -12,6 +12,7 @@ import oxi.repositories.OutfitRepositoryCustom;
 import org.hibernate.transform.*;
 import org.hibernate.SQLQuery;
 import org.hibernate.*;
+import org.hibernate.type.UUIDBinaryType;
 
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.data.domain.Page;
@@ -30,6 +31,7 @@ import static java.lang.Math.toIntExact;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.stream.Collectors;
@@ -71,12 +73,13 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 		//Example 553. Hibernate native query selecting entities with joined one-to-many association
 		String outfitQ = "select {o.*} from outfit o where o.profile_id = :id";
 		//String contentItemQ = "select {c.*}, {i.*} from item i, content c join item_content ic on ic.content_id=c.id where i.id = ic.item_id and c.outfit_id in (:outfitIdList)";
+		//"select c.id, c.coverpicuri, c.outfit_id, i.id, i.link, i.positionx, i.positiony, i.size, i.type, i.profile_id 
 		String contentItemQ = "select {c.*}, {i.*} "+
 			"from item i, content c " +
 			"join item_content ic on ic.content_id=c.id " +
 			"where i.id = ic.item_id " +
 			"and c.outfit_id in (:outfitIdList) " +
-			"union all select c.*, null, null, null, null, null, null, null " +
+			"union all select c.id, c.coverpicuri, c.outfit_id, null, null, null, null, null, null, null, null, null " +
 			"from content c, item_content ic " +
 			"where c.outfit_id in (:outfitIdList) " +
 			"and not c.id=ic.content_id";
@@ -89,12 +92,11 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 
 		//values used as a Parameter List in the cotnentItemQ SQL query
 		//List<Long> outfitIds = new ArrayList(toIntExact(outfitCount));
-
 		List<Outfit> outfitTuples = session.createSQLQuery(outfitQ)
 			.addEntity("o", Outfit.class)
 			.setFirstResult(pageable.getOffset())
 			.setMaxResults(pageable.getPageSize())
-			.setParameter("id", id)
+			.setParameter("id", id, UUIDBinaryType.INSTANCE)
 			.list();
 		logger.debug("outfitTuples Size = ");
 		logger.debug(outfitTuples.size());
@@ -111,7 +113,8 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 		List<Object[]> contentItemTuples = session.createSQLQuery(contentItemQ)
 			.addEntity("c", Content.class)
 			.addEntity("i", Item.class)
-			.setParameterList("outfitIdList", idToOutfitDtoMap.keySet())
+			//.setParameterList("outfitIdList", Arrays.asList(UUID.fromString("3a5f73ae-a986-11e8-8336-f23c9150975d"), UUID.fromString("078e417f-a986-11e8-8336-f23c9150975d")), UUIDBinaryType.INSTANCE)
+			.setParameterList("outfitIdList", idToOutfitDtoMap.keySet(), UUIDBinaryType.INSTANCE)
 			.list();
 
 		for(Object[] tuple : contentItemTuples){
@@ -128,10 +131,14 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 		}
 
 		for(Content c : contentToItemMap.keySet()){
-			idToOutfitDtoMap.get(c.getOutfit().getId()).getContents().add(new ContentDto(c.getIdText(), c.getCoverpicuri(), contentToItemMap.get(c)));
-			//contentDtos.add(new ContentDto(c.getId(), c.getCoverpicuri(), contentToItemMap.get(c)));
-			logger.debug("content.outfit = " + c.getOutfit());
-			//outfitDtos.add
+			if(c.getOutfit() != null){
+				logger.debug("content.outfit = " + c.getOutfit());
+				logger.debug("content.outfit.id = " + c.getOutfit().getId());
+				idToOutfitDtoMap.get(c.getOutfit().getId()).getContents().add(new ContentDto(c.getIdText(), c.getCoverpicuri(), contentToItemMap.get(c)));
+				//contentDtos.add(new ContentDto(c.getId(), c.getCoverpicuri(), contentToItemMap.get(c)));
+				logger.debug("content.outfit = " + c.getOutfit());
+				//outfitDtos.add				
+			}
 		}
 		Page<OutfitDto> pagedOutfitDtos = new PageImpl<OutfitDto>(new ArrayList<OutfitDto>(idToOutfitDtoMap.values()), pageable, outfitCount);
 

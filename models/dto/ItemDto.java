@@ -12,7 +12,6 @@ import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Identifiable;
 
 
-@Relation(value = "item", collectionRelation = "items")
 public class ItemDto implements Serializable, Identifiable<String>
 {
 	private String id;

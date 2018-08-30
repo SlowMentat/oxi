@@ -2,7 +2,11 @@ package oxi.configs;
 
 import org.springframework.web.servlet.config.annotation.*;
 import org.springframework.http.*;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.context.annotation.*;
+import java.util.List;
+import java.util.ArrayList;
 
 @Configuration
 @EnableWebMvc
@@ -22,7 +26,27 @@ public class WebConfig extends WebMvcConfigurerAdapter {
             mediaType("xml", MediaType.APPLICATION_XML).
             mediaType("json", MediaType.APPLICATION_JSON).
             mediaType("jpeg", MediaType.IMAGE_JPEG).
-            mediaType("png", MediaType.IMAGE_PNG);//.
-            //mediaType("octet-stream", MediaType.APPLICATION_OCTET_STREAM);
+            mediaType("png", MediaType.IMAGE_PNG).
+            mediaType("octet-stream", MediaType.APPLICATION_OCTET_STREAM);
+  }
+
+  @Override
+  public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+      converters.add(byteArrayHttpMessageConverter());
+  }
+
+  @Bean
+  public ByteArrayHttpMessageConverter byteArrayHttpMessageConverter() {
+      ByteArrayHttpMessageConverter byteArrayHttpMC = new ByteArrayHttpMessageConverter();
+      byteArrayHttpMC.setSupportedMediaTypes(getImageMediaTypes());
+      return byteArrayHttpMC;
+  }
+
+  private List<MediaType> getImageMediaTypes() {
+      List<MediaType> list = new ArrayList<MediaType>();
+      list.add(MediaType.IMAGE_JPEG);
+      list.add(MediaType.IMAGE_PNG);
+      list.add(MediaType.APPLICATION_OCTET_STREAM);
+      return list;
   }
 }

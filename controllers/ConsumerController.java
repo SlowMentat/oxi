@@ -6,6 +6,7 @@ import java.util.Iterator;
 import javax.servlet.http.*;
 import javax.servlet.*;
 import javax.persistence.*;
+import java.security.Principal;
 //import javax.annotation.*;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -80,6 +81,8 @@ import org.springframework.http.*;
 @RequestMapping("/consumer")
 @RepositoryRestController
 public class ConsumerController{
+
+
 	//Services
 	@Autowired
 	private ConsumerService consumerService;
@@ -93,10 +96,32 @@ public class ConsumerController{
 		logger.debug("Image filename = " + imageUrl);
 	}
 	
-	@RequestMapping(value="/image/{filename}", method=RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
+	@RequestMapping(value="/image/{filename}", method=RequestMethod.GET/*, produces = MediaType.IMAGE_JPEG_VALUE*/)
 	public @ResponseBody byte[] getImage(@PathVariable String filename) throws IOException{
 		return consumerService.getImage(filename);
 	}
+
+	/*@RequestMapping(value="/image2/{filename}", method=RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
+	public @ResponseBody byte[] getImageProduces(@PathVariable String filename) throws IOException{
+		return consumerService.getImage(filename);
+	}*/
+
+	/*@RequestMapping(value="/image2/{filename}", method=RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
+	public byte[] getImageByte(@PathVariable("filename") String filename) throws IOException{
+		return consumerService.getImage(filename);
+	}*/
+
+
+	
+	@RequestMapping(value="/image3/{filename}", method=RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
+	@ResponseBody
+	public ResponseEntity<byte[]> getImageResponseEntity(@PathVariable("filename") String filename) throws IOException{
+		final HttpHeaders headers = new HttpHeaders();
+    	headers.setContentType(MediaType.IMAGE_JPEG);
+		return new ResponseEntity<byte[]>(consumerService.getImage(filename), headers, HttpStatus.CREATED);
+	}
+	
+
 	/*
 	******************************************************************
 	HTTP Request handling methods (GET and POST) for OUTFIT resource
@@ -124,9 +149,14 @@ public class ConsumerController{
 		return new ResponseEntity<>(consumerService.readOutfits(profileId, pageable), HttpStatus.OK);
 	}*/
 	@RestResource(exported = true)
-	@RequestMapping(value = "/outfits/{profileId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> readOutfits(@PathVariable("profileId") String profileId, @PageableDefault Pageable pageable){
-		return new ResponseEntity<PagedResources<?>>(consumerService.readOutfits(profileId, pageable), HttpStatus.OK);
+	@RequestMapping(value = "/outfits/{username}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> readOutfits(final Principal principal, @PathVariable("username") String username, @PageableDefault Pageable pageable){
+		logger.debug("username = <" + username + ">");
+		if(username.isEmpty()){
+			logger.debug("Principal Name: " + principal.getName());
+			username = principal.getName();
+		}
+		return new ResponseEntity<PagedResources<?>>(consumerService.readOutfits(username, pageable), HttpStatus.OK);
 	}
 
 	/*
@@ -191,20 +221,44 @@ public class ConsumerController{
 	HTTP Request handling methods (GET and POST) for PROFILE resource
 	******************************************************************
 	*/
-	//@Secured({"ROLE_USER"})
+	//@PreAuthorize("#name == principal.username")
+	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
-	@RequestMapping(value="/profile", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public void uploadProfile(@RequestBody Profile profile){
-		logger.debug("Request Body Received: " + profile);
-		consumerService.saveProfile(profile);
+	@RequestMapping(value="/profile/{name}", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> postProfile(@RequestBody ProfileDto profile, @PathVariable("name") String username){
+		try{
+			logger.debug("Request Body Received: " + profile);
+			return new ResponseEntity(consumerService.createProfile(profile, username), HttpStatus.OK);
+		}catch(Exception e){
+			logger.error(e);
+			return new ResponseEntity(HttpStatus.BAD_REQUEST);
+		}
 	}
 
-	//@PreAuthorize("#name == principal.username")
-	//@Secured({"ROLE_ANONYMOUS"})
+	@PreAuthorize("#name == principal.username")
+	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
-	@RequestMapping(value="/profile/{id}", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public HttpEntity<ProfileDto> readProfile(@PathVariable("id") String id){
-		return new ResponseEntity<>(consumerService.readProfile(id), HttpStatus.OK);
+	@RequestMapping(value="/profile", method=RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> putProfile(@RequestBody ProfileDto profile){
+		try{
+			logger.debug("Request Body Received: " + profile);
+			return new ResponseEntity(consumerService.updateProfile(profile), HttpStatus.OK);
+		}catch(Exception e){	
+			logger.error(e);		
+			return new ResponseEntity(HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@Secured({"ROLE_USER"})
+	@RestResource(exported = true)
+	@RequestMapping(value="/profile/{name}", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getProfile(@PathVariable("name") String username){
+		try{
+			return new ResponseEntity(consumerService.readProfile(username), HttpStatus.OK);
+		}catch(Exception e){
+			logger.error(e);
+			return new ResponseEntity(HttpStatus.BAD_REQUEST);
+		}
 	}
 
 
