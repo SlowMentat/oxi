@@ -1,4 +1,4 @@
-package oxi.configs;
+/*package oxi.configs;
 
 import org.springframework.web.servlet.config.annotation.*;
 import org.springframework.http.*;
@@ -15,7 +15,7 @@ public class WebConfig extends WebMvcConfigurerAdapter {
   /**
     *  Total customization - see below for explanation.
     */
-  @Override
+/*  @Override
   public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
     configurer.favorPathExtension(false).//Disabled path extension. Note that favor does not mean use one approach in preference to another, it just enables or disables it. The order of checking is always path extension, parameter, Accept header.
             favorParameter(true).
@@ -49,4 +49,4 @@ public class WebConfig extends WebMvcConfigurerAdapter {
       list.add(MediaType.APPLICATION_OCTET_STREAM);
       return list;
   }
-}
+}*/

@@ -90,10 +90,12 @@ public class ConsumerController{
 
 	//@Secured ({"ROLE_USER"})
 	@RequestMapping(value="/uploadPhoto", method=RequestMethod.POST)
-	public void uploadImage(MultipartHttpServletRequest requestData){
-		String imageUrl = consumerService.saveImage(requestData);
+	public ResponseEntity<?> uploadImage(MultipartHttpServletRequest requestData){
+		logger.debug("/uploadPhoto content length = " + requestData.getContentLength() + " bytes");
+		String filename = consumerService.saveImage(requestData);
 		//create new Picture Record with imageUrl
-		logger.debug("Image filename = " + imageUrl);
+		logger.debug("Image filename = " + filename);
+		return new ResponseEntity<String>(filename, HttpStatus.CREATED);
 	}
 	
 	@RequestMapping(value="/image/{filename}", method=RequestMethod.GET/*, produces = MediaType.IMAGE_JPEG_VALUE*/)
@@ -127,12 +129,14 @@ public class ConsumerController{
 	HTTP Request handling methods (GET and POST) for OUTFIT resource
 	******************************************************************
 	*/
-	//@Secured({"ROLE_USER"})
+	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
 	@RequestMapping(value="/outfit", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public void uploadOutfit(@RequestBody Outfit outfit){
-		logger.debug("Request Body Received: " + outfit);
-		consumerService.saveOutfit(outfit);
+	public ResponseEntity<?> uploadOutfit(final Principal principal, @RequestBody Outfit outfit){
+		String username = principal.getName();
+		logger.debug("Request Body Received: " + outfit);	
+		consumerService.saveOutfit(outfit, username);	
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	//@PreAuthorize("#name == principal.username")
@@ -251,10 +255,12 @@ public class ConsumerController{
 
 	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
-	@RequestMapping(value="/profile/{name}", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getProfile(@PathVariable("name") String username){
+	@RequestMapping(value="/profile/{username}", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getProfile(final Principal principal, @PathVariable("username") String username){
 		try{
-			return new ResponseEntity(consumerService.readProfile(username), HttpStatus.OK);
+			if(principal.getName() != username){
+				return new ResponseEntity(consumerService.readProfile(username), HttpStatus.OK);
+			}
 		}catch(Exception e){
 			logger.error(e);
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);

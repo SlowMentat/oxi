@@ -2,6 +2,9 @@ package oxi.services;
 
 import java.lang.*;
 import java.util.Iterator;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Set;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Collection;
@@ -12,6 +15,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.io.Serializable;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FilenameUtils;
 
 import oxi.models.*;
 import oxi.repositories.*;
@@ -35,6 +39,7 @@ import org.apache.logging.log4j.LogManager;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.xml.bind.DatatypeConverter;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.Session;
@@ -97,26 +102,32 @@ public class ConsumerService implements ClientService{
 	@return
 	*/
 	@Transactional
-	public void saveOutfit(Outfit outfit){
+	public void saveOutfit(Outfit outfit, String username){
 		logger.debug("saving Outfit");
 		//Session session = sessionFactory.getCurrentSession();
 		int contentsCount = outfit.getContents().size();
 		if(contentsCount > 0){
 			logger.debug("outfit = ");
 			logger.debug(outfit);
-			int n=0;
-			//List<UUID> contentIds = new ArrayList<UUID>(contentsCount);
-			List<Content> contents = new ArrayList<Content>(contentsCount);
-			for(Content c : outfit.getContents()){
-				entityManager.persist(c);
-				contents.add(c);
+			Profile profile = profileRep.findByUsername(username);
+			if(profile != null){
+				int n=0;
+				//List<UUID> contentIds = new ArrayList<UUID>(contentsCount);
+				List<Content> contents = new ArrayList<Content>(contentsCount);
+				for(Content c : outfit.getContents()){
+					entityManager.persist(c);
+					contents.add(c);
+				}
+				for(Content c : contents){
+					outfit.addContent(c);
+				}
+				outfit.setProfile(profile);
+				entityManager.persist(outfit);
+				logger.debug("outfit after persist = ");
+				logger.debug(outfit);
+			}else{
+				logger.warn("No profile exists for user!");
 			}
-			for(Content c : contents){
-				outfit.addContent(c);
-			}
-			entityManager.persist(outfit);
-			logger.debug("outfit after persist = ");
-			logger.debug(outfit);
 		}else{
 			logger.warn("Rejecting Outfit entity. Outfit entity contains no Content childeren. Outfit entity must have at least 1 Content child entity");
 		}
@@ -396,8 +407,41 @@ public class ConsumerService implements ClientService{
 	*/
 	public String saveImage(MultipartHttpServletRequest data){
 		logger.debug("Hitting uploadImage method!");
-		Iterator<String> itr = data.getFileNames();
-		MultipartFile file = data.getFile(itr.next());
+		
+		//Iterator<String> itr = data.getFileNames();
+		//MultipartFile file = data.getFile("imageFile");
+
+		Enumeration<String> parameters = data.getParameterNames();
+		String[] multipartPayload = data.getParameterValues(parameters.nextElement());
+		String file = multipartPayload[0].split(",")[1];
+
+		//logger.debug(file);
+		//build file string
+		/*for(String s : multipartPayload){
+			file += s;
+		}*/
+
+		//Todo:	the below snippet returns an empty Iterator.  Why does this happen?  it was working before.
+		//		If I call getParameterNames below It returns the requst parameter imageFile from which I can extract the file data.
+		/*if(!itr.hasNext()){logger.debug("no parameter names returned from calling getFileNames() on MultipartHttpServletRequest, data");}
+		else{
+			while(itr.hasNext()){
+				String paramName = itr.next();
+				logger.debug("parameter name: " + paramName);
+			}
+		}*/
+
+		//Note:	getParameterNames implementation works
+		/*Enumeration<String> parameters = data.getParameterNames();
+		if(!parameters.hasMoreElements()){logger.debug("no parameter names found in MultipartHttpServletRequest, data.");}
+		else{
+			while(parameters.hasMoreElements()){
+				String paramName = parameters.nextElement();
+				logger.debug("parameter name: " + paramName);
+				//logger.debug(paramName + " value length:  " + data.getParameterValues(paramName)[0]);
+			}
+		}*/
+
 		if(!file.isEmpty()){
 			File imgpath = null;
 			try{
@@ -407,13 +451,14 @@ public class ConsumerService implements ClientService{
 			}		
 			//insert new image entry in database
 			try{
-				byte[] bytes = file.getBytes();
+				//byte[] bytes = file.getBytes();
+				byte[] bytes = DatatypeConverter.parseBase64Binary(file);
 				BufferedOutputStream oStream = new BufferedOutputStream(new FileOutputStream(imgpath));
 				oStream.write(bytes);
 				oStream.close();
 				
 				//update image database
-				return imgpath.toString();
+				return FilenameUtils.getBaseName(imgpath.getName());
 			}catch(Exception e){
 				return null;
 			}
