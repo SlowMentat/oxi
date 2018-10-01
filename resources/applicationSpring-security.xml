@@ -103,6 +103,11 @@
         <beans:bean id="myAuthFilter" class="org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter">
                 <beans:property name="sessionAuthenticationStrategy" ref="sas" />
                 <beans:property name="authenticationManager" ref="defaultAuthenticationManager" />
+                <beans:property name="authenticationSuccessHandler">
+                    <beans:bean class="oxi.security.CustomLoginSuccessHandler">
+                        <beans:constructor-arg name="defaultTargetUrl" value="http://72.14.177.220/gs-convert-jar-to-war-0.1.0/consumer/profile" /> <!--the default redirect url on successful login-->
+                    </beans:bean>
+                </beans:property>
         </beans:bean>
 
         <beans:bean id="sas" class="org.springframework.security.web.authentication.session.ConcurrentSessionControlAuthenticationStrategy">

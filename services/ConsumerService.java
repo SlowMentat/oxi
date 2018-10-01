@@ -33,6 +33,7 @@ import org.springframework.data.domain.*;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.core.convert.converter.*;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -57,6 +58,9 @@ public class ConsumerService implements ClientService{
 	@Autowired private ProfileRepository profileRep;
 	@Autowired private UserRepository userRep;
 	@Autowired private RoleRepository roleRep;
+	@Autowired private BrandRepository brandRep;
+	@Autowired private RetailerRepository retailerRep;
+	@Autowired private SizeRepository sizeRep;
 
 	//Resource Assemblers
 	//@Autowired 
@@ -71,6 +75,10 @@ public class ConsumerService implements ClientService{
 	@Autowired private PagedResourcesAssembler<Outfit> outfitPRA;
 	@Autowired private PagedResourcesAssembler<OutfitDto> outfitPRAP;
 	@Autowired private PagedResourcesAssembler<Item> itemPRA;
+	@Autowired private PagedResourcesAssembler<Brand> brandPRA;
+	@Autowired private PagedResourcesAssembler<BrandDto> brandPRAP;
+	@Autowired private PagedResourcesAssembler<Retailer> retailerPRA;
+	@Autowired private PagedResourcesAssembler<RetailerDto> retailerPRAP;
 
 	@Autowired private RepositoryEntityLinks links;
 
@@ -102,11 +110,13 @@ public class ConsumerService implements ClientService{
 	@return
 	*/
 	@Transactional
-	public void saveOutfit(Outfit outfit, String username){
+	public OutfitDto saveOutfit(Outfit outfit, String username){
 		logger.debug("saving Outfit");
 		//Session session = sessionFactory.getCurrentSession();
+		OutfitDto outfitDto = null;
 		int contentsCount = outfit.getContents().size();
 		if(contentsCount > 0){
+			ArrayList<ContentDto> contentDtos = new ArrayList<ContentDto>(contentsCount);
 			logger.debug("outfit = ");
 			logger.debug(outfit);
 			Profile profile = profileRep.findByUsername(username);
@@ -117,7 +127,14 @@ public class ConsumerService implements ClientService{
 				for(Content c : outfit.getContents()){
 					entityManager.persist(c);
 					contents.add(c);
+					List<ItemDto> itemDtos = new ArrayList<ItemDto>(c.getItems().size());
+					for(Item i : c.getItems()){
+						entityManager.persist(i);
+						itemDtos.add(new ItemDto(i.getId().toString().toUpperCase(), i.getPositionx(), i.getPositiony(), i.getType(), i.getSize(), i.getRetailer().toString().toUpperCase(), i.getBrand().toString().toUpperCase()));
+					}
+					contentDtos.add(new ContentDto(c.getId().toString().toUpperCase(), c.getCoverpicuri(), itemDtos));
 				}
+				//DOTO:  see about getting rid of this loop
 				for(Content c : contents){
 					outfit.addContent(c);
 				}
@@ -128,9 +145,11 @@ public class ConsumerService implements ClientService{
 			}else{
 				logger.warn("No profile exists for user!");
 			}
+			outfitDto = new OutfitDto(outfit.getId().toString().toUpperCase(), outfit.getLikes(), outfit.getComments(), contentDtos, outfit.getCoverpicuri());
 		}else{
 			logger.warn("Rejecting Outfit entity. Outfit entity contains no Content childeren. Outfit entity must have at least 1 Content child entity");
 		}
+		return outfitDto;
 	}
 
 	/*
@@ -175,6 +194,21 @@ public class ConsumerService implements ClientService{
 		// Tell PAR to use the user assembler for individual items.
 		PagedResources<?> pagedOutfitResource = outfitPRAP.toResource(outfits, this::toResource);
 		return pagedOutfitResource;
+	}
+
+	public PagedResources<?> readFilteredOutfits(String filter, Pageable pageable){
+		switch(filter){
+			case "all":
+				Page<OutfitDto> outfits = outfitRep.findAll(pageable).map(new Converter<Outfit, OutfitDto>(){
+					@Override
+					public OutfitDto convert(Outfit outfit){
+						return new OutfitDto(outfit.getIdText(), outfit.getLikes(), outfit.getComments(), new ArrayList<ContentDto>(5), outfit.getCoverpicuri());
+					}	
+				});
+				return outfitPRAP.toResource(outfits, this::toResource);
+			default:
+				return null;
+		}		
 	}
 
 	/*public List<?> readOutfits(Long profileId, Pageable pageable){
@@ -269,7 +303,7 @@ public class ConsumerService implements ClientService{
 
 	private static ProfileDto copyToProfileDto(Profile profile){
 		return new ProfileDto(
-			profile.getId().toString(),
+			null,
 			profile.getUsername(),
 			profile.getCountry(),
 			profile.getDateOfBirth(),
@@ -292,6 +326,7 @@ public class ConsumerService implements ClientService{
 			profile.getCalf()
 			); 
 	}
+
 	private static Profile copyToProfile(ProfileDto profileDto){
 		Profile profile = new Profile();
 		logger.debug("starting copy.");
@@ -327,25 +362,42 @@ public class ConsumerService implements ClientService{
 		return copyToProfileDto(profile);
 	}
 
-	@Transactional
-	public ProfileDto createProfile(ProfileDto profileDto, String username) throws Exception{
-		logger.debug("Creating new profile");
-		Profile profile = copyToProfile(profileDto);
-		//logger.debug(profile.toString());
-		entityManager.persist(profile);
-		profile.setUser(userRep.findByUsername(username));
-		entityManager.persist(profile);
-		Profile idProfile = profileRep.saveAndFlush(profile);//entityManager.flush();
-		//if(profile == null) throw new Exception("Could not create profile");
-		return copyToProfileDto(idProfile);
+	public ProfileDto readMetric(String outfitId) throws Exception{
+		logger.debug("Reading PRofile (outfit id = " + outfitId + ")");
+		Profile profile = profileRep.findByOutfitId(UUID.fromString(outfitId));
+		return copyToProfileDto(profile);
 	}
 
 	@Transactional
-	public ProfileDto updateProfile(ProfileDto profileDto) throws Exception{
-		if (profileDto.getId() == null || profileDto.getId().isEmpty()) throw new Exception("invalid id");
+	public ProfileDto createProfile(ProfileDto profileDto, String username) throws Exception{
+		logger.debug("Creating new profile");
+		Profile existingProfile = profileRep.findByUsername(username);
+		//check if profile exists for user.  If so, insert id field into profileDto before copying to profile DAO
+		if(existingProfile == null) throw new Exception("User does not exist");
+		//logger.debug(profile.toString());
+		//entityManager.persist(profile);
 		Profile profile = copyToProfile(profileDto);
-		profile = profileRep.save(entityManager.merge(profile));
-		return copyToProfileDto(profile);
+		User user = userRep.findByUsername(username);
+		logger.debug("User object queried.  Properties [id_text, username] = " + user.getId().toString() + " " + user.getUsername());		
+		profile.setUser(userRep.findByUsername(username));
+		logger.debug("Profile Object Created.  Properties [username, user.username, user.id_text] = " + profile.getUsername() + " " + profile.getUser().getId().toString());
+		//entityManager.persist(profile);
+		//Profile idProfile = profileRep.saveAndFlush(profile);//entityManager.flush();
+		//if(profile == null) throw new Exception("Could not create profile");
+		return copyToProfileDto(profileRep.saveAndFlush(profile));
+	}
+
+	@Transactional
+	public ProfileDto updateProfile(ProfileDto profileDto, String username) throws Exception{
+		if (profileDto.getUsername() == null || profileDto.getUsername().isEmpty() || !profileDto.getUsername().equals(username)){
+			throw new Exception("request invalid");
+		}else{
+			profileDto.setId(profileRep.findByUsername(username).getId().toString());
+			Profile profile = copyToProfile(profileDto);
+			profile.setUser(userRep.findByUsername(profile.getUsername()));
+			profile = profileRep.save(entityManager.merge(profile));
+			return copyToProfileDto(profile);
+		}
 	}
 
 
@@ -366,7 +418,15 @@ public class ConsumerService implements ClientService{
 			user.setUsername(userDto.getUsername());
 			user.setRoles(Arrays.asList(roleRep.findByName("ROLE_USER")));
 			user.setEnabled(true);
-			userRep.saveAndFlush(user);	
+			entityManager.persist(user);
+			logger.debug("User object persisted.  user.id: " + user.getId().toString());
+			//Create an empty Profile linked to this user
+			Profile profile = new Profile();
+			profile.setUser(user);
+			profile.setUsername(user.getUsername());
+			entityManager.persist(profile);
+			logger.debug("Profile object persisted.  profile.user.id: " + profile.getUser().getId().toString());
+			//userRep.saveAndFlush(user);	
 
 			//Set User roles
 						
@@ -376,7 +436,7 @@ public class ConsumerService implements ClientService{
 		}
 	}
 
-	/*
+	/*F
 	Makes call to data access layer (DAL) inserting new profile resource into database.
 	@param Profile 
 	@return void
@@ -388,6 +448,34 @@ public class ConsumerService implements ClientService{
 	}
 
 	//=====================================================================================
+
+	public PagedResources<?> readBrands(Pageable pageable){
+		Page<BrandDto> brands = brandRep.findAll(pageable).map(new Converter<Brand, BrandDto>(){
+			@Override
+			public BrandDto convert(Brand brand){
+				return new BrandDto(brand.getIdText(), brand.getName(), brand.getLink(), brand.getRed(), brand.getGreen(), brand.getBlue());
+			}	
+		});
+		logger.debug("brands return from repository: \n" + brands);
+		return brandPRAP.toResource(brands, this::toResource);
+	}
+
+	public PagedResources<?> readRetailers(Pageable pageable){
+		Page<RetailerDto> retailers = retailerRep.findAll(pageable).map(new Converter<Retailer, RetailerDto>(){
+			@Override
+			public RetailerDto convert(Retailer retailer){
+				return new RetailerDto(retailer.getIdText(), retailer.getName(), retailer.getLink(), retailer.getRed(), retailer.getGreen(), retailer.getBlue());
+			}	
+		});
+		logger.debug("retailers return from repository: \n" + retailers);
+		return retailerPRAP.toResource(retailers, this::toResource);
+	}
+
+	/*public List<Size> readSizes(){
+		List<SizeDto> sizes = sizesRep.findAll();
+		logger.debug("sizes return from repository: \n" + sizes);
+		return sizes;
+	}*/
 
 	@Transactional
 	private void savePicture(String imgFileName){

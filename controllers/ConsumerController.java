@@ -81,7 +81,7 @@ import org.springframework.http.*;
 @RequestMapping("/consumer")
 @RepositoryRestController
 public class ConsumerController{
-
+	public static final String defaultExceptionResponse = "Our servers seem to have freyed a bit.\nPlease wait a moment and try your request agian.";
 
 	//Services
 	@Autowired
@@ -114,15 +114,52 @@ public class ConsumerController{
 	}*/
 
 
-	
 	@RequestMapping(value="/image3/{filename}", method=RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
 	@ResponseBody
 	public ResponseEntity<byte[]> getImageResponseEntity(@PathVariable("filename") String filename) throws IOException{
 		final HttpHeaders headers = new HttpHeaders();
     	headers.setContentType(MediaType.IMAGE_JPEG);
 		return new ResponseEntity<byte[]>(consumerService.getImage(filename), headers, HttpStatus.CREATED);
+	}	
+
+	/*
+	******************************************************************
+	HTTP Request handling methods (GET and POST) for BRAND resource
+	******************************************************************
+	*/
+	@Secured({"ROLE_USER"})
+	@RestResource(exported = true)
+	@RequestMapping(value="/brands", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getBrands(@PageableDefault Pageable pageable){
+		try{
+			return new ResponseEntity<PagedResources<?>>(consumerService.readBrands(pageable), HttpStatus.OK);
+		}catch(Exception e){
+			return new ResponseEntity<String>(defaultExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
-	
+
+	/*
+	******************************************************************
+	HTTP Request handling methods (GET and POST) for RETAILER resource
+	******************************************************************
+	*/
+	@Secured({"ROLE_USER"})
+	@RestResource(exported = true)
+	@RequestMapping(value="/retailers", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getRetailers(@PageableDefault Pageable pageable){
+		try{
+			return new ResponseEntity<PagedResources<?>>(consumerService.readRetailers(pageable), HttpStatus.OK);
+		}catch(Exception e){
+			logger.debug(e.toString());
+			return new ResponseEntity<String>(defaultExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	/*
+	******************************************************************
+	HTTP Request handling methods (GET and POST) for SIZE resource
+	******************************************************************
+	*/
 
 	/*
 	******************************************************************
@@ -134,9 +171,12 @@ public class ConsumerController{
 	@RequestMapping(value="/outfit", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> uploadOutfit(final Principal principal, @RequestBody Outfit outfit){
 		String username = principal.getName();
-		logger.debug("Request Body Received: " + outfit);	
-		consumerService.saveOutfit(outfit, username);	
-		return new ResponseEntity<>(HttpStatus.OK);
+		logger.debug("Request Body Received: " + outfit);
+		try{	
+			return new ResponseEntity<>(consumerService.saveOutfit(outfit, username), HttpStatus.CREATED);
+		}catch(Exception e){
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 
 	//@PreAuthorize("#name == principal.username")
@@ -154,13 +194,22 @@ public class ConsumerController{
 	}*/
 	@RestResource(exported = true)
 	@RequestMapping(value = "/outfits/{username}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> readOutfits(final Principal principal, @PathVariable("username") String username, @PageableDefault Pageable pageable){
+	public ResponseEntity<?> readOutfits(@PathVariable("username") String username, @PageableDefault Pageable pageable){
 		logger.debug("username = <" + username + ">");
-		if(username.isEmpty()){
-			logger.debug("Principal Name: " + principal.getName());
-			username = principal.getName();
-		}
 		return new ResponseEntity<PagedResources<?>>(consumerService.readOutfits(username, pageable), HttpStatus.OK);
+	}
+
+	@RestResource(exported = true)
+	@RequestMapping(value = "/outfits", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> readOutfits(final Principal principal, @PageableDefault Pageable pageable, @RequestParam(value="filter", required=false) String filter){
+		if(filter == null || filter.isEmpty()){
+			String username = principal.getName();
+			logger.debug("username = <" + username + ">");
+			logger.debug("Principal Name: " + principal.getName());
+			return new ResponseEntity<PagedResources<?>>(consumerService.readOutfits(username, pageable), HttpStatus.OK);
+		}else{
+			return new ResponseEntity<PagedResources<?>>(consumerService.readFilteredOutfits(filter, pageable), HttpStatus.OK);
+		}
 	}
 
 	/*
@@ -228,25 +277,25 @@ public class ConsumerController{
 	//@PreAuthorize("#name == principal.username")
 	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
-	@RequestMapping(value="/profile/{name}", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> postProfile(@RequestBody ProfileDto profile, @PathVariable("name") String username){
+	@RequestMapping(value="/profile", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> postProfile(final Principal principal, @RequestBody ProfileDto profile){
 		try{
 			logger.debug("Request Body Received: " + profile);
-			return new ResponseEntity(consumerService.createProfile(profile, username), HttpStatus.OK);
+			return new ResponseEntity(consumerService.createProfile(profile, principal.getName()), HttpStatus.CREATED);
 		}catch(Exception e){
 			logger.error(e);
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
 		}
 	}
 
-	@PreAuthorize("#name == principal.username")
+	//@PreAuthorize("#name == principal.username")
 	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
 	@RequestMapping(value="/profile", method=RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> putProfile(@RequestBody ProfileDto profile){
+	public ResponseEntity<?> putProfile(final Principal principal, @RequestBody ProfileDto profile){
 		try{
 			logger.debug("Request Body Received: " + profile);
-			return new ResponseEntity(consumerService.updateProfile(profile), HttpStatus.OK);
+			return new ResponseEntity(consumerService.updateProfile(profile, principal.getName()), HttpStatus.CREATED);
 		}catch(Exception e){	
 			logger.error(e);		
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
@@ -258,15 +307,29 @@ public class ConsumerController{
 	@RequestMapping(value="/profile/{username}", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getProfile(final Principal principal, @PathVariable("username") String username){
 		try{
-			if(principal.getName() != username){
-				return new ResponseEntity(consumerService.readProfile(username), HttpStatus.OK);
-			}
+			return new ResponseEntity(consumerService.readProfile(username), HttpStatus.OK);			
 		}catch(Exception e){
 			logger.error(e);
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
 		}
 	}
 
+	@Secured({"ROLE_USER"})
+	@RestResource(exported = true)
+	@RequestMapping(value="/profile", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getMetric(final Principal principal, @RequestParam(value="filter", required=false) String outfitId){
+		try{
+			logger.debug("Principal Name:  " + principal.getName());
+			if(outfitId == null || outfitId.isEmpty()){
+				return new ResponseEntity(consumerService.readProfile(principal.getName()), HttpStatus.OK);
+			}else{//TODO:  Check if parameter is a valid UUID string
+				return new ResponseEntity(consumerService.readMetric(outfitId), HttpStatus.OK);
+			}
+		}catch(Exception e){
+			logger.error(e);
+			return new ResponseEntity(HttpStatus.BAD_REQUEST);
+		}
+	}
 
 
 	/*@RequestMapping(value="/createUser", method=RequestMethod.POST)

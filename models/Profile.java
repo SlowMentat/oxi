@@ -249,8 +249,6 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	}
 	
 	public void setUser(User user){
-		this.user = user;
-
 		logger.debug("adding user to Profile entity");
 		if(user != null){
 			this.user = user;

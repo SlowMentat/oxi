@@ -11,4 +11,7 @@ import java.util.UUID;
 public interface ProfileRepository extends JpaRepository<Profile, UUID>{
 	@Query(value = "SELECT * FROM profile p JOIN user u on u.id = p.user_id WHERE u.username = ?1", nativeQuery = true)
 	Profile findByUsername(String username);
+
+	@Query(value = "SELECT * FROM profile p JOIN outfit o on o.profile_id = p.id WHERE o.id = ?1", nativeQuery = true)
+	Profile findByOutfitId(UUID outfitId);
 }

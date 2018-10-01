@@ -30,12 +30,38 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	private UUID id;
 	@Column(name = "id_text", updatable = false, insertable = false)
 	private String idText;
-	private Long positionx;
-	private Long positiony;
-	private String link;
+	private Float positionx;
+	private Float positiony;
+	//private String link;
 	private String type;
+
+	/*@ManyToOne(cascade=CascadeType.ALL)
+	@RestResource(rel="vendor_1")
+	@JsonProperty("size")
+	@JsonIdentityReference(alwaysAsId=true)	
+	@JsonBackReference*/
 	private String size;
 	
+	/*@ManyToOne(cascade=CascadeType.ALL)
+	@RestResource(rel="vendor_1")
+	@JsonProperty("brand")
+	@JsonIdentityReference(alwaysAsId=true)	*/
+	//@JsonBackReference
+	@Column(name="brand_id", columnDefinition = "BINARY(16)")
+	private UUID brand;
+	@Column(name = "brand_id_text", updatable = false, insertable = false)
+	private String brandText;
+
+	/*@ManyToOne(cascade=CascadeType.ALL)
+	@RestResource(rel="vendor_1")
+	@JsonProperty("retailer")
+	@JsonIdentityReference(alwaysAsId=true)	*/
+	//@JsonBackReference
+	@Column(name="retailer_id", columnDefinition = "BINARY(16)")
+	private UUID retailer;
+	@Column(name = "retailer_id_text", updatable = false, insertable = false)
+	private String retailerText;
+
 	@ManyToMany(cascade=CascadeType.ALL)
 	@RestResource(rel="client_0")
 	@JsonIdentityReference(alwaysAsId=true)
@@ -60,11 +86,13 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	//@Override
 	public void setId(UUID id){this.id = id;}
 	//public void setIdText(String idText){this.idText = idText;}
-	public void setLocationx(Long posx){this.positionx = posx;}
-	public void setLocationy(Long posy){this.positiony = posy;}
-	public void setLink(String link){this.link = link;}	
-	public void setType(String type){this.type = type;}	
-	public void setSize(String size){this.size = size;}	
+	public void setPositionx(Float posx){this.positionx = posx;}
+	public void setPositiony(Float posy){this.positiony = posy;}
+	//public void setLink(String link){this.link = link;}	
+	public void setType(String type){this.type = type;}
+	public void setSize(String size){this.size = size;}
+	public void setBrand(UUID brand){this.brand = brand;}
+	public void setRetailer(UUID retailer){this.retailer = retailer;}	
 	public void setProfile(Profile profile){
 		this.profile = profile;
 	}
@@ -84,11 +112,15 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	//@Override
 	public UUID getId(){return this.id;}
 	public String getIdText(){return this.idText;}
-	public Long getPositionx(){return this.positionx;}
-	public Long getPositiony(){return this.positiony;}
-	public String getLink(){return this.link;}	
-	public String getType(){return this.type;}	
+	public Float getPositionx(){return this.positionx;}
+	public Float getPositiony(){return this.positiony;}
+	//public String getLink(){return this.link;}
 	public String getSize(){return this.size;}
+	public UUID getBrand(){return this.brand;}
+	public String getBrandText(){return this.brandText;}
+	public UUID getRetailer(){return this.retailer;}
+	public String getRetailerText(){return this.retailerText;}
+	public String getType(){return this.type;}
 	public List<Content> getContents(){return this.contents;}
 	public Profile getProfile(){return this.profile;}
 	
@@ -111,7 +143,6 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
         StringBuilder sb = new StringBuilder("\nID: ").append(this.id)
 			.append("\npositionx: ").append(this.positionx)
 			.append("\npositiony:").append(this.positiony)
-			.append("\nlink:").append(this.link)
 			.append("\ntype:").append(this.type)
 			.append("\nsize:").append(this.size)
 		.append("\ncontents: [");

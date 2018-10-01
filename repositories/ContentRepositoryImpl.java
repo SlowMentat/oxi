@@ -88,7 +88,7 @@ public class ContentRepositoryImpl implements ContentRepositoryCustom {
 			}else{
 				items = contentToItemMap.get(content);
 			}
-			if(item != null) items.add(new ItemDto(item.getIdText(), item.getPositionx(), item.getPositiony(), item.getLink(), item.getType(), item.getSize()));
+			if(item != null) items.add(new ItemDto(item.getIdText(), item.getPositionx(), item.getPositiony(), item.getType(), item.getSize(), item.getRetailerText(), item.getBrandText()));
 			contentToItemMap.put(content, items);
 		}
 

@@ -39,7 +39,7 @@ public class AjaxTimeoutRedirectFilter extends GenericFilterBean
     private ThrowableAnalyzer throwableAnalyzer = new DefaultThrowableAnalyzer();
     private AuthenticationTrustResolver authenticationTrustResolver = new AuthenticationTrustResolverImpl();
  
-    private int customSessionExpiredErrorCode = 302;
+    private int customSessionExpiredErrorCode = 901;
 	private String redirectLocation = "";
  
     @Override

@@ -79,7 +79,7 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 			"join item_content ic on ic.content_id=c.id " +
 			"where i.id = ic.item_id " +
 			"and c.outfit_id in (:outfitIdList) " +
-			"union all select c.id, c.coverpicuri, c.outfit_id, null, null, null, null, null, null, null, null, null " +
+			"union all select c.id, c.coverpicuri, c.outfit_id, null, null, null, null, null, null, null, null, null, null, null, null " +
 			"from content c, item_content ic " +
 			"where c.outfit_id in (:outfitIdList) " +
 			"and not c.id=ic.content_id";
@@ -126,7 +126,7 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 			}else{
 				items = contentToItemMap.get(content);
 			}			
-			if(item != null) items.add(new ItemDto(item.getIdText(), item.getPositionx(), item.getPositiony(), item.getLink(), item.getType(), item.getSize()));
+			if(item != null) items.add(new ItemDto(item.getIdText(), item.getPositionx(), item.getPositiony(), item.getType(), item.getSize(), item.getRetailerText(), item.getBrandText()));
 			contentToItemMap.put(content, items);
 		}
 
@@ -146,14 +146,25 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 		return pagedOutfitDtos;//outfitDtos;
 	}
 
-	/*@Transactional
-	public Outfit save(Outfit outfit){
-		entityManager.persist(outfit);
-		return outfit;*/
-		/*outfitDto outfitdto = new OutfitDto();
-		outfitdto.setId(outfit.id);
-		for(Content content : outfit.getContents()){
-			outfitdto.getContents().add(contentDto)
-		}*/
-	//}
+	@Override
+	public Page<Outfit> findAll(Pageable pageable){
+		Session session = entityManager.unwrap(Session.class);	
+		String outfitQ = "select {o.*} from outfit o";
+		//values used as a Parameter List in the cotnentItemQ SQL query
+		//List<Long> outfitIds = new ArrayList(toIntExact(outfitCount));
+		String countQ = "select count(o.id) as cnt from outfit o";
+ 
+		Long outfitCount = (Long)session.createSQLQuery(countQ)
+			.addScalar("cnt", LongType.INSTANCE)
+			.uniqueResult();
+
+		List<Outfit> outfitTuples = session.createSQLQuery(outfitQ)
+			.addEntity("o", Outfit.class)
+			.setFirstResult(pageable.getOffset())
+			.setMaxResults(pageable.getPageSize())
+			.list();
+		logger.debug("outfitTuples Size = ");
+		logger.debug(outfitTuples.size());
+		return new PageImpl<Outfit>(outfitTuples, pageable, outfitCount);
+	}
 }
