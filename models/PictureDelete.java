@@ -1,5 +1,7 @@
 package oxi.models;
 
+import oxi.models.dto.PictureDto;
+
 import javax.persistence.*;
 import javax.persistence.CascadeType;
 import java.util.List;
@@ -17,11 +19,11 @@ import org.apache.logging.log4j.LogManager;
 import org.hibernate.annotations.GenericGenerator;
 
 @Entity
-@Table(name="picture")
-@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=Picture.class)
-public class Picture extends RelatedEntity implements Serializable, Identifiable<UUID>{
+@Table(name="picture_delete")
+@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=PictureDelete.class)
+public class PictureDelete extends RelatedEntity implements Serializable, Identifiable<UUID>{
 	@Transient
-	private static final Logger logger = LogManager.getLogger(Picture.class);
+	private static final Logger logger = LogManager.getLogger(PictureDelete.class);
 	
 	@Id
 	@GeneratedValue(generator = "uuid2")
@@ -35,18 +37,24 @@ public class Picture extends RelatedEntity implements Serializable, Identifiable
 	private String largeuri;
 	private String thumbnailuri;
 	
-	@OneToOne(cascade=CascadeType.ALL)
-	//@JoinColumn(name="content_id")
-	//@JoinColumn(name="picture_id", referencedColumnName="picture_id")
-	///@RestResource(rel="client_0")
-	@JsonIdentityReference(alwaysAsId=true)	
-	//@JsonManagedReference
-	private Content content;
-	
-	public Picture(){
+	public PictureDelete(){
 	}
 
-	public Picture(UUID id, String thumbnailuri, String smalluri, String largeuri){
+	public PictureDelete(PictureDto pictureDto){
+		this.id = UUID.fromString(pictureDto.getId());
+		this.thumbnailuri = pictureDto.getThumbnailuri();
+		this.smalluri = pictureDto.getSmalluri();
+		this.largeuri = pictureDto.getLargeuri();
+	}
+
+	public PictureDelete(Picture picture){
+		this.id = picture.getId();
+		this.thumbnailuri = picture.getThumbnailuri();
+		this.smalluri = picture.getSmalluri();
+		this.largeuri = picture.getLargeuri();
+	}
+
+	public PictureDelete(UUID id, String thumbnailuri, String smalluri, String largeuri){
 		this.id = id;
 		this.thumbnailuri = thumbnailuri;
 		this.smalluri = smalluri;
@@ -60,7 +68,6 @@ public class Picture extends RelatedEntity implements Serializable, Identifiable
 	public String getSmalluri(){return this.smalluri;}
 	public String getLargeuri(){return this.largeuri;}
 	public String getThumbnailuri(){return this.thumbnailuri;}
-	public Content getContent(){return this.content;}
 	
 	//Setters
 	//@Override
@@ -69,31 +76,14 @@ public class Picture extends RelatedEntity implements Serializable, Identifiable
 	public void setSmalluri(String smalluri){this.smalluri = smalluri;}
 	public void setLargeuri(String largeuri){this.largeuri = largeuri;}
 	public void setThumbnailuri(String thumbnailuri){this.thumbnailuri = thumbnailuri;}
-	public void setContent(Content content){
-		logger.warn("setting Content property of Picture POJO");
-		//this.content = content;
-		if(content != null){
-			this.content = content;
-			if(this.content.getPicture() != this) this.content.setPicture(this);
-		}else{
-			logger.warn("Content parameter is null");
-		}
-	}
 	
 	@Override
 	public String toString(){
-		logger.debug("building Picture string");
-        StringBuilder sb = new StringBuilder("\nid: ").append(this.id)
+		logger.debug("building PictureDelete string");
+        StringBuilder sb = new StringBuilder("\nid: ").append(this.id.toString())
 			.append("\nsmalluri: ").append(this.smalluri)
 			.append("\nlargeuri:").append(this.largeuri)
-			.append("\nthumbnail:").append(this.thumbnailuri)
-			.append("\ncontent: ");
-		if(this.content != null){		
-			logger.debug("building outfit string");
-			sb.append(this.content.getIdText());
-		}else{
-			logger.debug("profile.content is null");
-		}
+			.append("\nthumbnail:").append(this.thumbnailuri);
         return sb.toString();
 	}
 	

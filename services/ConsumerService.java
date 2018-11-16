@@ -55,6 +55,7 @@ public class ConsumerService implements ClientService{
 	@Autowired private ContentRepository contentRep;
 	@Autowired private ItemRepository itemRep;
 	@Autowired private PictureRepository pictureRep;
+	@Autowired private PictureDeleteRepository pictureDeleteRep;
 	@Autowired private ProfileRepository profileRep;
 	@Autowired private UserRepository userRep;
 	@Autowired private RoleRepository roleRep;
@@ -80,7 +81,11 @@ public class ConsumerService implements ClientService{
 	@Autowired private PagedResourcesAssembler<Retailer> retailerPRA;
 	@Autowired private PagedResourcesAssembler<RetailerDto> retailerPRAP;
 
-	@Autowired private RepositoryEntityLinks links;
+	@Autowired 
+	private RepositoryEntityLinks links;
+
+	@Autowired 
+	private ImageService imageService;
 
 	private static final Logger logger = LogManager.getLogger(ConsumerService.class);
 	private static String imgfolder = "/usr/images/";
@@ -103,203 +108,6 @@ public class ConsumerService implements ClientService{
 
 	}
 	//=====================================================================================
-
-	/*
-	Makes call to data access layer (DAL) inserting new outfit resource into database.
-	@param Outfit 
-	@return
-	*/
-	@Transactional
-	public OutfitDto saveOutfit(Outfit outfit, String username){
-		logger.debug("saving Outfit");
-		//Session session = sessionFactory.getCurrentSession();
-		OutfitDto outfitDto = null;
-		int contentsCount = outfit.getContents().size();
-		if(contentsCount > 0){
-			ArrayList<ContentDto> contentDtos = new ArrayList<ContentDto>(contentsCount);
-			logger.debug("outfit = ");
-			logger.debug(outfit);
-			Profile profile = profileRep.findByUsername(username);
-			if(profile != null){
-				int n=0;
-				//List<UUID> contentIds = new ArrayList<UUID>(contentsCount);
-				List<Content> contents = new ArrayList<Content>(contentsCount);
-				for(Content c : outfit.getContents()){
-					entityManager.persist(c);
-					contents.add(c);
-					List<ItemDto> itemDtos = new ArrayList<ItemDto>(c.getItems().size());
-					for(Item i : c.getItems()){
-						entityManager.persist(i);
-						itemDtos.add(new ItemDto(i.getId().toString().toUpperCase(), i.getPositionx(), i.getPositiony(), i.getType(), i.getSize(), i.getRetailer().toString().toUpperCase(), i.getBrand().toString().toUpperCase()));
-					}
-					contentDtos.add(new ContentDto(c.getId().toString().toUpperCase(), c.getCoverpicuri(), itemDtos));
-				}
-				//DOTO:  see about getting rid of this loop
-				for(Content c : contents){
-					outfit.addContent(c);
-				}
-				outfit.setProfile(profile);
-				entityManager.persist(outfit);
-				logger.debug("outfit after persist = ");
-				logger.debug(outfit);
-			}else{
-				logger.warn("No profile exists for user!");
-			}
-			outfitDto = new OutfitDto(outfit.getId().toString().toUpperCase(), outfit.getLikes(), outfit.getComments(), contentDtos, outfit.getCoverpicuri());
-		}else{
-			logger.warn("Rejecting Outfit entity. Outfit entity contains no Content childeren. Outfit entity must have at least 1 Content child entity");
-		}
-		return outfitDto;
-	}
-
-	/*
-	Makes call to DAL retreiving outfit resource
-	@param Long specifying id of outfit to retreive
-	@return OutfitDto which extends ResourceSupport
-	*/
-	/*public OutfitDto readOutfit(Long id){
-		//TODO:  ???need a customized json serialization to replace HAL links with raw data.
-		logger.debug("Reading Outfit (id=" + id + ")");
-		OutfitDto outfitResource = outfitRA.toResource(outfitRep.getOne(id));
-		logger.debug("OutfitResource:  " + outfitResource);
-		return outfitResource;
-	}
-
-	public PagedResources<OutfitDto> readOutfits(Pageable pageable){
-		Page<Outfit> outfits = outfitRep.findAll(pageable);
-		// Tell PAR to use the user assembler for individual items.
-		PagedResources<OutfitDto> pagedOutfitResource = outfitPRA.toResource(outfits, outfitRA);
-		return pagedOutfitResource;
-	}*/
-
-
-	//EXPERIMENT
-	/*
-	Makes call to DAL retreiving outfit resource
-	@param Long specifying id of outfit to retreive
-	@return OutfitDto which extends ResourceSupport
-	*/
-	public ResourceSupport readOutfit(String outfitId){
-		//TODO:  ???need a customized json serialization to replace HAL links with raw data.
-		logger.debug("Reading Outfit (id=" + outfitId + ")");
-		//logger.debug("OutfitResource:  " + outfitResource);
-		return null;//this.toResource(outfitRep.findById(outfitId));
-	}
-
-	public PagedResources<?> readOutfits(String username, Pageable pageable){
-		logger.debug("username = " + username);
-		Profile profile = profileRep.findByUsername(username);
-		Page<OutfitDto> outfits = outfitRep.findByProfileId(profile.getId(), pageable);
-		logger.debug("outfits return from repository: \n" + outfits);
-		// Tell PAR to use the user assembler for individual items.
-		PagedResources<?> pagedOutfitResource = outfitPRAP.toResource(outfits, this::toResource);
-		return pagedOutfitResource;
-	}
-
-	public PagedResources<?> readFilteredOutfits(String filter, Pageable pageable){
-		switch(filter){
-			case "all":
-				Page<OutfitDto> outfits = outfitRep.findAll(pageable).map(new Converter<Outfit, OutfitDto>(){
-					@Override
-					public OutfitDto convert(Outfit outfit){
-						return new OutfitDto(outfit.getIdText(), outfit.getLikes(), outfit.getComments(), new ArrayList<ContentDto>(5), outfit.getCoverpicuri());
-					}	
-				});
-				return outfitPRAP.toResource(outfits, this::toResource);
-			default:
-				return null;
-		}		
-	}
-
-	/*public List<?> readOutfits(Long profileId, Pageable pageable){
-		List<OutfitDto> outfits = outfitRep.findByProfileId(profileId);
-		logger.debug("outfits return from repository: \n" + outfits);
-		// Tell PAR to use the user assembler for individual items.
-		List<?> outfitResources = outfits.stream().map(this::toResource).collect(Collectors.toList());
-		//List<?> pagedOutfitResources = outfitPRAP.toResource(outfits, this::toResource);
-		logger.debug("outfitResources = " + outfitResources);
-		return outfitResources;
-	}*/
-
-	/*private ResourceSupport toResource(OutfitProjection projection){
-		//OutfitDto dto = new OutfitDto(projection.getId(), projection.getLikes(), projection.getComments(), projection.getContents(), projection.getCoverpicuri());
-		OutfitDto dto = new OutfitDto(projection.getId(), projection.getLikes(), projection.getComments(), projection.getContents(), projection.getCoverpicuri());		
-		Link outfitLink = links.linkForSingleResource(projection).withRel("outfit");
-		Link selfLink = links.linkForSingleResource(projection).withSelfRel();
-		return new Resource<>(dto, outfitLink, selfLink);
-		/*OutfitDto dto = new OutfitDto(projection.getOutfit());		
-		Link outfitLink = links.linkForSingleResource(projection.getOutfit()).withRel("outfit");
-		Link selfLink = links.linkForSingleResource(projection.getOutfit()).withSelfRel();
-		return new Resource<>(dto, outfitLink, selfLink);
-	}*/
-	//=====================================================================================
-
-	/*
-	Makes call to DAL retreiving content resource
-	@param Long specifying id of content to retreive
-	@return ContentDto which extends ResourceSupport
-	*/
-	/*public ContentDto readContent(Long id){
-		//TODO:  ???need a customized json serialization to replace HAL links with raw data.
-		logger.debug("Reading Content (id=" + id + ")");
-		ContentDto contentResource = contentRA.toResource(contentRep.getOne(id));
-		logger.debug("OutfitResource:  " + contentResource);
-		return contentResource;
-	}*/
-
-	public List<?> readContents(String outfitId){
-		List<ContentDto> contents = contentRep.findByOutfitId(UUID.fromString(outfitId));
-		return contents.stream().map(this::toResource).collect(Collectors.toList());
-	}
-
-	/*
-	Makes call to data access layer (DAL) inserting new content resource into database.
-	@param Content 
-	@return void
-	*/
-	@Transactional
-	public void saveContent(Content content){
-		logger.debug("saving Content");
-		contentRep.saveAndFlush(content);
-	}
-	//=====================================================================================
-
-	/*
-	Makes call to DAL retreiving item resource
-	@param Long specifying id of item to retreive
-	@return ItemDto which extends ResourceSupport
-	*/
-	/*public ItemDto readItem(Long id){
-		//TODO:  ???need a customized json serialization to replace HAL links with raw data.
-		logger.debug("Reading Item (id=" + id + ")");
-		ItemDto itemResource = itemRA.toResource(itemRep.getOne(id));
-		logger.debug("ItemRsource:  " + itemResource);
-		return itemResource;
-	}
-
-	public PagedResources<ItemDto> readItems(Pageable pageable){
-		Page<Item> items = itemRep.findAll(pageable);
-		// Tell PAR to use the user assembler for individual items.
-		PagedResources<ItemDto> pagedItemResource = itemPRA.toResource(items, itemRA);
-		return pagedItemResource;
-	}*/
-	/*
-	Makes call to data access layer (DAL) inserting new item resource into database.
-	@param Item 
-	@return void
-	*/
-	@Transactional
-	public void saveItem(Item item){
-		logger.debug("saving Item");
-		itemRep.saveAndFlush(item);
-	}
-
-	//=====================================================================================
-	/*
-	Makes call to DAL retreiving profile resource
-	@param Long specifying id of profile to retreive
-	@return ProfileDto which extends ResourceSupport
-	*/
 
 	private static ProfileDto copyToProfileDto(Profile profile){
 		return new ProfileDto(
@@ -354,6 +162,276 @@ public class ConsumerService implements ClientService{
 		logger.debug("finished copy.");
 		return profile;
 	}
+
+	private static OutfitDto copyToOutfitDto(Outfit outfit){
+		if(outfit != null){
+			int contentLength = outfit.getContents().size();
+			List<ContentDto> contentDtos = new ArrayList<ContentDto>(contentLength);
+			for(Content content: outfit.getContents()){
+				contentDtos.add(copyToContentDto(content));
+			}
+			return new OutfitDto(outfit.getId().toString().toUpperCase(), outfit.getLikes(), outfit.getComments(), contentDtos, outfit.getCoverpicuri());
+		}
+		return null;
+	}
+
+	private static ContentDto copyToContentDto(Content content){
+		if(content != null){
+			int itemLength = content.getItems().size();
+			List<ItemDto> itemDtos = new ArrayList(itemLength);
+			for(Item item : content.getItems()){
+				itemDtos.add(copyToItemDto(item));
+			}
+			PictureDto pictureDto = copyToPictureDto(content.getPicture());
+			return new ContentDto(content.getId().toString().toUpperCase(), content.getCoverpicuri(), pictureDto, itemDtos);
+		}
+		return null;
+	}
+
+	private static ItemDto copyToItemDto(Item item){
+		if(item != null){
+			return new ItemDto(item.getId().toString().toUpperCase(), item.getPositionx(), item.getPositiony(), item.getType(), item.getSize(), item.getRetailer().toString().toUpperCase(), item.getBrand().toString().toUpperCase());
+		}
+		return null;
+	}
+
+	private static PictureDto copyToPictureDto(Picture picture){
+		if(picture != null){
+			return new PictureDto(picture.getId().toString().toUpperCase(), picture.getThumbnailuri(), picture.getSmalluri(), picture.getLargeuri());
+		}
+		return null;
+	}
+
+	private static Picture copyToPicture(PictureDto pictureDto){
+		if(pictureDto != null){
+			if(pictureDto.getId() != null) return new Picture(UUID.fromString(pictureDto.getId()), pictureDto.getThumbnailuri(), pictureDto.getSmalluri(), pictureDto.getLargeuri());	
+			else return new Picture(null, pictureDto.getThumbnailuri(), pictureDto.getSmalluri(), pictureDto.getLargeuri());
+		}
+		return null;
+	}
+
+	/*
+	Makes call to data access layer (DAL) inserting new outfit resource into database.
+	@param Outfit 
+	@return
+	*/
+	@Transactional
+	public OutfitDto saveOutfit(Outfit outfit, String username){
+		logger.debug("saving Outfit");
+		//Session session = sessionFactory.getCurrentSession();
+		OutfitDto outfitDto = null;
+		int contentsCount = outfit.getContents().size();
+		if(contentsCount > 0){
+			ArrayList<ContentDto> contentDtos = new ArrayList<ContentDto>(contentsCount);
+			logger.debug("outfit = ");
+			logger.debug(outfit);
+			Profile profile = profileRep.findByUsername(username);
+			if(profile != null){
+				//List<UUID> contentIds = new ArrayList<UUID>(contentsCount);
+				/*List<Content> contents = new ArrayList<Content>(contentsCount);
+				for(Content c : outfit.getContents()){
+					List<Item> items = c.getItems();
+					Picture p = c.getPicture();
+					if(p != null){
+						if(p.getId() != null){
+							pictureRep.save(entityManager.merge(p));
+						}else{
+							entityManager.persist(p);
+						}
+						logger.debug("picture after persist = " + p);
+						c.setPicture(p);
+					}else{
+						logger.debug("picture property from Content object is null");
+					}*/
+					/*if(c.getId() != null){
+						logger.debug("content id is not null");
+						logger.debug("content id = " + c.getId());
+						//contentRep.save(entityManager.merge(c));
+						contentRep.save(entityManager.persist(c));
+					}else{
+						logger.debug("content id is null");
+						entityManager.persist(c);
+					}
+					logger.debug("content after persist = " + c);
+					List<ItemDto> itemDtos = new ArrayList<ItemDto>(c.getItems().size());
+					for(Item i : c.getItems()){
+						if(i.getId() != null) itemRep.save(entityManager.merge(i));
+						else entityManager.persist(i);
+						itemDtos.add(new ItemDto(i.getId().toString().toUpperCase(), i.getPositionx(), i.getPositiony(), i.getType(), i.getSize(), i.getRetailer().toString().toUpperCase(), i.getBrand().toString().toUpperCase()));
+					}
+					contents.add(c);
+					Picture picture = c.getPicture();
+					PictureDto pictureDto = picture == null ? null : new PictureDto(picture.getId().toString().toUpperCase(), picture.getThumbnailuri(), picture.getSmalluri(), picture.getLargeuri());
+					contentDtos.add(new ContentDto(c.getId().toString().toUpperCase(), c.getCoverpicuri(), pictureDto, itemDtos));
+				}
+				//DOTO:  see about getting rid of this loop
+				for(Content c : contents){
+					outfit.addContent(c);
+				}*/
+				outfit.setProfile(profile);
+				/*if(outfit.getId() != null) outfitRep.save(entityManager.merge(outfit));
+				else entityManager.persist(outfit);*/
+				//profile.setOutfit(outfit);
+				//entityManager.persist(profile);
+				outfitDto = copyToOutfitDto(entityManager.merge(outfit));
+				//outfit.setProfile(profile);
+				logger.debug("outfit after persist = ");
+				logger.debug(outfit);
+			}else{
+				logger.warn("No profile exists for user!");
+			}
+			//outfitDto = new OutfitDto(outfit.getId().toString().toUpperCase(), outfit.getLikes(), outfit.getComments(), contentDtos, outfit.getCoverpicuri());
+		}else{
+			logger.warn("Rejecting Outfit entity. Outfit entity contains no Content childeren. Outfit entity must have at least 1 Content child entity");
+		}
+		return outfitDto;
+	}
+
+	@Transactional
+	public OutfitDto addOutfit(Outfit outfit, String username){
+		OutfitDto outfitDto = null;
+		int contentsCount = outfit.getContents().size();
+		Profile profile = profileRep.findByUsername(username);
+		
+		for(Content c : outfit.getContents()){
+			Picture picture = pictureRep.findById(c.getPicture().getId());
+			entityManager.persist(picture);
+			picture.setContent(c);
+		}
+		entityManager.persist(outfit);
+		for(Content c : outfit.getContents()){
+			c.setOutfit(outfit);
+		}
+		outfit.setProfile(profile);
+		outfitDto = copyToOutfitDto(outfit);
+		
+		return outfitDto;
+	}
+
+	@Transactional
+	public OutfitDto addContents(List<Content> contents, String username, String outfitId){
+		OutfitDto outfitDto = null;
+		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId));
+		//Verify that client is owner of outfitId
+		Profile profile = outfit.getProfile();
+		if(profile.getUsername().equals(username)){
+			//Add new contents to outfit.contents list
+			for(Content c : contents){
+				Picture picture = pictureRep.findById(c.getPicture().getId());
+				entityManager.persist(picture);
+				picture.setContent(c);
+				c.setOutfit(outfit);
+				entityManager.persist(c);
+			}
+			entityManager.persist(outfit);
+			outfitDto = copyToOutfitDto(outfit);
+		}else{
+			logger.warn("User does not have permissions to edit outfit with provided Id");
+		}
+		return outfitDto;
+	}
+
+
+	//EXPERIMENT
+	/*
+	Makes call to DAL retreiving outfit resource
+	@param Long specifying id of outfit to retreive
+	@return OutfitDto which extends ResourceSupport
+	*/
+	public ResourceSupport readOutfit(String outfitId){
+		//TODO:  ???need a customized json serialization to replace HAL links with raw data.
+		logger.debug("Reading Outfit (id=" + outfitId + ")");
+		//logger.debug("OutfitResource:  " + outfitResource);
+		return null;//this.toResource(outfitRep.findById(outfitId));
+	}
+
+	public PagedResources<?> readOutfits(String username, Pageable pageable){
+		logger.debug("username = " + username);
+		Profile profile = profileRep.findByUsername(username);
+		Page<OutfitDto> outfits = outfitRep.findByProfileId(profile.getId(), pageable);
+		logger.debug("outfits return from repository: \n" + outfits);
+		// Tell PAR to use the user assembler for individual items.
+		PagedResources<?> pagedOutfitResource = outfitPRAP.toResource(outfits, this::toResource);
+		return pagedOutfitResource;
+	}
+
+	public PagedResources<?> readFilteredOutfits(String filter, Pageable pageable){
+		switch(filter){
+			case "all":
+				Page<OutfitDto> outfits = outfitRep.findAll(pageable).map(new Converter<Outfit, OutfitDto>(){
+					@Override
+					public OutfitDto convert(Outfit outfit){
+						return new OutfitDto(outfit.getIdText(), outfit.getLikes(), outfit.getComments(), new ArrayList<ContentDto>(5), outfit.getCoverpicuri());
+					}	
+				});
+				return outfitPRAP.toResource(outfits, this::toResource);
+			default:
+				return null;
+		}		
+	}
+
+	public List<?> readContents(String outfitId){
+		List<ContentDto> contents = contentRep.findByOutfitId(UUID.fromString(outfitId));
+		return contents.stream().map(this::toResource).collect(Collectors.toList());
+	}
+
+	/*
+	Makes call to data access layer (DAL) inserting new content resource into database and adds it to the specifed outiftId.
+	@param Content 
+	@return void
+	*/
+	@Transactional
+	public ContentDto saveContent(Content content, String parentId) throws Exception{
+		logger.debug("saving Content");
+
+		//Find Outfit by parentId
+		Outfit parentOutfit = outfitRep.findById(UUID.fromString(parentId));
+
+		//Build content Entity copying over the properties of content
+		//Content content = new Content(null, content.getCoverpicuri(), null, null);
+		Picture p = content.getPicture();
+		PictureDto pDto = null;
+		List<ItemDto> itemsDto  = new ArrayList<ItemDto>(content.getItems().size());
+		for(Item i : content.getItems()){
+			entityManager.persist(i);
+			itemsDto.add(new ItemDto(i.getId().toString(), i.getPositionx(), i.getPositiony(), i.getType(), i.getSize(), i.getRetailer().toString(), i.getBrand().toString()));
+		}
+		//content.setItems(items);
+		if(p != null){
+			//p = new Picture(null, pDto.getThumbnailuri(), pDto.getSmalluri(), pDto.getLargeuri());
+			entityManager.persist(p);
+			logger.debug("picture after persist = " + p);
+			pDto = new PictureDto(p.getId().toString(), p.getThumbnailuri(), p.getSmalluri(), p.getLargeuri());
+			//content.setPicture(p);
+		}else{
+			throw new Exception("content property, picture must not be null");
+		}
+		entityManager.persist(content);
+		content.setOutfit(parentOutfit);
+		entityManager.persist(parentOutfit);
+		return new ContentDto(content.getId().toString(), content.getCoverpicuri(), pDto, itemsDto);
+	}
+	//=====================================================================================
+
+	/*
+	Makes call to data access layer (DAL) inserting new item resource into database.
+	@param Item 
+	@return void
+	*/
+	@Transactional
+	public void saveItem(Item item){
+		logger.debug("saving Item");
+		itemRep.saveAndFlush(item);
+	}
+
+	//=====================================================================================
+	/*
+	Makes call to DAL retreiving profile resource
+	@param Long specifying id of profile to retreive
+	@return ProfileDto which extends ResourceSupport
+	*/
+
+
 
 	public ProfileDto readProfile(String username) throws Exception{
 		logger.debug("Reading Profile (id=" + username + ")");
@@ -493,78 +571,62 @@ public class ConsumerService implements ClientService{
 	@param MulitpartHttpServletRequest data 
 	@return String indicating generated filename.
 	*/
-	public String saveImage(MultipartHttpServletRequest data){
-		logger.debug("Hitting uploadImage method!");
-		
-		//Iterator<String> itr = data.getFileNames();
-		//MultipartFile file = data.getFile("imageFile");
-
-		Enumeration<String> parameters = data.getParameterNames();
-		String[] multipartPayload = data.getParameterValues(parameters.nextElement());
-		String file = multipartPayload[0].split(",")[1];
-
-		//logger.debug(file);
-		//build file string
-		/*for(String s : multipartPayload){
-			file += s;
-		}*/
-
-		//Todo:	the below snippet returns an empty Iterator.  Why does this happen?  it was working before.
-		//		If I call getParameterNames below It returns the requst parameter imageFile from which I can extract the file data.
-		/*if(!itr.hasNext()){logger.debug("no parameter names returned from calling getFileNames() on MultipartHttpServletRequest, data");}
-		else{
-			while(itr.hasNext()){
-				String paramName = itr.next();
-				logger.debug("parameter name: " + paramName);
-			}
-		}*/
-
-		//Note:	getParameterNames implementation works
-		/*Enumeration<String> parameters = data.getParameterNames();
-		if(!parameters.hasMoreElements()){logger.debug("no parameter names found in MultipartHttpServletRequest, data.");}
-		else{
-			while(parameters.hasMoreElements()){
-				String paramName = parameters.nextElement();
-				logger.debug("parameter name: " + paramName);
-				//logger.debug(paramName + " value length:  " + data.getParameterValues(paramName)[0]);
-			}
-		}*/
-
-		if(!file.isEmpty()){
-			File imgpath = null;
-			try{
-				imgpath = File.createTempFile("lrg",".jpg", new File(imgfolder));
-			}catch(Exception e){
-				return e.toString();
-			}		
-			//insert new image entry in database
-			try{
-				//byte[] bytes = file.getBytes();
-				byte[] bytes = DatatypeConverter.parseBase64Binary(file);
-				BufferedOutputStream oStream = new BufferedOutputStream(new FileOutputStream(imgpath));
-				oStream.write(bytes);
-				oStream.close();
-				
-				//update image database
-				return FilenameUtils.getBaseName(imgpath.getName());
-			}catch(Exception e){
-				return null;
-			}
-		}else{
-			return null;
-		}
+	@Transactional
+	public PictureDto saveImage(MultipartHttpServletRequest data){
+		logger.debug("ConsumerService.saveImage() invoked");
+		PictureUpdateDto pictureUpdateDto = imageService.saveImage(data);
+		Picture picture = copyToPicture(pictureUpdateDto);
+		entityManager.persist(picture);
+		pictureUpdateDto.setId(picture.getId().toString());
+		return pictureUpdateDto;
 	}
-
-	/*public Resource getThumbnail(String filename){
-
-	}*/
+	
+	/*
+	saves jpeg data to filesystem, and creates an entry in PictureDeleted with associating picture entity.
+	TODO:  Finiah implementing multiple files identified by a multipart contentId parameter
+	@param MulitpartHttpServletRequest data 
+	@param String contentId
+	@returns json picture object of existing picture entity having properties modified with new image filnames.
+	*/
+	@Transactional
+	public List<PictureUpdateDto> updateImage(MultipartHttpServletRequest data, String contentId){
+		//send existing image to the PictureDeleteTable
+		Content content = contentRep.findById(UUID.fromString(contentId));
+		Picture picture = content.getPicture();
+		//Picture picture = pictureRep.findById(UUID.fromString(pictureId));
+		PictureDelete pd = new PictureDelete(picture);
+		logger.debug("PictureDelete created = " + pd.toString());
+		pictureDeleteRep.saveAndFlush(pd);
+		//save the new image data to fs and return in picture json with existing id.
+		PictureUpdateDto pictureUpdateDto = imageService.saveImage(data);
+		pictureUpdateDto.setId(picture.getId().toString());
+		pictureUpdateDto.setContentId(contentId);
+		List<PictureUpdateDto> pictureUpdateDtos = new ArrayList<PictureUpdateDto>();
+		pictureUpdateDtos.add(pictureUpdateDto);
+		return pictureUpdateDtos;		
+	}
 
 	public byte[] getImage(String filename/*, HttpServletResponse response*/){
 		//Path file = Paths.get(imgfolder+filename);
 		byte[] image = null;
 		logger.debug("in ConsumerService.getImage()");
+		String subfolder = "";
+		switch(filename.substring(0, Math.min(filename.length(), 3))){
+			case "sml":
+				subfolder = "small/";
+				break;
+			case "lrg":
+				subfolder = "large/";
+				break;
+			case "tnl":
+				subfolder = "thumbnail/";
+				break;
+			default:
+				logger.debug("no matching prefix in filename");
+				break;
+		}
 		try{
-			iStream = new FileInputStream(imgfolder + filename + ".jpg");
+			iStream = new FileInputStream(imgfolder + subfolder + filename + ".jpg");
 			image = IOUtils.toByteArray(iStream);
 			logger.debug("image byte[] length = " + image.length);
 			return image;

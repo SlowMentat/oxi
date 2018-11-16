@@ -21,13 +21,14 @@ public class ContentDto implements Serializable, Identifiable<String>
 	private String id;
 	private String coverpicuri;
 	//private Outfit outfit;
-	private Picture picture;
+	private PictureDto picture;
 	private List<ItemDto> items;
 
-	public ContentDto(String id, String coverpicuri, List<ItemDto> items){
+	public ContentDto(String id, String coverpicuri, PictureDto picture, List<ItemDto> items){
 		super();
 		this.id = id;
 		this.coverpicuri = coverpicuri;
+		this.picture = picture;
 		this.items = items;
 	}
 
@@ -35,7 +36,7 @@ public class ContentDto implements Serializable, Identifiable<String>
 	public void setId(String id){this.id = id;}
 	public void setCoverpicuri(String uri){this.coverpicuri = uri;}	
 	//public void setOutfit(Outfit outfit){this.outfit = outfit;}	
-	public void setPicture(Picture picture){this.picture = picture;}	
+	public void setPicture(PictureDto picture){this.picture = picture;}	
 	public void setItems(List<ItemDto> items){logger.debug("items = " + items); this.items = items;}
 	
 	//Getters==========================================================================	
@@ -43,6 +44,6 @@ public class ContentDto implements Serializable, Identifiable<String>
 	public String getId(){return this.id;}
 	public String getCoverpicuri(){return this.coverpicuri;}
 	//public Outfit getOutfit(){return this.outfit;}
-	public Picture getPicture(){return this.picture;}
+	public PictureDto getPicture(){return this.picture;}
 	public List<ItemDto> getItems(){return this.items;}
 }

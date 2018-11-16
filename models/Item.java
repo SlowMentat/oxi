@@ -81,6 +81,17 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	public Item(){
 
 	}
+
+	public Item(UUID id, Float positionx, Float positiony, String type, String size, UUID retailer, UUID brand){
+		super();
+		this.id = id;
+		this.positionx = positionx;
+		this.positiony = positiony;
+		this.type = type;
+		this.size = size;
+		this.retailer = retailer;
+		this.brand = brand;
+	}
 	
 	//Setters
 	//@Override

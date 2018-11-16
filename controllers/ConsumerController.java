@@ -90,12 +90,29 @@ public class ConsumerController{
 
 	//@Secured ({"ROLE_USER"})
 	@RequestMapping(value="/uploadPhoto", method=RequestMethod.POST)
-	public ResponseEntity<?> uploadImage(MultipartHttpServletRequest requestData){
-		logger.debug("/uploadPhoto content length = " + requestData.getContentLength() + " bytes");
-		String filename = consumerService.saveImage(requestData);
-		//create new Picture Record with imageUrl
-		logger.debug("Image filename = " + filename);
-		return new ResponseEntity<String>(filename, HttpStatus.CREATED);
+	public ResponseEntity<?> uploadImage(MultipartHttpServletRequest requestData) throws Exception{
+		//try{
+			logger.debug("/uploadPhoto content length = " + requestData.getContentLength() + " bytes");
+			PictureDto pictureDto = consumerService.saveImage(requestData);
+			return new ResponseEntity<PictureDto>(pictureDto, HttpStatus.CREATED);
+		/*}catch(Exception e){
+			throw new Exception("Could not save new image data from /uploadPhoto controller", e);		
+		}finally{			
+			return new ResponseEntity<String>(defaultExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);	
+		}*/
+	}
+
+	@RequestMapping(value="/updatePhoto/{contentId}", method=RequestMethod.POST) //TODO:  Override multipart resolver to allow for put requests
+	public ResponseEntity<?> updateImage(MultipartHttpServletRequest requestData, @PathVariable String contentId) throws Exception{		
+		//try{
+			logger.debug("/updatePhoto content length = " + requestData.getContentLength() + " bytes");
+			List<PictureUpdateDto> pictureUpdateDto = consumerService.updateImage(requestData, contentId);
+			return new ResponseEntity<List<PictureUpdateDto>>(pictureUpdateDto, HttpStatus.OK);
+		/*}catch(Exception e){
+			throw new Exception("Could not save new image data from /updatePhoto controller", e);
+		}finally{			
+			return new ResponseEntity<String>(defaultExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+		}*/
 	}
 	
 	@RequestMapping(value="/image/{filename}", method=RequestMethod.GET/*, produces = MediaType.IMAGE_JPEG_VALUE*/)
@@ -172,11 +189,30 @@ public class ConsumerController{
 	public ResponseEntity<?> uploadOutfit(final Principal principal, @RequestBody Outfit outfit){
 		String username = principal.getName();
 		logger.debug("Request Body Received: " + outfit);
-		try{	
-			return new ResponseEntity<>(consumerService.saveOutfit(outfit, username), HttpStatus.CREATED);
-		}catch(Exception e){
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		//try{	
+			long startTime = System.currentTimeMillis();
+
+			//ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.saveOutfit(outfit, username), HttpStatus.CREATED);
+			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.addOutfit(outfit, username), HttpStatus.CREATED);
+
+			long endTime = System.currentTimeMillis();
+			logger.debug("ConsumerService execution time for call to saveOutfit: " + (endTime - startTime) + "ms");
+			return responseEntity;
+		/*}catch(Exception e){
+			logger.debug("Could not save new outfit data from /outfit controller\n" + e);
+			throw new Exception("Could not save new outfit data from /outfit controller", e);
+		}finally{			
+			return new ResponseEntity<String>(defaultExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);	
+		}*/
+	}
+
+	@Secured({"ROLE_USER"})
+	@RestResource(exported = true)
+	@RequestMapping(value="/contents/{outfitId}", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> addContents(final Principal principal, @PathVariable("outfitId") String outfitId, @RequestBody ArrayList<Content> contents){
+		String username = principal.getName();
+		ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.addContents(contents, username, outfitId), HttpStatus.CREATED);
+		return responseEntity;
 	}
 
 	//@PreAuthorize("#name == principal.username")
@@ -218,11 +254,21 @@ public class ConsumerController{
 	******************************************************************
 	*/
 	//@Secured({"ROLE_USER"})
+	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
-	@RequestMapping(value="/content", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public void uploadContent(@RequestBody Content content){
+	@RequestMapping(value="/content/{outfitId}", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> uploadContent(final Principal principal, @PathVariable String outfitId, @RequestBody Content content){
+		String username = principal.getName();
 		logger.debug("Request Body Received: " + content);
-		consumerService.saveContent(content);
+		try{	
+			long startTime = System.currentTimeMillis();
+			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.saveContent(content, outfitId), HttpStatus.CREATED);
+			long endTime = System.currentTimeMillis();
+			logger.debug("ConsumerService execution time for call to saveContent: " + (endTime - startTime) + "ms");
+			return responseEntity;
+		}catch(Exception e){
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 
 	//@PreAuthorize("#name == principal.username")

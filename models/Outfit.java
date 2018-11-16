@@ -149,7 +149,7 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 			logger.debug("instantiating new List<T>");
 			this.contents = new ArrayList<Content>();
 		}
-		this.contents.add((Content)targetChild);
+		if (!this.contents.contains((Content)targetChild)) this.contents.add((Content)targetChild);
 	}
 	@Override
 	public <T extends Relational> void internalRemoveChild(T targetChild){

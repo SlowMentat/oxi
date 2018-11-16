@@ -6,8 +6,7 @@ import org.springframework.data.jpa.repository.*;
 import org.springframework.data.rest.core.annotation.*;
 import java.util.UUID;
 
-@RepositoryRestResource(collectionResourceRel="Picture", path="picture")
-public interface PictureRepository extends JpaRepository<Picture, UUID>{
-	@Query("SELECT p FROM Picture AS p WHERE p.id = ?1")
-	Picture findById(UUID Id);
+//@RepositoryRestResource(collectionResourceRel="PictureDelete", path="pictureDelete")
+public interface PictureDeleteRepository extends JpaRepository<PictureDelete, UUID>{
+	
 } 

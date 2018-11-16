@@ -19,7 +19,7 @@ import java.io.*;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-@Controller
+/*@Controller
 public class UserPhotoControlloer{
 	@Autowired
 	private ConsumerService consumerService;
@@ -38,7 +38,7 @@ public class UserPhotoControlloer{
 		logger.debug("image = " + image);
 		return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
 	}
-}
+}*/
 
 
 

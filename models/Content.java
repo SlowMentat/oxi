@@ -58,12 +58,20 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 	@RestResource(rel="vendor_1")
 	@JsonProperty("picture")
 	@JsonIdentityReference(alwaysAsId=true)	
-	@JsonBackReference
+	//@JsonBackReference
 	private Picture picture;
 	
 	
 	//Constructor
 	public Content(){
+	}
+
+	public Content(UUID id, String coverpicuri, Picture picture, List<Item> items){
+		super();
+		this.id = id;
+		this.coverpicuri = coverpicuri;
+		this.picture = picture;
+		this.items = items;
 	}
 	
 	//Setters==========================================================================	
@@ -82,7 +90,7 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 	public void setPicture(Picture picture){
 		logger.warn("SETTING PICURE");
 		this.picture = picture;
-		/*if (this.picture != null){		
+		if (this.picture != null){		
 			logger.warn("Picture POJO Not NULL");
 			if(this.picture.getContent() != this){
 				logger.warn("LINKING PICTURE TO CONTENT");
@@ -91,7 +99,7 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 		}
 		else{
 			logger.warn("!!PICTURE IS NULL!!");
-		}*/
+		}
 	}	
 	public void setItems(List<Item> items){
 		logger.debug("Setting items list in Content entity");

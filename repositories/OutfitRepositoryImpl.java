@@ -4,6 +4,7 @@ import oxi.models.*;
 import oxi.models.dto.OutfitDto;
 import oxi.models.dto.ContentDto;
 import oxi.models.dto.ItemDto;
+import oxi.models.dto.PictureDto;
 import oxi.models.projection.OutfitProjection;
 import oxi.models.projection.ContentProjection;
 import oxi.repositories.OutfitRepositoryCustom;
@@ -134,7 +135,9 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 			if(c.getOutfit() != null){
 				logger.debug("content.outfit = " + c.getOutfit());
 				logger.debug("content.outfit.id = " + c.getOutfit().getId());
-				idToOutfitDtoMap.get(c.getOutfit().getId()).getContents().add(new ContentDto(c.getIdText(), c.getCoverpicuri(), contentToItemMap.get(c)));
+				Picture picture = c.getPicture();
+				PictureDto pictureDto = picture == null ? null : new PictureDto(picture.getIdText(), picture.getThumbnailuri(), picture.getSmalluri(), picture.getLargeuri());
+				idToOutfitDtoMap.get(c.getOutfit().getId()).getContents().add(new ContentDto(c.getIdText(), c.getCoverpicuri(), pictureDto, contentToItemMap.get(c)));
 				//contentDtos.add(new ContentDto(c.getId(), c.getCoverpicuri(), contentToItemMap.get(c)));
 				logger.debug("content.outfit = " + c.getOutfit());
 				//outfitDtos.add				
