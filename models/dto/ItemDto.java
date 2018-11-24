@@ -10,6 +10,7 @@ import java.io.Serializable;
 import org.springframework.hateoas.core.*;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Identifiable;
+import com.fasterxml.jackson.annotation.*;
 
 
 public class ItemDto implements Serializable, Identifiable<String>
@@ -22,8 +23,24 @@ public class ItemDto implements Serializable, Identifiable<String>
 	private String retailer;
 	private String brand;
 
-	public ItemDto(String id, Float positionx, Float positiony, String type, String size, String retailer, String brand){
-		super();
+	//Had to add jackson annotations for calling controller with ArrayList<ItemDto> typed parameter
+	@JsonCreator
+	public ItemDto(
+		@JsonProperty("id")
+		String id, 
+		@JsonProperty("positionx")
+		Float positionx, 
+		@JsonProperty("positiony")
+		Float positiony, 
+		@JsonProperty("type")
+		String type, 
+		@JsonProperty("size")
+		String size, 
+		@JsonProperty("retailer")
+		String retailer, 
+		@JsonProperty("brand")
+		String brand){
+		//super();
 		this.id = id;
 		this.positionx = positionx;
 		this.positiony = positiony;

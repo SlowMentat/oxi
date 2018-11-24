@@ -4,6 +4,7 @@ import java.lang.*;
 import java.util.Iterator;
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -195,6 +196,18 @@ public class ConsumerService implements ClientService{
 		return null;
 	}
 
+	private static Item copyToItem(ItemDto itemDto){
+		if(itemDto != null){
+			if(itemDto.getId() != null){
+				if(!itemDto.getId().isEmpty()) return new Item(UUID.fromString(itemDto.getId()), itemDto.getPositionx(), itemDto.getPositiony(), itemDto.getType(), itemDto.getSize(), UUID.fromString(itemDto.getRetailer()), UUID.fromString(itemDto.getBrand()));
+			}else{
+				return new Item(null, itemDto.getPositionx(), itemDto.getPositiony(), itemDto.getType(), itemDto.getSize(), UUID.fromString(itemDto.getRetailer()), UUID.fromString(itemDto.getBrand()));
+
+			}
+		}
+		return null;
+	}
+
 	private static PictureDto copyToPictureDto(Picture picture){
 		if(picture != null){
 			return new PictureDto(picture.getId().toString().toUpperCase(), picture.getThumbnailuri(), picture.getSmalluri(), picture.getLargeuri());
@@ -209,6 +222,8 @@ public class ConsumerService implements ClientService{
 		}
 		return null;
 	}
+
+
 
 	/*
 	Makes call to data access layer (DAL) inserting new outfit resource into database.
@@ -326,9 +341,73 @@ public class ConsumerService implements ClientService{
 			entityManager.persist(outfit);
 			outfitDto = copyToOutfitDto(outfit);
 		}else{
-			logger.warn("User does not have permissions to edit outfit with provided Id");
+			logger.warn("User, " + username + " does not have permissions to edit outfit with provided Id");
 		}
 		return outfitDto;
+	}
+
+	@Transactional
+	public OutfitDto modifyItems(HashMap<String, ArrayList<ItemDto>> contentIdToItemMap, String username, String outfitId){
+		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId));
+		Profile profile = outfit.getProfile();
+		if(profile.getUsername().equals(username)){
+			//logger.debug("content Ids:");
+			entityManager.persist(outfit);
+			for(String contentId : contentIdToItemMap.keySet()){
+				//logger.debug(contentId + ": " + "{\n");
+				Content content = contentRep.findById(UUID.fromString(contentId));
+				List<Item> items = content.getItems();
+				entityManager.persist(content);
+				for(ItemDto itemDto : contentIdToItemMap.get(contentId)){
+					//logger.debug(itemDto.getId() + "\n");
+					int ind = -1;
+					for(Item item : items){
+						ind++;
+						if(itemDto.getId().equals(item.getIdText())){
+							item.setPositionx(itemDto.getPositionx()); 
+							item.setPositiony(itemDto.getPositiony());
+							item.setType(itemDto.getType()); 
+							item.setSize(itemDto.getSize());
+							item.setRetailer(UUID.fromString(itemDto.getRetailer()));
+							item.setBrand(UUID.fromString(itemDto.getBrand()));
+
+							/*items.set(
+								ind, 
+							);*/
+							break;
+						}
+					}
+				}
+				//content.setItems(items);
+				//logger.debug("}\n");
+			}
+		}else{
+			logger.warn("User, " + username + " does not have permissions to edit item");
+		}
+		return copyToOutfitDto(outfit);
+	}
+
+	//
+	@Transactional
+	public OutfitDto addItems(HashMap<String, ArrayList<ItemDto>> contentIdToItemMap, String username, String outfitId){
+		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId));
+		Profile profile = outfit.getProfile();
+		if(profile.getUsername().equals(username)){
+			entityManager.persist(outfit);
+			//work on each content id key provided in the payload received
+			for(String contentId : contentIdToItemMap.keySet()){
+				Content content = contentRep.findById(UUID.fromString(contentId));
+				entityManager.persist(content);
+				for(ItemDto itemDto : contentIdToItemMap.get(contentId)){
+					Item item = copyToItem(itemDto);
+					entityManager.persist(item);
+					content.addItem(item);
+				}
+			}
+		}else{
+			logger.warn("User, " + username + " does not have permissions to edit item");
+		}
+		return copyToOutfitDto(outfit);
 	}
 
 

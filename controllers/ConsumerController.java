@@ -3,6 +3,8 @@ package oxi.controllers;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.List;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.HashMap;
 import javax.servlet.http.*;
 import javax.servlet.*;
 import javax.persistence.*;
@@ -291,29 +293,32 @@ public class ConsumerController{
 	HTTP Request handling methods (GET and POST) for ITEM resource
 	******************************************************************
 	*/
-	//@Secured({"ROLE_USER"})
-	//@Transactional
+
+	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
-	@RequestMapping(value="/item", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public void uploadItem(@RequestBody Item item){
-		logger.debug("Request Body Received: " + item);
-		consumerService.saveItem(item);
+	@RequestMapping(value="/items/{outfitId}", method=RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> uploadExistingItems(final Principal principal, @PathVariable String outfitId, @RequestBody HashMap<String, ArrayList<ItemDto>> payload){
+		String username = principal.getName();
+		//try{	
+			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.modifyItems(payload, username, outfitId), HttpStatus.OK);
+			return responseEntity;
+		/*}catch(Exception e){
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}*/
 	}
 
-	//@PreAuthorize("#name == principal.username")
-	//@Secured({"ROLE_ANONYMOUS"})
-	/*@RestResource(exported = true)
-	@RequestMapping(value="/item/{id}", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public HttpEntity<ItemDto> readItem(@PathVariable("id") Long id){
-		return new ResponseEntity<>(consumerService.readItem(id), HttpStatus.OK);
-	}
-
+	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
-	@RequestMapping(value = "/items", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<PagedResources<ItemDto>> readItems(@PageableDefault Pageable pageable){
-		return new ResponseEntity<>(consumerService.readItems(pageable), HttpStatus.OK);
-	}*/
-
+	@RequestMapping(value="/items/{outfitId}", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> uploadNewItems(final Principal principal, @PathVariable String outfitId, @RequestBody HashMap<String, ArrayList<ItemDto>> payload){
+		String username = principal.getName();
+		//try{	
+			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.addItems(payload, username, outfitId), HttpStatus.CREATED);
+			return responseEntity;
+		/*}catch(Exception e){
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}*/
+	}
 
 	/*
 	******************************************************************

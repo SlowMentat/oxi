@@ -109,6 +109,7 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 	public void addItem(Item item){
 		logger.debug("ADDING ITEM TO items[]");
 		this.items.add(item);
+		if(item.getContents() == null) item.setContents(new ArrayList<Content>());
 		if (!item.getContents().contains(this)) item.addContent(this);
 	}
 	
