@@ -3,15 +3,15 @@
 
 ## Exposed URIs
 
-- **/consumer/createUser**
-- **/consumer/profile**
-- **/consumer/outfits/{username}**
-- **/consumer/outfits/**
-- **/consumer/content/{outfitId}**
-- **/consumer/contents/{outfitId}**
-- **/consumer/items/{outfitId}**
-- **/consumer/brand**
-- **/consumer/retailers**
+- **[/consumer/createUser](API.md#consumercreateuser)**
+- **[/consumer/profile](API.md#consumerprofile)**
+- **[/consumer/outfits/{username}](API.md#consumeroutfitsusername)**
+- **[/consumer/outfits/](API.md#consumeroutfits)**
+- **[/consumer/content/{outfitId}](API.md#consumercontentoutfitid)**
+- **[/consumer/contents/{outfitId}](API.md#consumercontentsoutfitid)**
+- **[/consumer/items/{outfitId}](API.md#consumeritemsoutfitid)**
+- **[/consumer/brands](API.md#consumerbrands)**
+- **[/consumer/retailers](API.md#consumerretailers)**
 
 
 
