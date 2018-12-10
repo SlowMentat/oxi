@@ -16,6 +16,7 @@
 
 
 ## 
+</br></br>
 ## /consumer/createUser
 
 ### Request Type    
@@ -33,6 +34,7 @@ POST
 ### Success Response
 
 ### Error Response
+</br>
 
 ## /consumer/profile
 
@@ -47,6 +49,7 @@ GET
 ### Response Body
 ```json
 ```
+</br>
 
 ## /consumer/outfits/{username}
 
@@ -102,6 +105,7 @@ GET
     }
 }
 ```
+</br>
 
 ## /consumer/outfits/
 
@@ -152,6 +156,7 @@ GET
     }
 }
 ```
+</br>
 
 ## /consumer/content/{outfitId}
 
@@ -204,6 +209,7 @@ PUT, POST
     }]
 }
 ```
+</br>
 
 ## /consumer/contents/{outfitId}
 
@@ -220,6 +226,7 @@ PUT, POST
 ### Response Body
 ```json
 ```
+</br>
 
 ## /consumer/contents/{outfitId}
 
@@ -236,6 +243,7 @@ GET
 ### Response Body
 ```json
 ```
+</br>
 
 ## /consumer/items/{outfitId}
 
@@ -288,6 +296,7 @@ PUT, POST
     "coverpicuri" : "sml4478001644451872349"
 }
 ```
+</br>
 
 ## /consumer/brands
 
@@ -334,6 +343,7 @@ GET
     }
 }
 ```
+</br>
 
 ## /consumer/retailers
 
