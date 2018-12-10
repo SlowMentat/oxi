@@ -114,9 +114,12 @@ GET
 GET
 
 ### Request Parameters
-    filter    (default = "")
-    page    (default = 0)
-    size    (default = 20)
+
+   | Parameter Name | Default Value |
+   | - | - |
+   | filter | \"\" |
+   | page | 0 |
+   | size | 20 |
 
 ### Request Body
 ```json
