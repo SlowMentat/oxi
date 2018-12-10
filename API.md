@@ -15,9 +15,8 @@
 
 
 
-## Details
-
-### /consumer/createUser
+## 
+## /consumer/createUser
 
 ### Request Type    
 
@@ -34,11 +33,8 @@ POST
 ### Success Response
 
 ### Error Response
-##
 
-
-
-### /consumer/profile
+## /consumer/profile
 
 ### Request Type    
 
@@ -51,11 +47,8 @@ GET
 ### Response Body
 ```json
 ```
-##
 
-
-
-### /consumer/outfits/{username}
+## /consumer/outfits/{username}
 
 ### Request Type    
 
@@ -109,11 +102,8 @@ GET
     }
 }
 ```
-##
 
-
-
-### /consumer/outfits/
+## /consumer/outfits/
 
 ### Request Type    
 
@@ -162,11 +152,8 @@ GET
     }
 }
 ```
-##
 
-
-
-### /consumer/content/{outfitId}
+## /consumer/content/{outfitId}
 
 ### Request Type    
 
@@ -217,11 +204,8 @@ PUT, POST
     }]
 }
 ```
-##
 
-
-
-### /consumer/contents/{outfitId}
+## /consumer/contents/{outfitId}
 
 ### Request Type    
 
@@ -236,11 +220,8 @@ PUT, POST
 ### Response Body
 ```json
 ```
-##
 
-
-
-### /consumer/contents/{outfitId}
+## /consumer/contents/{outfitId}
 
 ### Request Type    
 
@@ -255,11 +236,8 @@ GET
 ### Response Body
 ```json
 ```
-##
 
-
-
-### /consumer/items/{outfitId}
+## /consumer/items/{outfitId}
 
 ### Request Type    
 
@@ -310,11 +288,8 @@ PUT, POST
     "coverpicuri" : "sml4478001644451872349"
 }
 ```
-##
 
-
-
-### /consumer/brands
+## /consumer/brands
 
 ### Request Type    
 
@@ -359,11 +334,8 @@ GET
     }
 }
 ```
-##
 
-
-
-### /consumer/retailers
+## /consumer/retailers
 
 ### Request Type:    
 
@@ -408,4 +380,4 @@ GET
     }
 }
 ```
-##
+
