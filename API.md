@@ -17,7 +17,7 @@
 
 ## 
 </br></br>
-## /consumer/createUser        [↑](API.md#exposed-uris)
+## /consumer/createUser
 
 ### Request Type    
 
@@ -36,7 +36,7 @@ POST
 ### Error Response
 </br>
 
-## /consumer/profile        [↑](API.md#exposed-uris)
+## /consumer/profile
 
 ### Request Type    
 
@@ -51,7 +51,7 @@ GET
 ```
 </br>
 
-## /consumer/outfits/{username}        [↑](API.md#exposed-uris)
+## /consumer/outfits/{username}
 
 ### Request Type    
 
@@ -107,7 +107,7 @@ GET
 ```
 </br>
 
-## /consumer/outfits/        [↑](API.md#exposed-uris)
+## /consumer/outfits/
 
 ### Request Type    
 
@@ -161,7 +161,7 @@ GET
 ```
 </br>
 
-## /consumer/content/{outfitId}        [↑](API.md#exposed-uris)
+## /consumer/content/{outfitId}
 
 ### Request Type    
 
@@ -214,7 +214,7 @@ PUT, POST
 ```
 </br>
 
-## /consumer/contents/{outfitId}        [↑](API.md#exposed-uris)
+## /consumer/contents/{outfitId}
 
 ### Request Type    
 
@@ -231,7 +231,7 @@ PUT, POST
 ```
 </br>
 
-## /consumer/contents/{outfitId}        [↑](API.md#exposed-uris)
+## /consumer/contents/{outfitId}
 
 ### Request Type    
 
@@ -248,7 +248,7 @@ GET
 ```
 </br>
 
-## /consumer/items/{outfitId}        [↑](API.md#exposed-uris)
+## /consumer/items/{outfitId}
 
 ### Request Type    
 
@@ -301,7 +301,7 @@ PUT, POST
 ```
 </br>
 
-## /consumer/brands        [↑](API.md#exposed-uris)
+## /consumer/brands
 
 ### Request Type    
 
@@ -348,7 +348,7 @@ GET
 ```
 </br>
 
-## /consumer/retailers        [↑](API.md#exposed-uris)
+## /consumer/retailers
 
 ### Request Type:    
 
