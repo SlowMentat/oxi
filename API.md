@@ -17,9 +17,7 @@
 
 ## Details
 
-### Request URI 
-
-/createUser
+### /consumer/createUser
 
 ### Request Type    
 
@@ -40,9 +38,7 @@ POST
 
 
 
-### Request URI 
-
-/consumer/profile
+### /consumer/profile
 
 ### Request Type    
 
@@ -59,9 +55,7 @@ GET
 
 
 
-### Request URI    
-
-/consumer/outfits/{username}
+### /consumer/outfits/{username}
 
 ### Request Type    
 
@@ -119,9 +113,7 @@ GET
 
 
 
-### Request URI    
-
-/consumer/outfits/
+### /consumer/outfits/
 
 ### Request Type    
 
@@ -174,9 +166,7 @@ GET
 
 
 
-### Request URI 
-
-/consumer/content/{outfitId}
+### /consumer/content/{outfitId}
 
 ### Request Type    
 
@@ -231,9 +221,7 @@ PUT, POST
 
 
 
-### Request URI 
-
-/consumer/contents/{outfitId}
+### /consumer/contents/{outfitId}
 
 ### Request Type    
 
@@ -252,9 +240,7 @@ PUT, POST
 
 
 
-### Request URI 
-
-/consumer/contents/{outfitId}
+### /consumer/contents/{outfitId}
 
 ### Request Type    
 
@@ -273,9 +259,7 @@ GET
 
 
 
-### Request URI 
-
-/consumer/items/{outfitId}
+### /consumer/items/{outfitId}
 
 ### Request Type    
 
@@ -330,9 +314,7 @@ PUT, POST
 
 
 
-### Request URI 
-
-/consumer/brands
+### /consumer/brands
 
 ### Request Type    
 
@@ -381,9 +363,7 @@ GET
 
 
 
-### Request URI    
-
-/consumer/retailers
+### /consumer/retailers
 
 ### Request Type:    
 

@@ -460,12 +460,10 @@ public class ConsumerService implements ClientService{
 	@return void
 	*/
 	@Transactional
-	public ContentDto saveContent(Content content, String parentId) throws Exception{
-		logger.debug("saving Content");
-
+	public ContentDto createContent(Content content, String parentId) throws Exception{
+		logger.debug("Creating Content");
 		//Find Outfit by parentId
 		Outfit parentOutfit = outfitRep.findById(UUID.fromString(parentId));
-
 		//Build content Entity copying over the properties of content
 		//Content content = new Content(null, content.getCoverpicuri(), null, null);
 		Picture p = content.getPicture();
@@ -490,6 +488,53 @@ public class ConsumerService implements ClientService{
 		entityManager.persist(parentOutfit);
 		return new ContentDto(content.getId().toString(), content.getCoverpicuri(), pDto, itemsDto);
 	}
+
+	@Transactional
+	public ContentDto updateContent(Content content, String outfitId) throws Exception{
+		logger.debug("Updating Content");
+		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId));
+		//Build content Entity copying over the properties of content
+		//Content content = new Content(null, content.getCoverpicuri(), null, null);
+		Picture p = content.getPicture();
+		PictureDto pDto = null;
+		List<ItemDto> itemsDto  = new ArrayList<ItemDto>(content.getItems().size());
+		/*for(Item i : content.getItems()){
+			entityManager.merge(i);
+			itemsDto.add(new ItemDto(i.getId().toString(), i.getPositionx(), i.getPositiony(), i.getType(), i.getSize(), i.getRetailer().toString(), i.getBrand().toString()));
+		}*/
+		//Picture data has been changed and content's picture property has been updated accordingly
+		if(p != null){
+			entityManager.merge(p);
+			logger.debug("picture after persist = " + p);
+			pDto = new PictureDto(p.getId().toString(), p.getThumbnailuri(), p.getSmalluri(), p.getLargeuri());
+		}
+		//Content's items array property has been altered (namely add/deletion of item ids)
+		else{
+			pDto = null;
+		}
+		List<Item> items = content.getItems();
+		content = entityManager.merge(content);
+		//content.setItems(items);
+		content.setOutfit(outfit);
+		logger.debug("content after calls persist and setItems: " + content.toString());
+		return new ContentDto(content.getId().toString(), content.getCoverpicuri(), pDto, itemsDto);
+	}
+
+	//@Transactional
+	public ArrayList<ContentDto> updateContents(ArrayList<Content> contents, String outfitId) throws Exception{
+		//TODO  Hanlde multipled content updates
+		int contentCount = contents.size();		
+		if(contentCount < 7){
+		ArrayList<ContentDto> contentDtos = new ArrayList(contents.size());
+			for(Content content : contents){
+				contentDtos.add(updateContent(content, outfitId));
+			}
+			return contentDtos;
+		}else{
+			throw new Exception("Parameter collection size greater than maximum allowed size.");
+		}
+	}
+
 	//=====================================================================================
 
 	/*

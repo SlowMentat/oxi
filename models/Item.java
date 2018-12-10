@@ -62,7 +62,7 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	@Column(name = "retailer_id_text", updatable = false, insertable = false)
 	private String retailerText;
 
-	@ManyToMany(cascade=CascadeType.ALL)
+	@ManyToMany(cascade={CascadeType.PERSIST, CascadeType.MERGE})
 	@RestResource(rel="client_0")
 	@JsonIdentityReference(alwaysAsId=true)
 	@JoinTable(

@@ -46,7 +46,7 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 	@JsonIdentityReference(alwaysAsId=true)
 	private Outfit outfit;	
 	
-	@ManyToMany(cascade=CascadeType.ALL, mappedBy="contents")	//Item entity is the owner
+	@ManyToMany(cascade={CascadeType.PERSIST, CascadeType.MERGE}, mappedBy="contents")	//Item entity is the owner
 	//@MapKeyColumn(name="clothing_type")
 	@RestResource(rel="vendor_0")
 	@JsonProperty("items")
