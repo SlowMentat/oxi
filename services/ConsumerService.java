@@ -171,7 +171,7 @@ public class ConsumerService implements ClientService{
 			for(Content content: outfit.getContents()){
 				contentDtos.add(copyToContentDto(content));
 			}
-			return new OutfitDto(outfit.getId().toString().toUpperCase(), outfit.getLikes(), outfit.getComments(), contentDtos, outfit.getCoverpicuri());
+			return new OutfitDto(outfit.getId().toString(), outfit.getLikes(), outfit.getComments(), contentDtos, outfit.getCoverpicuri());
 		}
 		return null;
 	}
@@ -184,14 +184,14 @@ public class ConsumerService implements ClientService{
 				itemDtos.add(copyToItemDto(item));
 			}
 			PictureDto pictureDto = copyToPictureDto(content.getPicture());
-			return new ContentDto(content.getId().toString().toUpperCase(), content.getCoverpicuri(), pictureDto, itemDtos);
+			return new ContentDto(content.getId().toString(), content.getCoverpicuri(), pictureDto, itemDtos);
 		}
 		return null;
 	}
 
 	private static ItemDto copyToItemDto(Item item){
 		if(item != null){
-			return new ItemDto(item.getId().toString().toUpperCase(), item.getPositionx(), item.getPositiony(), item.getType(), item.getSize(), item.getRetailer().toString().toUpperCase(), item.getBrand().toString().toUpperCase());
+			return new ItemDto(item.getId().toString(), item.getPositionx(), item.getPositiony(), item.getType(), item.getSize(), item.getRetailer().toString(), item.getBrand().toString());
 		}
 		return null;
 	}
@@ -210,7 +210,7 @@ public class ConsumerService implements ClientService{
 
 	private static PictureDto copyToPictureDto(Picture picture){
 		if(picture != null){
-			return new PictureDto(picture.getId().toString().toUpperCase(), picture.getThumbnailuri(), picture.getSmalluri(), picture.getLargeuri());
+			return new PictureDto(picture.getId().toString(), picture.getThumbnailuri(), picture.getSmalluri(), picture.getLargeuri());
 		}
 		return null;
 	}
@@ -490,6 +490,42 @@ public class ConsumerService implements ClientService{
 	}
 
 	@Transactional
+	public ArrayList<ContentDto> createContents(ArrayList<Content> contents, String parentId) throws Exception{
+		logger.debug("Creating Contents");
+		ArrayList<ContentDto> contentDtos = new ArrayList<ContentDto>(contents.size()); 
+		//Find Outfit by parentId
+		Outfit parentOutfit = outfitRep.findById(UUID.fromString(parentId));
+		//Build content Entity copying over the properties of content
+		//Content content = new Content(null, content.getCoverpicuri(), null, null);
+		for(Content content : contents){
+			Picture p = content.getPicture();
+			PictureDto pDto = null;
+			List<ItemDto> itemsDto  = new ArrayList<ItemDto>(content.getItems().size());
+			//content.setItems(items);
+			entityManager.persist(content);
+			if(p != null){
+				p.setContent(content);
+				entityManager.merge(p);
+				logger.debug("picture after persist = " + p);
+				pDto = new PictureDto(p.getId().toString(), p.getThumbnailuri(), p.getSmalluri(), p.getLargeuri());
+				//content.setPicture(p);
+			}else{
+				throw new Exception("content property, picture must not be null");
+			}
+			//content.setPicture(p);
+			content.setOutfit(parentOutfit);
+
+			for(Item i : content.getItems()){
+				//entityManager.persist(i);
+				itemsDto.add(new ItemDto(i.getId().toString(), i.getPositionx(), i.getPositiony(), i.getType(), i.getSize(), i.getRetailer().toString(), i.getBrand().toString()));
+			}
+			contentDtos.add(new ContentDto(content.getId().toString(), content.getCoverpicuri(), pDto, itemsDto));
+		}
+		entityManager.persist(parentOutfit);
+		return contentDtos;
+	}
+
+	@Transactional
 	public ContentDto updateContent(Content content, String outfitId) throws Exception{
 		logger.debug("Updating Content");
 		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId));
@@ -516,6 +552,10 @@ public class ConsumerService implements ClientService{
 		content = entityManager.merge(content);
 		//content.setItems(items);
 		content.setOutfit(outfit);
+		for(Item i : content.getItems()){
+			//entityManager.merge(i);
+			itemsDto.add(new ItemDto(i.getId().toString(), i.getPositionx(), i.getPositiony(), i.getType(), i.getSize(), i.getRetailer().toString(), i.getBrand().toString()));
+		}
 		logger.debug("content after calls persist and setItems: " + content.toString());
 		return new ContentDto(content.getId().toString(), content.getCoverpicuri(), pDto, itemsDto);
 	}

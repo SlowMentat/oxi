@@ -41,7 +41,7 @@ public class ContentDto implements Serializable, Identifiable<String>
 	
 	//Getters==========================================================================	
 	@Override
-	public String getId(){return this.id;}
+	public String getId(){return (this.id == null) ? this.id : this.id.toLowerCase();}
 	public String getCoverpicuri(){return this.coverpicuri;}
 	//public Outfit getOutfit(){return this.outfit;}
 	public PictureDto getPicture(){return this.picture;}

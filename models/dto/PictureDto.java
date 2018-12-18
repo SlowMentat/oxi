@@ -29,7 +29,7 @@ public class PictureDto implements Serializable, Identifiable<String>
 	
 	//Getters
 	@Override
-	public String getId(){return this.id;}
+	public String getId(){return (this.id == null) ? this.id : this.id.toLowerCase();}
 	public String getSmalluri(){return this.smalluri;}
 	public String getLargeuri(){return this.largeuri;}
 	public String getThumbnailuri(){return this.thumbnailuri;}

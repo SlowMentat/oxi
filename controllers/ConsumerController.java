@@ -92,29 +92,37 @@ public class ConsumerController{
 
 	//@Secured ({"ROLE_USER"})
 	@RequestMapping(value="/uploadPhoto", method=RequestMethod.POST)
-	public ResponseEntity<?> uploadImage(MultipartHttpServletRequest requestData) throws Exception{
+	public ResponseEntity<?> uploadImage(MultipartHttpServletRequest requestData){
+		StringWriter stringWriter = new StringWriter();
+		PrintWriter printWriter = new PrintWriter(stringWriter);
+
 		//try{
 			logger.debug("/uploadPhoto content length = " + requestData.getContentLength() + " bytes");
 			PictureDto pictureDto = consumerService.saveImage(requestData);
 			return new ResponseEntity<PictureDto>(pictureDto, HttpStatus.CREATED);
 		/*}catch(Exception e){
-			throw new Exception("Could not save new image data from /uploadPhoto controller", e);		
+			e.printStackTrace(printWriter);
+			logger.debug(stringWriter.toString()); //stack trace as stirng		
 		}finally{			
 			return new ResponseEntity<String>(defaultExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);	
 		}*/
 	}
 
 	@RequestMapping(value="/updatePhoto/{contentId}", method=RequestMethod.POST) //TODO:  Override multipart resolver to allow for put requests
-	public ResponseEntity<?> updateImage(MultipartHttpServletRequest requestData, @PathVariable String contentId) throws Exception{		
-		//try{
+	public ResponseEntity<?> updateImage(MultipartHttpServletRequest requestData, @PathVariable String contentId){	
+		StringWriter stringWriter = new StringWriter();
+		PrintWriter printWriter = new PrintWriter(stringWriter);
+
+		try{
 			logger.debug("/updatePhoto content length = " + requestData.getContentLength() + " bytes");
 			List<PictureUpdateDto> pictureUpdateDto = consumerService.updateImage(requestData, contentId);
 			return new ResponseEntity<List<PictureUpdateDto>>(pictureUpdateDto, HttpStatus.OK);
-		/*}catch(Exception e){
-			throw new Exception("Could not save new image data from /updatePhoto controller", e);
+		}catch(Exception e){
+			e.printStackTrace(printWriter);
+			logger.debug(stringWriter.toString()); //stack trace as stirng	
 		}finally{			
-			return new ResponseEntity<String>(defaultExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-		}*/
+			return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 	
 	@RequestMapping(value="/image/{filename}", method=RequestMethod.GET/*, produces = MediaType.IMAGE_JPEG_VALUE*/)
@@ -253,8 +261,13 @@ public class ConsumerController{
 	@RequestMapping(value="/contents/{outfitId}", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> createContents(final Principal principal, @PathVariable("outfitId") String outfitId, @RequestBody ArrayList<Content> contents){
 		String username = principal.getName();
-		ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.addContents(contents, username, outfitId), HttpStatus.CREATED);
-		return responseEntity;
+		//ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.addContents(contents, username, outfitId), HttpStatus.CREATED);
+		try{
+			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.createContents(contents, outfitId), HttpStatus.CREATED);
+			return responseEntity;
+		}catch(Exception e){
+			return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 
 	//@Secured({"ROLE_USER"})
@@ -271,7 +284,7 @@ public class ConsumerController{
 			logger.debug("ConsumerService execution time for call to saveContent: " + (endTime - startTime) + "ms");
 			return responseEntity;
 		}catch(Exception e){
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 

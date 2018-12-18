@@ -54,7 +54,7 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 	//private Map<String, Item> items;	
 	private List<Item> items;
 	
-	@OneToOne(cascade=CascadeType.ALL, mappedBy="content")
+	@OneToOne(cascade=CascadeType.MERGE, mappedBy="content")
 	@RestResource(rel="vendor_1")
 	@JsonProperty("picture")
 	@JsonIdentityReference(alwaysAsId=true)	

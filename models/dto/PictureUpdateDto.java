@@ -21,16 +21,16 @@ public class PictureUpdateDto extends PictureDto
 	}
 	
 	//Getters
-	public String getContentId(){return this.contentId;}
+	public String getContentId(){return (this.contentId == null) ? this.contentId : this.contentId.toLowerCase();}
 	//public Content getContent(){return this.content;}
 	
 	//Setters
-	public void setContentId(String contentId){this.contentId = contentId;}
+	public void setContentId(String contentId){this.contentId = (contentId == null) ? contentId : contentId.toLowerCase();}
 	//public void setContent(Content content){this.content = content;}
 
 	@Override
 	public String toString(){
-		//TODO:  below causing StackOverflowError
+		//TODO:  below causing StackOverflowError 
         /*StringBuilder sb = new StringBuilder(this.toString()).append("\ncontentId: ").append(this.contentId);
         return sb.toString();*/
         return "Place holder string for PictureUpdateDto entity";

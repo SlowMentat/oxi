@@ -25,5 +25,5 @@ public class ItemUpdateDto extends ItemDto
 	
 	//Getters
 	@Override
-	public String getId(){return this.contentId;}
+	public String getId(){return (this.contentId == null) ? this.contentId : this.contentId.toLowerCase();}
 }

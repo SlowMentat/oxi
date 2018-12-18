@@ -52,7 +52,7 @@ public class OutfitDto implements Serializable, Identifiable<String>
 	}
 	//Getters
 	@Override
-	public String getId(){return this.id;}
+	public String getId(){return (this.id == null) ? this.id : this.id.toLowerCase();}
 	public int getLikes(){return this.likes;}
 	public String getComments(){return this.comments;}
 	//Profile getProfile();

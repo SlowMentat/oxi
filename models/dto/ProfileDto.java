@@ -146,7 +146,7 @@ public class ProfileDto extends RelatedEntity implements Serializable, Identifia
 	
 	//Getters
 	@Override
-	public String getId(){return this.id;}
+	public String getId(){return (this.id == null) ? this.id : this.id.toLowerCase();}
 
 	public String getUsername(){return this.username;}
 	

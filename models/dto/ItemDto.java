@@ -63,13 +63,13 @@ public class ItemDto implements Serializable, Identifiable<String>
 	
 	//Getters
 	@Override
-	public String getId(){return this.id;}
+	public String getId(){return (this.id == null) ? this.id : this.id.toLowerCase();}
 	public Float getPositionx(){return this.positionx;}
 	public Float getPositiony(){return this.positiony;}	
 	public String getType(){return this.type;}	
 	public String getSize(){return this.size;}
-	public String getRetailer(){return this.retailer;}
-	public String getBrand(){return this.brand;}
+	public String getRetailer(){return (this.retailer == null) ? this.retailer : this.retailer.toLowerCase();}
+	public String getBrand(){return (this.brand == null) ? this.brand : this.brand.toLowerCase();}
 	//public List<Content> getContents(){return this.contents;}
 	//public Profile getProfile(){return this.profile;}
 }

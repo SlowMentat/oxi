@@ -45,7 +45,7 @@ public class BrandDto implements Serializable, Identifiable<String>
 	
 	//Getters==========================================================================	
 	@Override
-	public String getId(){return this.id;}
+	public String getId(){return (this.id == null) ? this.id : this.id.toLowerCase();}
 	public String getName(){return this.name;}
 	public String getLink(){return this.link;}
 	public Integer getRed(){return this.red;}
