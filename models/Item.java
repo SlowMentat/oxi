@@ -2,6 +2,7 @@ package oxi.models;
 
 import javax.persistence.*;
 import javax.persistence.CascadeType;
+import java.util.Objects;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -15,8 +16,8 @@ import org.springframework.hateoas.*;
 
 import org.hibernate.annotations.GenericGenerator;
 
-@Entity
-@Table(name="item")
+@Entity(name = "Item")
+@Table(name = "item")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=Item.class)
 public class Item extends RelatedEntity implements Serializable, Identifiable<UUID>{
 	@Transient
@@ -30,8 +31,8 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	private UUID id;
 	@Column(name = "id_text", updatable = false, insertable = false)
 	private String idText;
-	private Float positionx;
-	private Float positiony;
+	/*private Float positionx;
+	private Float positiony;*/
 	//private String link;
 	private String type;
 
@@ -62,15 +63,16 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	@Column(name = "retailer_id_text", updatable = false, insertable = false)
 	private String retailerText;
 
-	@ManyToMany(cascade={CascadeType.PERSIST, CascadeType.MERGE})
+	//@ManyToMany(cascade={CascadeType.PERSIST, CascadeType.MERGE})
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval= true, mappedBy = "item")
 	@RestResource(rel="client_0")
 	@JsonIdentityReference(alwaysAsId=true)
-	@JoinTable(
+	/*@JoinTable(
 		name="item_content",
 		joinColumns=@JoinColumn(name="item_id", referencedColumnName="id"),
 		inverseJoinColumns=@JoinColumn(name="content_id", referencedColumnName="id")
-	)
-	private List<Content> contents;
+	)*/
+	private List<ItemContent> contents = new ArrayList<>();
 	
 	@ManyToOne(cascade=CascadeType.ALL)
 	@RestResource(rel="client_1")
@@ -82,11 +84,11 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 
 	}
 
-	public Item(UUID id, Float positionx, Float positiony, String type, String size, UUID retailer, UUID brand){
+	public Item(UUID id, String type, String size, UUID retailer, UUID brand){
 		super();
 		this.id = id;
-		this.positionx = positionx;
-		this.positiony = positiony;
+		/*this.positionx = positionx;
+		this.positiony = positiony;*/
 		this.type = type;
 		this.size = size;
 		this.retailer = retailer;
@@ -97,8 +99,8 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	//@Override
 	public void setId(UUID id){this.id = id;}
 	//public void setIdText(String idText){this.idText = idText;}
-	public void setPositionx(Float posx){this.positionx = posx;}
-	public void setPositiony(Float posy){this.positiony = posy;}
+	/*public void setPositionx(Float posx){this.positionx = posx;}
+	public void setPositiony(Float posy){this.positiony = posy;}*/
 	//public void setLink(String link){this.link = link;}	
 	public void setType(String type){this.type = type;}
 	public void setSize(String size){this.size = size;}
@@ -108,7 +110,7 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 		this.profile = profile;
 	}
 	
-	public void setContents(List<Content> contents){
+	/*public void setContents(List<Content> contents){
 		//this.contents = (List<Content>)(Object)this.setManyToManyParents(contents, this.contents, this);
 		this.contents = this.<Content, Item>setManyToManyParents(contents, this.contents, this);
 		//add this Item to profile items list
@@ -117,14 +119,14 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	public void addContent(Content content){
 		this.contents.add(content);
 		if(!this.contents.contains(content)) content.addItem(this);
-	}
+	}*/
 	
 	//Getters
 	//@Override
 	public UUID getId(){return this.id;}
 	public String getIdText(){return this.idText;}
-	public Float getPositionx(){return this.positionx;}
-	public Float getPositiony(){return this.positiony;}
+	/*public Float getPositionx(){return this.positionx;}
+	public Float getPositiony(){return this.positiony;}*/
 	//public String getLink(){return this.link;}
 	public String getSize(){return this.size;}
 	public UUID getBrand(){return this.brand;}
@@ -132,46 +134,42 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	public UUID getRetailer(){return this.retailer;}
 	public String getRetailerText(){return this.retailerText;}
 	public String getType(){return this.type;}
-	public List<Content> getContents(){return this.contents;}
+	public List<ItemContent> getContents(){return this.contents;}
 	public Profile getProfile(){return this.profile;}
 	
 	@Override 
 	public <T extends Relational> void internalAddChild(T targetChild){
-		if(this.contents == null){
+		/*if(this.contents == null){
 			logger.debug("instantiating new List<T>");
 			this.contents = new ArrayList<Content>();
 		}
-		this.contents.add((Content)targetChild);
+		this.contents.add((Content)targetChild);*/
 	}
 	@Override
 	public <T extends Relational> void internalRemoveChild(T targetChild){
-		this.contents.remove((Content)targetChild);
+		//this.contents.remove((Content)targetChild);
 	}
 	
 	@Override
 	public String toString(){
 		logger.debug("building Item string");
-        StringBuilder sb = new StringBuilder("\nID: ").append(this.id)
-			.append("\npositionx: ").append(this.positionx)
-			.append("\npositiony:").append(this.positiony)
+        StringBuilder sb = new StringBuilder("\nid: ").append(this.id)
 			.append("\ntype:").append(this.type)
-			.append("\nsize:").append(this.size)
-		.append("\ncontents: [");
-		if(this.contents != null){
-			for (Content content: this.contents) {
-				logger.debug("building content string");
-				sb.append("\n	").append(content.getId());
-			}
-			sb.append("]");
-		}else{
-			logger.debug("Item.contents is null");
-		}
-		sb.append("\nprofile: ");
-		if(this.profile != null){
-			sb.append(profile.getId());
-		}else{
-			logger.debug("Item.profile is null");
-		}
+			.append("\nsize:").append(this.size);
+		//sb.append("\nprofile: ").append(((profile.getId() == null) ? "null" : profile.getId().toString()));
         return sb.toString();		
+	}
+
+	@Override
+	public boolean equals(Object object){
+		if(this == object) return true;
+		if(this == null || getClass() != object.getClass()) return false;
+		Item item = (Item) object;
+		return Objects.equals(id, item.getId());
+	}
+
+	@Override
+	public int hashCode(){
+		return Objects.hash(id);
 	}
 }

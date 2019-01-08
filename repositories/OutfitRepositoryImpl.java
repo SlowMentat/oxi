@@ -64,6 +64,8 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 		Outfit outfit;
 		Content content;
 		Item item;
+		ItemContent itemContent;
+		Picture picture;
 		List<OutfitDto> outfitDtos = new ArrayList<OutfitDto>();
 		List<ContentDto> contentDtos = new ArrayList<ContentDto>();
 		ArrayList<ItemDto> items;
@@ -75,15 +77,16 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 		String outfitQ = "select {o.*} from outfit o where o.profile_id = :id";
 		//String contentItemQ = "select {c.*}, {i.*} from item i, content c join item_content ic on ic.content_id=c.id where i.id = ic.item_id and c.outfit_id in (:outfitIdList)";
 		//"select c.id, c.coverpicuri, c.outfit_id, i.id, i.link, i.positionx, i.positiony, i.size, i.type, i.profile_id 
-		String contentItemQ = "select {c.*}, {i.*} "+
-			"from item i, content c " +
+		String contentItemQ = "select {c.*}, {i.*}, {ic.*}, {p.*} "+
+			"from item i, picture p, content c " +
 			"join item_content ic on ic.content_id=c.id " +
 			"where i.id = ic.item_id " +
 			"and c.outfit_id in (:outfitIdList) " +
-			"union all select c.id, c.coverpicuri, c.outfit_id, null, null, null, null, null, null, null, null, null, null, null, null " +
+			"and p.content_id=c.id";/* +
+			"union all select c.id, c.coverpicuri, c.outfit_id, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null " +
 			"from content c, item_content ic " +
 			"where c.outfit_id in (:outfitIdList) " +
-			"and not c.id=ic.content_id";
+			"and not c.id=ic.content_id";*/
 		String countQ = "select count(o.id) as cnt from outfit o where o.profile_id = :id";
  
 		Long outfitCount = (Long)session.createSQLQuery(countQ)
@@ -114,20 +117,26 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 		List<Object[]> contentItemTuples = session.createSQLQuery(contentItemQ)
 			.addEntity("c", Content.class)
 			.addEntity("i", Item.class)
+			.addEntity("ic", ItemContent.class)
+			.addEntity("p", Picture.class)
 			//.setParameterList("outfitIdList", Arrays.asList(UUID.fromString("3a5f73ae-a986-11e8-8336-f23c9150975d"), UUID.fromString("078e417f-a986-11e8-8336-f23c9150975d")), UUIDBinaryType.INSTANCE)
 			.setParameterList("outfitIdList", idToOutfitDtoMap.keySet(), UUIDBinaryType.INSTANCE)
 			.list();
-
+		logger.debug("OutfitRepositoryImpl#findByProfileId: size of contentItemTuples = " + contentItemTuples.size());
 		for(Object[] tuple : contentItemTuples){
 			//put <key, value> into HasMap
 			content = (Content)tuple[0];
 			item = (Item)tuple[1];
+			itemContent = (ItemContent)tuple[2];
+			picture = (Picture)tuple[3];
+			//content.setPicture(picture);
 			if(!contentToItemMap.containsKey(content)){
 				items = new ArrayList<ItemDto>(9);
 			}else{
+				picture.setContent(content);
 				items = contentToItemMap.get(content);
 			}			
-			if(item != null) items.add(new ItemDto(item.getIdText(), item.getPositionx(), item.getPositiony(), item.getType(), item.getSize(), item.getRetailerText(), item.getBrandText()));
+			if(item != null) items.add(new ItemDto(item.getIdText(), itemContent.getPositionx(), itemContent.getPositiony(), item.getType(), item.getSize(), item.getRetailerText(), item.getBrandText()));
 			contentToItemMap.put(content, items);
 		}
 
@@ -135,9 +144,9 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 			if(c.getOutfit() != null){
 				logger.debug("content.outfit = " + c.getOutfit());
 				logger.debug("content.outfit.id = " + c.getOutfit().getId());
-				Picture picture = c.getPicture();
-				PictureDto pictureDto = picture == null ? null : new PictureDto(picture.getIdText(), picture.getThumbnailuri(), picture.getSmalluri(), picture.getLargeuri());
-				idToOutfitDtoMap.get(c.getOutfit().getId()).getContents().add(new ContentDto(c.getIdText(), c.getCoverpicuri(), pictureDto, contentToItemMap.get(c)));
+				//Picture picture = c.getPicture();
+				PictureDto pictureDto = c.getPicture() == null ? null : new PictureDto(c.getPicture().getIdText(), c.getPicture().getThumbnailuri(), c.getPicture().getSmalluri(), c.getPicture().getLargeuri());
+				idToOutfitDtoMap.get(c.getOutfit().getId()).getContents().add(new ContentDto(c.getIdText(), c.getCoverpicuri(), pictureDto, contentToItemMap.get(c), null));
 				//contentDtos.add(new ContentDto(c.getId(), c.getCoverpicuri(), contentToItemMap.get(c)));
 				logger.debug("content.outfit = " + c.getOutfit());
 				//outfitDtos.add				

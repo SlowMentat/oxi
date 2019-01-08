@@ -13,6 +13,4 @@ public interface ItemRepository extends JpaRepository<Item, UUID>{
 	@RestResource(exported=true, path="byid", rel="SearchAllById")
 	@Query(value = "SELECT * FROM item WHERE profile_id = ?1", nativeQuery = true)
 	List<Item> findByProfileId(long profileid/*, Pageable pageable*/);
-	
-	
 } 

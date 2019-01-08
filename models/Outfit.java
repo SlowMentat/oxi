@@ -156,31 +156,28 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 		this.contents.remove((Content)targetChild);
 	}
 	
-	@Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder("\nid: ").append(this.id)
-			.append("\nlikes: ").append(this.likes)
-			.append("\ncomments:").append(this.comments)
-			.append("\ncoverpic:").append(this.coverpicuri)
-			.append("\ncontents:");
-		if(this.contents != null){
-			sb.append("[\n");
-			for (Content content: this.contents) {
-				sb.append(content.getId());
-			}
-			sb.append("\n]");
-		}else{
-			sb.append("null");
+	public String toString(int indents) {
+		String indent = "\n";
+		for(int i = 0; i < indents; i++){
+			indent += "    ";
 		}
-		sb.append("\nprofile:");
-		if(this.profile != null){
-			sb.append("[\n	")
-			.append(this.profile.getId())
-			.append("\n]");
-		}else{
-			sb.append("null");
+		StringBuilder sb = new StringBuilder(indent).append("id: ").append(((this.id == null) ? "null" : id))
+			.append(indent).append("likes: ").append(this.likes)
+			.append(indent).append("comments:").append(this.comments)
+			.append(indent).append("coverpic:").append(this.coverpicuri)
+			.append(indent).append("contents: [");
+		for (Content content: this.contents){
+			sb.append(indent).append("{")
+			.append(((content == null) ? "null" : content.toString(indents + 1)))
+			.append(indent).append("}, ");
 		}
+		sb.append(indent).append("]");
 		
-        return sb.toString();
-    }
+		return sb.toString();
+	}	
+
+	@Override
+	public String toString(){
+		return toString(0);
+	}
 }

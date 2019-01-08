@@ -10,22 +10,44 @@ import java.io.Serializable;
 import org.springframework.hateoas.core.*;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Identifiable;
+import com.fasterxml.jackson.annotation.*;
 
 
+
+@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=PictureDto.class)
 public class PictureDto implements Serializable, Identifiable<String>
 {
+	@JsonProperty("id")
 	private String id;	
 	private String thumbnailuri;
 	private String smalluri;
 	private String largeuri;
 	//private String contentId;
 	
+	public PictureDto(){}
+
 	public PictureDto(String id, String thumbnailuri, String smalluri, String largeuri){
 		this.id = id;
 		this.thumbnailuri = thumbnailuri;
 		this.smalluri = smalluri;
 		this.largeuri = largeuri;
 	}
+
+	/*@JsonCreator
+	public PictureDto(
+		@JsonProperty("id")
+		String id, 
+		@JsonProperty("thumbnailuri")
+		String thumbnailuri, 
+		@JsonProperty("smalluri")
+		String smalluri, 
+		@JsonProperty("largeuri")
+		String largeuri){
+		this.id = id;
+		this.thumbnailuri = thumbnailuri;
+		this.smalluri = smalluri;
+		this.largeuri = largeuri;
+	}*/
 	
 	//Getters
 	@Override

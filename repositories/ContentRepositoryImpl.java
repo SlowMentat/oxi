@@ -60,8 +60,9 @@ public class ContentRepositoryImpl implements ContentRepositoryCustom {
 		Session session = entityManager.unwrap(Session.class);
 		Content content;
 		Item item;
+		ItemContent itemContent;
 		List<ContentDto> contentDtos = new ArrayList<ContentDto>();
-		ArrayList<ItemDto> items;
+		ArrayList<ItemDto> itemDtos;
 		//HashMap used to build OutfitDTO with nested List<Content>
 		HashMap<Content, ArrayList<ItemDto>> contentToItemMap = new HashMap<Content, ArrayList<ItemDto>>();
 		//Example 553. Hibernate native query selecting entities with joined one-to-many association
@@ -69,34 +70,53 @@ public class ContentRepositoryImpl implements ContentRepositoryCustom {
 			"from item i, content c " +
 			"join item_content ic on c.id = ic.content_id "+
 			"where c.outfit_id = :outfitId and i.id = ic.item_id "+
-			"union all select c.*, null, null, null, null, null, null, null " +
+			"union all select c.*, null, null, null, null, null, null, null, null " +
 			"from content c, item_content ic " +
 			"where c.outfit_id = :outfitId and not c.id = ic.content_id";
 
 		List<Object[]> contentItemTuples = session.createSQLQuery(contentQ)
 			.addEntity("c", Content.class)
 			.addEntity("i", Item.class)
+			.addEntity("ic", ItemContent.class)
 			.setParameter("outfitId", id)
 			.list();
 		for(Object[] tuple : contentItemTuples){
 			//put <key, value> into HasMap
 			content = (Content)tuple[0];
 			item = (Item)tuple[1];
+			itemContent = (ItemContent)tuple[2];
 			logger.debug("(Content)tuple[0] = " + content);
 			logger.debug("(Item)tuple[1] = " + item);
 			if(!contentToItemMap.containsKey(content)){
-				items = new ArrayList<ItemDto>(9);
+				itemDtos = new ArrayList<ItemDto>(9);
 			}else{
-				items = contentToItemMap.get(content);
+				itemDtos = contentToItemMap.get(content);
 			}
-			if(item != null) items.add(new ItemDto(item.getIdText(), item.getPositionx(), item.getPositiony(), item.getType(), item.getSize(), item.getRetailerText(), item.getBrandText()));
-			contentToItemMap.put(content, items);
+			if(item != null) itemDtos.add(new ItemDto(
+				item.getIdText(), 
+				itemContent.getPositionx(), 
+				itemContent.getPositiony(), 
+				item.getType(), 
+				item.getSize(), 
+				item.getRetailerText(), 
+				item.getBrandText()));
+			contentToItemMap.put(content, itemDtos);
 		}
 		Picture picture = null;
 		for(Content c : contentToItemMap.keySet()){
 			picture = c.getPicture();
-			PictureDto pictureDto = picture == null ? null : new PictureDto(picture.getIdText(), picture.getThumbnailuri(), picture.getSmalluri(), picture.getLargeuri());
-			contentDtos.add(new ContentDto(c.getIdText(), c.getCoverpicuri(), pictureDto, contentToItemMap.get(c)));
+			PictureDto pictureDto = picture == null ? null : new PictureDto(
+				picture.getIdText(), 
+				picture.getThumbnailuri(), 
+				picture.getSmalluri(), 
+				picture.getLargeuri());
+
+			contentDtos.add(new ContentDto(
+				c.getIdText(), 
+				c.getCoverpicuri(), 
+				pictureDto, 
+				contentToItemMap.get(c),
+				null));
 		}
 
 		return contentDtos;//outfitDtos;

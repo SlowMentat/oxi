@@ -57,9 +57,15 @@ public class ConsumerService implements ClientService{
 	@Autowired private ItemRepository itemRep;
 	@Autowired private PictureRepository pictureRep;
 	@Autowired private PictureDeleteRepository pictureDeleteRep;
+
+	@Autowired private BookmarkRepository bookmarkRep;
+	@Autowired private LikeRepository likeRep;
+	@Autowired private FollowRepository followRep;
+
 	@Autowired private ProfileRepository profileRep;
 	@Autowired private UserRepository userRep;
 	@Autowired private RoleRepository roleRep;
+
 	@Autowired private BrandRepository brandRep;
 	@Autowired private RetailerRepository retailerRep;
 	@Autowired private SizeRepository sizeRep;
@@ -76,9 +82,16 @@ public class ConsumerService implements ClientService{
 	//Paged Resource Assemblers 
 	@Autowired private PagedResourcesAssembler<Outfit> outfitPRA;
 	@Autowired private PagedResourcesAssembler<OutfitDto> outfitPRAP;
+
+	@Autowired private PagedResourcesAssembler<Content> contentPRA;
+	@Autowired private PagedResourcesAssembler<ContentDto> contentPRAP;
+
 	@Autowired private PagedResourcesAssembler<Item> itemPRA;
+	@Autowired private PagedResourcesAssembler<ItemDto> itemPRAP;
+
 	@Autowired private PagedResourcesAssembler<Brand> brandPRA;
 	@Autowired private PagedResourcesAssembler<BrandDto> brandPRAP;
+
 	@Autowired private PagedResourcesAssembler<Retailer> retailerPRA;
 	@Autowired private PagedResourcesAssembler<RetailerDto> retailerPRAP;
 
@@ -176,49 +189,132 @@ public class ConsumerService implements ClientService{
 		return null;
 	}
 
-	private static ContentDto copyToContentDto(Content content){
-		if(content != null){
-			int itemLength = content.getItems().size();
-			List<ItemDto> itemDtos = new ArrayList(itemLength);
-			for(Item item : content.getItems()){
-				itemDtos.add(copyToItemDto(item));
+	//Coppies full outfit object including child entities.  This should only be called when all child entities are new
+	private static Outfit copyToOutfit(OutfitDto outfitDto){
+		if(outfitDto != null){
+			List<Content> contents = new ArrayList<Content>(outfitDto.getContents().size());
+			for(ContentDto contentDto : outfitDto.getContents()){
+				Content content = copyToContent(contentDto);
+				for(ItemDto itemDto : contentDto.getItems()){
+					Item item = copyToItem(itemDto);
+					ItemContent itemContent = new ItemContent(item, content);
+					itemContent.setPositionx(itemDto.getPositionx());
+					itemContent.setPositiony(itemDto.getPositiony());
+					content.addItem(itemContent);
+				}
+				contents.add(content);
 			}
-			PictureDto pictureDto = copyToPictureDto(content.getPicture());
-			return new ContentDto(content.getId().toString(), content.getCoverpicuri(), pictureDto, itemDtos);
+			return new Outfit(null, outfitDto.getLikes(), outfitDto.getComments(), contents, outfitDto.getCoverpicuri());
 		}
 		return null;
 	}
 
-	private static ItemDto copyToItemDto(Item item){
-		if(item != null){
-			return new ItemDto(item.getId().toString(), item.getPositionx(), item.getPositiony(), item.getType(), item.getSize(), item.getRetailer().toString(), item.getBrand().toString());
+	//Coppies only non-entity properties.  Instantiats ArrayList for one-to-many child entities.
+	private static Outfit copyToOutfitExcludingEntities(OutfitDto outfitDto){
+		if(outfitDto != null){
+			return new Outfit(
+				null, 
+				outfitDto.getLikes(), 
+				outfitDto.getComments(), 
+				new ArrayList<Content>(outfitDto.getContents().size()), 
+				outfitDto.getCoverpicuri());
+		}
+		return null;		
+	}
+
+	private static ContentDto copyToContentDto(Content content){
+		if(content != null){
+			int itemLength = content.getItems().size();
+			List<ItemDto> itemDtos = new ArrayList(itemLength);
+			for(ItemContent itemContent : content.getItems()){
+				itemDtos.add(copyToItemDto(itemContent));
+			}
+			PictureDto pictureDto = copyToPictureDto(content.getPicture());
+			return new ContentDto(content.getId().toString(), content.getCoverpicuri(), pictureDto, itemDtos, null);
+		}
+		return null;
+	}
+
+	private static Content copyToContent(ContentDto contentDto){
+		if(contentDto != null){
+			if(contentDto.getId() == null){
+				return new Content(
+					null,
+					contentDto.getCoverpicuri(),
+					copyToPicture(contentDto.getPicture()),
+					new ArrayList<ItemContent>(contentDto.getItems().size()));
+			}
+
+			return new Content(
+				UUID.fromString(contentDto.getId()),
+				contentDto.getCoverpicuri(),
+				copyToPicture(contentDto.getPicture()),
+				new ArrayList<ItemContent>(contentDto.getItems().size()));
+		}
+		return null;
+	}
+
+	private static ItemDto copyToItemDto(ItemContent itemContent){
+		if(itemContent != null){
+			return new ItemDto(
+				itemContent.getItem().getId().toString(), 
+				itemContent.getPositionx(), 
+				itemContent.getPositiony(), 
+				itemContent.getItem().getType(), 
+				itemContent.getItem().getSize(), 
+				itemContent.getItem().getRetailer().toString(), 
+				itemContent.getItem().getBrand().toString());
 		}
 		return null;
 	}
 
 	private static Item copyToItem(ItemDto itemDto){
 		if(itemDto != null){
-			if(itemDto.getId() != null){
-				if(!itemDto.getId().isEmpty()) return new Item(UUID.fromString(itemDto.getId()), itemDto.getPositionx(), itemDto.getPositiony(), itemDto.getType(), itemDto.getSize(), UUID.fromString(itemDto.getRetailer()), UUID.fromString(itemDto.getBrand()));
-			}else{
-				return new Item(null, itemDto.getPositionx(), itemDto.getPositiony(), itemDto.getType(), itemDto.getSize(), UUID.fromString(itemDto.getRetailer()), UUID.fromString(itemDto.getBrand()));
-
+			if(itemDto.getId() != null && !itemDto.getId().isEmpty()){
+				return new Item(
+					UUID.fromString(itemDto.getId()), 
+					itemDto.getType(), 
+					itemDto.getSize(), 
+					UUID.fromString(itemDto.getRetailer()), 
+					UUID.fromString(itemDto.getBrand()));
 			}
+			
+			Item item = new Item(
+				null, 
+				itemDto.getType(), 
+				itemDto.getSize(), 
+				UUID.fromString(itemDto.getRetailer()), 
+				UUID.fromString(itemDto.getBrand()));
+
+			//item.setContents(new ArrayList<ItemContent>());
+			return item;
 		}
 		return null;
 	}
 
 	private static PictureDto copyToPictureDto(Picture picture){
 		if(picture != null){
-			return new PictureDto(picture.getId().toString(), picture.getThumbnailuri(), picture.getSmalluri(), picture.getLargeuri());
+			return new PictureDto(
+				picture.getId().toString(), 
+				picture.getThumbnailuri(), 
+				picture.getSmalluri(), 
+				picture.getLargeuri());
 		}
 		return null;
 	}
 
 	private static Picture copyToPicture(PictureDto pictureDto){
 		if(pictureDto != null){
-			if(pictureDto.getId() != null) return new Picture(UUID.fromString(pictureDto.getId()), pictureDto.getThumbnailuri(), pictureDto.getSmalluri(), pictureDto.getLargeuri());	
-			else return new Picture(null, pictureDto.getThumbnailuri(), pictureDto.getSmalluri(), pictureDto.getLargeuri());
+			if(pictureDto.getId() != null) return new Picture(
+				UUID.fromString(pictureDto.getId()), 
+				pictureDto.getThumbnailuri(), 
+				pictureDto.getSmalluri(), 
+				pictureDto.getLargeuri());	
+			else return new Picture(
+				null, 
+				pictureDto.getThumbnailuri(), 
+				pictureDto.getSmalluri(), 
+				pictureDto.getLargeuri());
 		}
 		return null;
 	}
@@ -303,24 +399,41 @@ public class ConsumerService implements ClientService{
 	}
 
 	@Transactional
-	public OutfitDto addOutfit(Outfit outfit, String username){
-		OutfitDto outfitDto = null;
-		int contentsCount = outfit.getContents().size();
+	public OutfitDto addOutfit(OutfitDto outfitDto, String username){
+		OutfitDto result = null;
+		//Outfit outfit = copyToOutfit(outfitDto);
+		Outfit outfit  = copyToOutfitExcludingEntities(outfitDto);
+		int contentsCount = outfitDto.getContents().size();
 		Profile profile = profileRep.findByUsername(username);
-		
-		for(Content c : outfit.getContents()){
-			Picture picture = pictureRep.findById(c.getPicture().getId());
-			entityManager.persist(picture);
-			picture.setContent(c);
+		//entityManager.persist(outfit);
+
+		for(ContentDto contentDto : outfitDto.getContents()){
+			Content content = copyToContent(contentDto);
+			entityManager.persist(content);
+
+			for(ItemDto itemDto : contentDto.getItems()){
+				Item item = copyToItem(itemDto);
+
+				if(item.getId() != null) entityManager.merge(item);
+				else entityManager.persist(item);
+
+				logger.debug("ConsumerService#addOutfit:  item object = \n" + item.toString());
+				content.addItem(item, itemDto.getPositionx(), itemDto.getPositiony());
+			}
+
+			Picture picture = pictureRep.findById(content.getPicture().getId());
+			picture.setContent(content);
+			entityManager.merge(picture);
+			content.setOutfit(outfit);
+			logger.debug("ConsumerService#addOutfit:  content object = \n" + content.toString());
 		}
+		
 		entityManager.persist(outfit);
-		for(Content c : outfit.getContents()){
-			c.setOutfit(outfit);
-		}
 		outfit.setProfile(profile);
-		outfitDto = copyToOutfitDto(outfit);
-		
-		return outfitDto;
+		logger.debug("ConsumerService#addOutfit:  outfit object = \n" + outfit.toString());
+		result = copyToOutfitDto(outfit);
+		logger.debug("ConsumerService#addOutfit: result = \n" + result.toString());
+		return result;
 	}
 
 	@Transactional
@@ -347,53 +460,62 @@ public class ConsumerService implements ClientService{
 	}
 
 	@Transactional
-	public OutfitDto modifyItems(HashMap<String, ArrayList<ItemDto>> contentIdToItemMap, String username, String outfitId){
+	public OutfitDto updateItems(HashMap<String, ArrayList<ItemDto>> contentIdToItemMap, String username, String outfitId){
 		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId));
 		Profile profile = outfit.getProfile();
+		List<ContentDto> contentDtos;
+
 		if(profile.getUsername().equals(username)){
 			//logger.debug("content Ids:");
-			entityManager.persist(outfit);
+			//entityManager.merge(outfit);
 			for(String contentId : contentIdToItemMap.keySet()){
 				//logger.debug(contentId + ": " + "{\n");
-				Content content = contentRep.findById(UUID.fromString(contentId));
-				List<Item> items = content.getItems();
-				entityManager.persist(content);
+				Content content = contentRep.findById(UUID.fromString(contentId));				
+				//List<ItemContent> itemContents = content.getItems();
+				//entityManager.persist(content);
+
+				List<ItemContent> itemContents = content.getItems();
+
 				for(ItemDto itemDto : contentIdToItemMap.get(contentId)){
 					//logger.debug(itemDto.getId() + "\n");
 					int ind = -1;
-					for(Item item : items){
+					for(ItemContent itemContent : itemContents){
 						ind++;
-						if(itemDto.getId().equals(item.getIdText())){
-							item.setPositionx(itemDto.getPositionx()); 
-							item.setPositiony(itemDto.getPositiony());
-							item.setType(itemDto.getType()); 
-							item.setSize(itemDto.getSize());
-							item.setRetailer(UUID.fromString(itemDto.getRetailer()));
-							item.setBrand(UUID.fromString(itemDto.getBrand()));
-
-							/*items.set(
-								ind, 
-							);*/
+						if(content.getId().equals(itemContent.getContent().getId()) && itemDto.getId().equals(itemContent.getItem().getId().toString())){
+							logger.debug("ConsumerService#updateItems: itemContents = \n" + itemContent.toString());
+							itemContent.setPositionx(itemDto.getPositionx()); 
+							itemContent.setPositiony(itemDto.getPositiony());
+							itemContent.getItem().setType(itemDto.getType()); 
+							itemContent.getItem().setSize(itemDto.getSize());
+							itemContent.getItem().setRetailer(UUID.fromString(itemDto.getRetailer()));
+							itemContent.getItem().setBrand(UUID.fromString(itemDto.getBrand()));
+							entityManager.merge(itemContent);
+							itemContents.set(ind, itemContent);
+							logger.debug("ConsumerService#updateItems: updated itemContent = \n" + itemContent.toString());
 							break;
 						}
 					}
+
+
 				}
-				//content.setItems(items);
-				//logger.debug("}\n");
+
+				content = entityManager.merge(content);
+				outfit.getContents().set(outfit.getContents().indexOf(content), content);
 			}
 		}else{
 			logger.warn("User, " + username + " does not have permissions to edit item");
 		}
 		return copyToOutfitDto(outfit);
+		//return copyToContentDto(content)
 	}
 
-	//
+	//TODO  modify to reuse exisitng items
 	@Transactional
 	public OutfitDto addItems(HashMap<String, ArrayList<ItemDto>> contentIdToItemMap, String username, String outfitId){
 		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId));
 		Profile profile = outfit.getProfile();
 		if(profile.getUsername().equals(username)){
-			entityManager.persist(outfit);
+			//entityManager.persist(outfit);
 			//work on each content id key provided in the payload received
 			for(String contentId : contentIdToItemMap.keySet()){
 				Content content = contentRep.findById(UUID.fromString(contentId));
@@ -401,7 +523,7 @@ public class ConsumerService implements ClientService{
 				for(ItemDto itemDto : contentIdToItemMap.get(contentId)){
 					Item item = copyToItem(itemDto);
 					entityManager.persist(item);
-					content.addItem(item);
+					content.addItem(item, itemDto.getPositionx(), itemDto.getPositiony());
 				}
 			}
 		}else{
@@ -454,125 +576,281 @@ public class ConsumerService implements ClientService{
 		return contents.stream().map(this::toResource).collect(Collectors.toList());
 	}
 
+	public PagedResources<?> getContentsByItemId(String itemId, Pageable pageable){
+		Page<ContentDto> contentDtos = contentRep.findByItemId(UUID.fromString(itemId), pageable).map(new Converter<Content, ContentDto>(){
+			@Override
+			public ContentDto convert(Content content){
+				return new ContentDto(content.getIdText(), content.getCoverpicuri(), null, null, content.getOutfit().getIdText());
+			}	
+		});
+		return contentPRAP.toResource(contentDtos, this::toResource);
+	}
+
+
+	private void persistContent(Outfit parentOutfit, ContentDto contentDto) throws Exception{
+		Content content = copyToContent(contentDto);
+		Picture picture = content.getPicture();
+		PictureDto pictureDto = null;
+		List<ItemDto> itemsDto  = new ArrayList<ItemDto>(content.getItems().size());
+
+		for(ItemDto itemDto : contentDto.getItems()){
+			Item item = copyToItem(itemDto);
+			entityManager.persist(item);
+			content.addItem(item, itemDto.getPositionx(), itemDto.getPositiony());
+			itemsDto.add(new ItemDto(
+				item.getId().toString(), 
+				itemDto.getPositionx(), 
+				itemDto.getPositiony(), 
+				item.getType(), 
+				item.getSize(), 
+				item.getRetailer().toString(), 
+				item.getBrand().toString()));
+		}
+		if(picture != null){
+			picture.setContent(content);
+			entityManager.merge(picture);
+			logger.debug("picture after persist = " + picture);
+			pictureDto = copyToPictureDto(picture);
+		}else{
+			throw new Exception("content property, picture must not be null");
+		}
+		entityManager.persist(content);
+		content.setOutfit(parentOutfit);	
+	}
+
+
 	/*
 	Makes call to data access layer (DAL) inserting new content resource into database and adds it to the specifed outiftId.
 	@param Content 
 	@return void
 	*/
+	//TODO  modify to reuse exisitng items
 	@Transactional
-	public ContentDto createContent(Content content, String parentId) throws Exception{
+	public ContentDto createContent(ContentDto contentDto, String parentId) throws Exception{
 		logger.debug("Creating Content");
-		//Find Outfit by parentId
 		Outfit parentOutfit = outfitRep.findById(UUID.fromString(parentId));
-		//Build content Entity copying over the properties of content
-		//Content content = new Content(null, content.getCoverpicuri(), null, null);
-		Picture p = content.getPicture();
-		PictureDto pDto = null;
+
+		//return persistContent(parentOutfit, contentDto);
+
+		Content content = copyToContent(contentDto);
+		Picture picture = content.getPicture();
+		PictureDto pictureDto = null;
 		List<ItemDto> itemsDto  = new ArrayList<ItemDto>(content.getItems().size());
-		for(Item i : content.getItems()){
-			entityManager.persist(i);
-			itemsDto.add(new ItemDto(i.getId().toString(), i.getPositionx(), i.getPositiony(), i.getType(), i.getSize(), i.getRetailer().toString(), i.getBrand().toString()));
+
+		for(ItemDto itemDto : contentDto.getItems()){
+			Item item = copyToItem(itemDto);
+			entityManager.persist(item);
+			content.addItem(item, itemDto.getPositionx(), itemDto.getPositiony());
+			itemsDto.add(new ItemDto(
+				item.getId().toString(), 
+				itemDto.getPositionx(), 
+				itemDto.getPositiony(), 
+				item.getType(), 
+				item.getSize(), 
+				item.getRetailer().toString(), 
+				item.getBrand().toString()));
 		}
-		//content.setItems(items);
-		if(p != null){
-			//p = new Picture(null, pDto.getThumbnailuri(), pDto.getSmalluri(), pDto.getLargeuri());
-			entityManager.persist(p);
-			logger.debug("picture after persist = " + p);
-			pDto = new PictureDto(p.getId().toString(), p.getThumbnailuri(), p.getSmalluri(), p.getLargeuri());
-			//content.setPicture(p);
+		if(picture != null){
+			picture.setContent(content);
+			entityManager.merge(picture);
+			logger.debug("picture after persist = " + picture);
+			pictureDto = copyToPictureDto(picture);
 		}else{
 			throw new Exception("content property, picture must not be null");
 		}
 		entityManager.persist(content);
 		content.setOutfit(parentOutfit);
 		entityManager.persist(parentOutfit);
-		return new ContentDto(content.getId().toString(), content.getCoverpicuri(), pDto, itemsDto);
+		return new ContentDto(content.getId().toString(), content.getCoverpicuri(), pictureDto, itemsDto, null);
 	}
 
+
+	//TODO  modify to reuse exisitng items
 	@Transactional
-	public ArrayList<ContentDto> createContents(ArrayList<Content> contents, String parentId) throws Exception{
+	public ArrayList<ContentDto> createContents(ArrayList<ContentDto> contentDtos, String parentId){// throws Exception{
 		logger.debug("Creating Contents");
-		ArrayList<ContentDto> contentDtos = new ArrayList<ContentDto>(contents.size()); 
-		//Find Outfit by parentId
 		Outfit parentOutfit = outfitRep.findById(UUID.fromString(parentId));
-		//Build content Entity copying over the properties of content
-		//Content content = new Content(null, content.getCoverpicuri(), null, null);
-		for(Content content : contents){
-			Picture p = content.getPicture();
-			PictureDto pDto = null;
-			List<ItemDto> itemsDto  = new ArrayList<ItemDto>(content.getItems().size());
-			//content.setItems(items);
-			entityManager.persist(content);
-			if(p != null){
-				p.setContent(content);
-				entityManager.merge(p);
-				logger.debug("picture after persist = " + p);
-				pDto = new PictureDto(p.getId().toString(), p.getThumbnailuri(), p.getSmalluri(), p.getLargeuri());
-				//content.setPicture(p);
-			}else{
-				throw new Exception("content property, picture must not be null");
-			}
-			//content.setPicture(p);
-			content.setOutfit(parentOutfit);
+		ArrayList<ContentDto> contentDtosResult = new ArrayList<ContentDto>(contentDtos.size());
 
-			for(Item i : content.getItems()){
-				//entityManager.persist(i);
-				itemsDto.add(new ItemDto(i.getId().toString(), i.getPositionx(), i.getPositiony(), i.getType(), i.getSize(), i.getRetailer().toString(), i.getBrand().toString()));
+		for(ContentDto contentDto : contentDtos){
+			Content content = copyToContent(contentDto);
+			entityManager.persist(content);
+			PictureDto pictureDtoResult = null;
+			List<ItemDto> itemsDtosResult  = new ArrayList<ItemDto>(content.getItems().size());
+			//content.setItems(items);
+			logger.debug("ConsumerService#createContents: content after persist() = " + content.toString());
+
+			for(ItemDto itemDto : contentDto.getItems()){
+				Item item = copyToItem(itemDto);
+				logger.debug("ConsumerService#createContents: item before persist/merge =" + item.toString() + "\n");
+				logger.debug("ConsumerService#createContents: item#contents before persist/merge =" + item.getContents().toString() + "\n");
+				
+				if(item.getId() != null) item = (Item)entityManager.merge(item);
+				else entityManager.persist(item);
+
+				logger.debug("ConsumerService#createContents: item after persist/merge = " + item.toString() + "\n");
+				logger.debug("ConsumerService#createContents: item#contents after persist/merge =" + item.getContents().toString() + "\n");
+				content.addItem(item, itemDto.getPositionx(), itemDto.getPositiony());
+				itemsDtosResult.add(new ItemDto(
+					item.getId().toString(), 
+					itemDto.getPositionx(), 
+					itemDto.getPositiony(), 
+					item.getType(), 
+					item.getSize(), 
+					item.getRetailer().toString(), 
+					item.getBrand().toString()));
 			}
-			contentDtos.add(new ContentDto(content.getId().toString(), content.getCoverpicuri(), pDto, itemsDto));
+
+			Picture picture = pictureRep.findById(content.getPicture().getId());
+			picture.setContent(content);
+			entityManager.merge(picture);
+			logger.debug("picture after persist = " + picture);
+			pictureDtoResult = copyToPictureDto(picture);
+			content.setOutfit(parentOutfit);
+			logger.debug("ConsumerService#createContents: parentOutfit = " + parentOutfit.toString());
+			//contentDtosResult.add(new ContentDto(content.getId().toString(), content.getCoverpicuri(), pictureDtoResult, itemsDtosResult));
 		}
-		entityManager.persist(parentOutfit);
-		return contentDtos;
+		entityManager.merge(parentOutfit);
+
+		for(Content content : parentOutfit.getContents()){
+			contentDtosResult.add(copyToContentDto(content));
+		}
+		
+		return contentDtosResult;
 	}
 
+
+	//TODO  modify to reuse exisitng items
+	//This is called mainly when Content's picture property or its items property (mapping changed, ie adding/removing association to EXISTING items) are modified
 	@Transactional
-	public ContentDto updateContent(Content content, String outfitId) throws Exception{
+	public ContentDto updateContent(ContentDto contentDto, String outfitId) throws Exception{
 		logger.debug("Updating Content");
 		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId));
-		//Build content Entity copying over the properties of content
-		//Content content = new Content(null, content.getCoverpicuri(), null, null);
-		Picture p = content.getPicture();
-		PictureDto pDto = null;
-		List<ItemDto> itemsDto  = new ArrayList<ItemDto>(content.getItems().size());
-		/*for(Item i : content.getItems()){
-			entityManager.merge(i);
-			itemsDto.add(new ItemDto(i.getId().toString(), i.getPositionx(), i.getPositiony(), i.getType(), i.getSize(), i.getRetailer().toString(), i.getBrand().toString()));
-		}*/
-		//Picture data has been changed and content's picture property has been updated accordingly
-		if(p != null){
-			entityManager.merge(p);
-			logger.debug("picture after persist = " + p);
-			pDto = new PictureDto(p.getId().toString(), p.getThumbnailuri(), p.getSmalluri(), p.getLargeuri());
+		Content content = copyToContent(contentDto);
+		Picture picture = content.getPicture();
+		PictureDto pictureDto = null;
+		List<ItemDto> itemDtos  = new ArrayList<ItemDto>(content.getItems().size());
+		List<Integer> exlcudedIndices = new ArrayList<Integer>(content.getItems().size());
+
+		if(picture != null){
+			entityManager.merge(picture);
+			logger.debug("picture after persist = " + picture);
+			pictureDto = new PictureDto(picture.getId().toString(), picture.getThumbnailuri(), picture.getSmalluri(), picture.getLargeuri());
 		}
-		//Content's items array property has been altered (namely add/deletion of item ids)
 		else{
-			pDto = null;
+			pictureDto = null;
 		}
-		List<Item> items = content.getItems();
+		//List<Item> items = content.getItems();
 		content = entityManager.merge(content);
 		//content.setItems(items);
 		content.setOutfit(outfit);
-		for(Item i : content.getItems()){
-			//entityManager.merge(i);
-			itemsDto.add(new ItemDto(i.getId().toString(), i.getPositionx(), i.getPositiony(), i.getType(), i.getSize(), i.getRetailer().toString(), i.getBrand().toString()));
+		content.getItems().clear();
+		for(ItemDto itemDto : contentDto.getItems()){
+			Item item = copyToItem(itemDto);
+			ItemContent itemContent = new ItemContent(item, content);
+			//add new itemContent association
+			itemContent.setPositionx(itemDto.getPositionx());
+			itemContent.setPositiony(itemDto.getPositiony());
+			content.addItem(itemContent);	
+
+			itemDtos.add(new ItemDto(
+				item.getId().toString(), 
+				itemDto.getPositionx(), 
+				itemDto.getPositiony(), 
+				item.getType(), 
+				item.getSize(), 
+				item.getRetailer().toString(), 
+				item.getBrand().toString()));		
 		}
+
+		/*for(ItemDto itemDto : contentDto.getItems()){
+			//entityManager.merge(i);
+			Item item = copyToItem(itemDto);
+			//entityManager.persist(item);
+			ItemContent itemContent = new ItemContent(item, content);
+			int itemContentInd = content.getItems().indexOf(itemContent);
+
+			if(itemContentInd > -1){
+				//update coordinates if modified
+				if(content.getItems().get(itemContentInd).getPositionx() != itemDto.getPositionx() || content.getItems().get(itemContentInd).getPositiony() != itemDto.getPositiony()){
+					content.getItems().get(itemContentInd).setPositionx(itemDto.getPositionx());
+					content.getItems().get(itemContentInd).setPositiony(itemDto.getPositiony());
+				}
+				exlcudedIndices.add(itemContentInd);
+			}else{
+				//add new itemContent association
+				itemContent.setPositionx(itemDto.getPositionx());
+				itemContent.setPositiony(itemDto.getPositiony());
+				content.addItem(itemContent);
+			}
+
+			itemDtos.add(new ItemDto(
+				item.getId().toString(), 
+				itemDto.getPositionx(), 
+				itemDto.getPositiony(), 
+				item.getType(), 
+				item.getSize(), 
+				item.getRetailer().toString(), 
+				item.getBrand().toString()));
+		}
+		//Remove ContentItem contianing items that do not exist in provided contenDto#items property
+		content.removeItems(exlcudedIndices);*/
+
 		logger.debug("content after calls persist and setItems: " + content.toString());
-		return new ContentDto(content.getId().toString(), content.getCoverpicuri(), pDto, itemsDto);
+		return new ContentDto(content.getId().toString(), content.getCoverpicuri(), pictureDto, itemDtos, null);
 	}
 
 	//@Transactional
-	public ArrayList<ContentDto> updateContents(ArrayList<Content> contents, String outfitId) throws Exception{
+	public ArrayList<ContentDto> updateContents(ArrayList<ContentDto> contentDtos, String outfitId) throws Exception{
 		//TODO  Hanlde multipled content updates
-		int contentCount = contents.size();		
-		if(contentCount < 7){
-		ArrayList<ContentDto> contentDtos = new ArrayList(contents.size());
-			for(Content content : contents){
-				contentDtos.add(updateContent(content, outfitId));
+		int count = contentDtos.size();		
+		if(count < 7){
+		ArrayList<ContentDto> result = new ArrayList(count);
+			for(ContentDto contentDto : contentDtos){
+				result.add(updateContent(contentDto, outfitId));
 			}
-			return contentDtos;
+			return result;
 		}else{
 			throw new Exception("Parameter collection size greater than maximum allowed size.");
 		}
+	}
+
+	@Transactional
+	public OutfitDto removeItemsFromContent(HashMap<String, ArrayList<String>> contentIdToItemMap, String username, String outfitId){
+		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId));
+		Profile profile = outfit.getProfile();
+		List<ContentDto> contentDtos;
+
+		if(profile.getUsername().equals(username)){
+			//logger.debug("content Ids:");
+			//entityManager.merge(outfit);
+			for(String contentId : contentIdToItemMap.keySet()){
+				//logger.debug(contentId + ": " + "{\n");
+				//Content content = contentRep.findById(UUID.fromString(contentId));				
+				//List<ItemContent> itemContents = content.getItems();
+				//entityManager.persist(content);
+
+				int ind = -1;
+				for(Content c : outfit.getContents()){
+					ind++;
+					if(c.getId().toString().equals(contentId)){
+						break;
+					}
+				}
+
+				Content content = outfit.getContents().get(ind);
+				for(String itemId : contentIdToItemMap.get(contentId)){
+					content.removeItem(itemId);
+				}
+				logger.debug("ConsumerService#removeItemsFromContent:  content = \n" + content.toString());
+				//content = entityManager.merge(content);
+				outfit.getContents().set(outfit.getContents().indexOf(content), content);
+			}
+			outfit = entityManager.merge(outfit);
+		}else{
+			logger.warn("User, " + username + " does not have permissions to edit item");
+		}
+		return copyToOutfitDto(outfit);		
 	}
 
 	//=====================================================================================
@@ -582,11 +860,120 @@ public class ConsumerService implements ClientService{
 	@param Item 
 	@return void
 	*/
+
 	@Transactional
 	public void saveItem(Item item){
 		logger.debug("saving Item");
 		itemRep.saveAndFlush(item);
 	}
+
+	@Transactional
+	public PagedResources<?> getFilteredItems(String username, String filter, Pageable pageable){
+		switch(filter){
+			case "all":
+				Page<ItemDto> itemDtos = itemRep.findAll(pageable).map(new Converter<Item, ItemDto>(){
+					@Override
+					public ItemDto convert(Item item){
+						return new ItemDto(item.getIdText(), null, null, item.getType(), item.getSize(), item.getRetailer().toString(), item.getBrand().toString());
+					}	
+				});
+				return itemPRAP.toResource(itemDtos, this::toResource);
+			//case "bookmarked":
+
+			default:
+				return null;
+		}		
+	}
+
+	//=====================================================================================
+	//  Bookmark
+	
+	@Transactional
+	public void bookmarkItem(String username, String itemId){
+		UUID uuidItemId = UUID.fromString(itemId);
+		Bookmark bookmark = bookmarkRep.findByUsernameAndItemId(username, uuidItemId);
+		if(bookmark == null){
+			entityManager.persist(new Bookmark(null, username, uuidItemId));
+		}
+	}
+
+	@Transactional
+	public void bookmarkItems(String username, ArrayList<String> itemIds){
+		List<UUID> uuidItemIds = new ArrayList<UUID>(itemIds.size());
+		for(String itemId : itemIds){
+			uuidItemIds.add(UUID.fromString(itemId));
+		}
+		logger.debug("ConsumerService#bookmarkItems:  uuidItemIds List size = " + uuidItemIds.size());
+		List<Bookmark> bookmarks = bookmarkRep.findByUsernameAndItemIds(username, uuidItemIds);
+		logger.debug("ConsumerService#bookmarkItems:  bookmarks List size = " + bookmarks.size());
+		boolean exists;
+		for(String itemId : itemIds){
+			exists = false;
+			for(Bookmark bookmark : bookmarks){
+				if(bookmark.getItemId().toString().equals(itemId)){
+					exists = true;
+					break;
+				}
+			}
+			if(!exists){
+				logger.debug("ConsumerService#bookmarkItems:  itemId not found in bookmarks List = " + itemId);
+				entityManager.persist(new Bookmark(null, username, UUID.fromString(itemId)));
+			}
+		}
+	}
+
+	@Transactional
+	public void removeBookmarkItem(String username, String itemId){
+		bookmarkRep.deleteByUsernameAndItemId(username, UUID.fromString(itemId));
+	}
+
+	@Transactional
+	public void removeBookmarkItems(String username, ArrayList<String> itemIds){
+		List<UUID> uuidItemIds = new ArrayList<UUID>(itemIds.size());
+		for(String itemId : itemIds){
+			uuidItemIds.add(UUID.fromString(itemId));
+		}
+		bookmarkRep.deleteByUsernameAndItemIds(username, uuidItemIds);
+	}
+
+
+	//=====================================================================================
+	//  Like
+
+	@Transactional
+	public void likeOutfit(String username, String outfitId){
+		Like like = likeRep.findByUsernameAndOutfitId(username, UUID.fromString(outfitId));
+		if(like == null){
+			//LIKE OUTFIT
+			entityManager.persist(new Like(null, username, UUID.fromString(outfitId)));
+			Outfit outfit = outfitRep.findById(UUID.fromString(outfitId));
+			outfit.setLikes((outfit.getLikes() + 1));
+			entityManager.merge(outfit);
+		}
+	}
+
+	@Transactional
+	public void unlikeOutfit(String username, String outfitId){
+		likeRep.deleteByUsernameAndOutfitId(username, UUID.fromString(outfitId));
+	}
+
+
+	//=====================================================================================
+	//  follow
+
+	@Transactional
+	public void followUser(String followerUsername, String followedUsername){
+		Follow follow = followRep.findByFollowerUsernameAndFollowedUsername(followerUsername, followedUsername);
+		if(follow == null){
+			entityManager.persist(new Follow(null, followerUsername, followedUsername));
+		}
+	}
+
+	@Transactional
+	public void unfollowUser(String followerUsername, String followedUsername){
+		followRep.deleteByFollowerUsernameAndFollowedUsername(followerUsername, followedUsername);
+	}
+
 
 	//=====================================================================================
 	/*
@@ -594,8 +981,6 @@ public class ConsumerService implements ClientService{
 	@param Long specifying id of profile to retreive
 	@return ProfileDto which extends ResourceSupport
 	*/
-
-
 
 	public ProfileDto readProfile(String username) throws Exception{
 		logger.debug("Reading Profile (id=" + username + ")");

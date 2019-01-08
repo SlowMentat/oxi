@@ -196,14 +196,14 @@ public class ConsumerController{
 	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
 	@RequestMapping(value="/outfit", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> uploadOutfit(final Principal principal, @RequestBody Outfit outfit){
+	public ResponseEntity<?> uploadOutfit(final Principal principal, @RequestBody OutfitDto outfitDto){
 		String username = principal.getName();
-		logger.debug("Request Body Received: " + outfit);
+		logger.debug("Request Body Received: " + outfitDto);
 		//try{	
 			long startTime = System.currentTimeMillis();
 
 			//ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.saveOutfit(outfit, username), HttpStatus.CREATED);
-			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.addOutfit(outfit, username), HttpStatus.CREATED);
+			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.addOutfit(outfitDto, username), HttpStatus.CREATED);
 
 			long endTime = System.currentTimeMillis();
 			logger.debug("ConsumerService execution time for call to saveOutfit: " + (endTime - startTime) + "ms");
@@ -259,27 +259,27 @@ public class ConsumerController{
 	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
 	@RequestMapping(value="/contents/{outfitId}", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> createContents(final Principal principal, @PathVariable("outfitId") String outfitId, @RequestBody ArrayList<Content> contents){
+	public ResponseEntity<?> createContents(final Principal principal, @PathVariable("outfitId") String outfitId, @RequestBody ArrayList<ContentDto> contentDtos){
 		String username = principal.getName();
 		//ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.addContents(contents, username, outfitId), HttpStatus.CREATED);
-		try{
-			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.createContents(contents, outfitId), HttpStatus.CREATED);
+		//try{
+			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.createContents(contentDtos, outfitId), HttpStatus.CREATED);
 			return responseEntity;
-		}catch(Exception e){
-			return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		//}catch(Exception e){
+		//	return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
+		//}
 	}
 
 	//@Secured({"ROLE_USER"})
 	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
 	@RequestMapping(value="/content/{outfitId}", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> createContent(final Principal principal, @PathVariable String outfitId, @RequestBody Content content){
+	public ResponseEntity<?> createContent(final Principal principal, @PathVariable String outfitId, @RequestBody ContentDto contentDto){
 		String username = principal.getName();
-		logger.debug("Request Body Received: " + content);
+		logger.debug("Request Body Received: " + contentDto);
 		try{	
 			long startTime = System.currentTimeMillis();
-			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.createContent(content, outfitId), HttpStatus.CREATED);
+			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.createContent(contentDto, outfitId), HttpStatus.CREATED);
 			long endTime = System.currentTimeMillis();
 			logger.debug("ConsumerService execution time for call to saveContent: " + (endTime - startTime) + "ms");
 			return responseEntity;
@@ -291,10 +291,10 @@ public class ConsumerController{
 	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
 	@RequestMapping(value="/content/{outfitId}", method=RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateContent(final Principal principal, @PathVariable String outfitId, @RequestBody Content content){
+	public ResponseEntity<?> updateContent(final Principal principal, @PathVariable String outfitId, @RequestBody ContentDto contentDto){
 		String username = principal.getName();
 		try{
-			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.updateContent(content, outfitId), HttpStatus.OK);
+			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.updateContent(contentDto, outfitId), HttpStatus.OK);
 			return responseEntity;
 		}catch(Exception e){
 			return new ResponseEntity<Exception>(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -304,10 +304,10 @@ public class ConsumerController{
 	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
 	@RequestMapping(value="/contents/{outfitId}", method=RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateContents(final Principal principal, @PathVariable String outfitId, @RequestBody ArrayList<Content> contents){
+	public ResponseEntity<?> updateContents(final Principal principal, @PathVariable String outfitId, @RequestBody ArrayList<ContentDto> contentDtos){
 		String username = principal.getName();
 		try{
-			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.updateContents(contents, outfitId), HttpStatus.OK);
+			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.updateContents(contentDtos, outfitId), HttpStatus.OK);
 			return responseEntity;
 		}catch(Exception e){
 			return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -320,6 +320,12 @@ public class ConsumerController{
 		return new ResponseEntity<List<?>>(consumerService.readContents(outfitId), HttpStatus.OK);
 	}
 
+	@RestResource(exported = true)
+	@RequestMapping(value = "/contents/items/{itemId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getContents(final Principal principa, @PathVariable("itemId") String itemId, @PageableDefault Pageable pageable){
+		return new ResponseEntity<PagedResources<?>>(consumerService.getContentsByItemId(itemId, pageable), HttpStatus.OK);
+	}
+
 
 	/*
 	******************************************************************
@@ -329,11 +335,37 @@ public class ConsumerController{
 
 	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
+	@RequestMapping(value="/items", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getFilteredItems(final Principal principal, @PageableDefault Pageable pageable, @RequestParam(value="filter", required=false) String filter){
+		//try{
+			filter = filter == null ? "" : filter;
+			String username = principal.getName();		
+			return new ResponseEntity<PagedResources<?>>(consumerService.getFilteredItems(username, filter, pageable), HttpStatus.OK);
+		/*}catch(Exception e){
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}*/
+	}
+
+	@Secured({"ROLE_USER"})
+	@RestResource(exported = true)
 	@RequestMapping(value="/items/{outfitId}", method=RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> uploadExistingItems(final Principal principal, @PathVariable String outfitId, @RequestBody HashMap<String, ArrayList<ItemDto>> payload){
 		String username = principal.getName();
 		//try{	
-			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.modifyItems(payload, username, outfitId), HttpStatus.OK);
+			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.updateItems(payload, username, outfitId), HttpStatus.OK);
+			return responseEntity;
+		/*}catch(Exception e){
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}*/
+	}
+
+	@Secured({"ROLE_USER"})
+	@RestResource(exported = true)
+	@RequestMapping(value="/removeItems/{outfitId}", method=RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> removeItemsFromContent(final Principal principal, @PathVariable String outfitId, @RequestBody HashMap<String, ArrayList<String>> payload){
+		String username = principal.getName();
+		//try{	
+			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.removeItemsFromContent(payload, username, outfitId), HttpStatus.OK);
 			return responseEntity;
 		/*}catch(Exception e){
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -365,6 +397,70 @@ public class ConsumerController{
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}*/
 	}
+
+
+	/*
+	******************************************************************
+	HTTP Request handling methods (GET and POST) for LIKE and BOOKMARk resource
+	******************************************************************
+	*/
+
+	@Secured({"ROLE_USER"})
+	@RestResource(exported = true)
+	@RequestMapping(value="/like/{recipientUsername}", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> like(final Principal principal, @PathVariable String recipientUsername){
+		String username = principal.getName();
+		//try{	
+			//ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.likeOutfit(username, recipientUsername), HttpStatus.CREATED);
+			consumerService.likeOutfit(username, recipientUsername);
+			return new ResponseEntity<>(HttpStatus.CREATED);
+		/*}catch(Exception e){
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}*/
+	}
+
+	@Secured({"ROLE_USER"})
+	@RestResource(exported = true)
+	@RequestMapping(value="/bookmark/{itemId}", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> bookmark(final Principal principal, @PathVariable String itemId){
+		String username = principal.getName();
+		//try{	
+			//ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.bookmarkItem(username, itemId), HttpStatus.CREATED);
+			consumerService.bookmarkItem(username, itemId);
+			return new ResponseEntity<>(HttpStatus.CREATED);
+		/*}catch(Exception e){
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}*/
+	}
+
+	@Secured({"ROLE_USER"})
+	@RestResource(exported = true)
+	@RequestMapping(value="/bookmarks", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> bookmark(final Principal principal, @RequestBody ArrayList<String> itemIds){
+		String username = principal.getName();
+		//try{	
+			//ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.bookmarkItem(username, itemId), HttpStatus.CREATED);
+			consumerService.bookmarkItems(username, itemIds);
+			return new ResponseEntity<>(HttpStatus.CREATED);
+		/*}catch(Exception e){
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}*/
+	}
+
+	@Secured({"ROLE_USER"})
+	@RestResource(exported = true)
+	@RequestMapping(value="/follow/{recipientUsername}", method=RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> follow(final Principal principal, @PathVariable String recipientUsername){
+		String username = principal.getName();
+		//try{	
+			//ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.followUser(username, recipientUsername), HttpStatus.CREATED);
+			consumerService.followUser(username, recipientUsername);
+			return new ResponseEntity<>(HttpStatus.CREATED);
+		/*}catch(Exception e){
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}*/
+	}
+
 
 	/*
 	******************************************************************

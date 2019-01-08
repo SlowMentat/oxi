@@ -9,11 +9,14 @@ import java.io.Serializable;
 import org.springframework.hateoas.core.*;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Identifiable;
+import com.fasterxml.jackson.annotation.*;
+
 
 
 public class ProfileDto extends RelatedEntity implements Serializable, Identifiable<String>
 {
 	//private Long Id;
+	@JsonProperty("id")
 	private String id;
 	private String username;
 	private String country;

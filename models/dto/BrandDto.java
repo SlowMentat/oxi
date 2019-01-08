@@ -10,14 +10,18 @@ import java.io.Serializable;
 import org.springframework.hateoas.core.*;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Identifiable;
+import com.fasterxml.jackson.annotation.*;
+
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 
+@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=BrandDto.class)
 public class BrandDto implements Serializable, Identifiable<String>
 {
 	private static final Logger logger = LogManager.getLogger(BrandDto.class);
+	@JsonProperty("id")
 	private String id;	
 	private String name;
 	private String link;
@@ -25,8 +29,10 @@ public class BrandDto implements Serializable, Identifiable<String>
 	private Integer blue;
 	private Integer green;
 
-	public BrandDto(String id, String name, String link, Integer red, Integer green, Integer blue){
-		super();
+	public BrandDto(){}
+
+	public BrandDto(String id, String name,  String link,  Integer red,  Integer green,  Integer blue){
+		//super();
 		this.id = id;
 		this.name = name;
 		this.link = link;
@@ -34,6 +40,29 @@ public class BrandDto implements Serializable, Identifiable<String>
 		this.green = green;
 		this.blue = blue;
 	}
+
+	/*@JsonCreator
+	public BrandDto(
+		@JsonProperty("id")
+		String id,
+		@JsonProperty("name")
+		String name, 
+		@JsonProperty("link")
+		String link, 
+		@JsonProperty("red")
+		Integer red, 
+		@JsonProperty("green")
+		Integer green, 
+		@JsonProperty("blue")
+		Integer blue){
+		//super();
+		this.id = id;
+		this.name = name;
+		this.link = link;
+		this.red = red;
+		this.green = green;
+		this.blue = blue;
+	}*/
 
 	//Setters==========================================================================	
 	public void setId(String id){this.id = id;}

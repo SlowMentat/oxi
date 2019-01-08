@@ -76,7 +76,7 @@ public class Brand extends RelatedEntity implements Serializable, Identifiable<U
 	@Override
 	public String toString(){
 		logger.debug("building Brand string");
-        StringBuilder sb = new StringBuilder("\nID: ").append(this.idText)
+        StringBuilder sb = new StringBuilder("\nid: ").append(this.idText)
 			.append("\nlink:").append(this.link)
 			.append("\nname:").append(this.name);
         return sb.toString();		

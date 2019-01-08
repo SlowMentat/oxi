@@ -13,8 +13,10 @@ import org.springframework.hateoas.Identifiable;
 import com.fasterxml.jackson.annotation.*;
 
 
+@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=ItemDto.class)
 public class ItemDto implements Serializable, Identifiable<String>
 {
+	@JsonProperty("id")
 	private String id;
 	private Float positionx;
 	private Float positiony;
@@ -23,8 +25,20 @@ public class ItemDto implements Serializable, Identifiable<String>
 	private String retailer;
 	private String brand;
 
+	public ItemDto(){}
+
+	public ItemDto(String id, Float positionx, Float positiony, String type, String size, String retailer, String brand){
+		//super();
+		this.id = id;
+		this.positionx = positionx;
+		this.positiony = positiony;
+		this.type = type;
+		this.size = size;
+		this.retailer = retailer;
+		this.brand = brand;
+	}
 	//Had to add jackson annotations for calling controller with ArrayList<ItemDto> typed parameter
-	@JsonCreator
+	/*@JsonCreator
 	public ItemDto(
 		@JsonProperty("id")
 		String id, 
@@ -48,7 +62,7 @@ public class ItemDto implements Serializable, Identifiable<String>
 		this.size = size;
 		this.retailer = retailer;
 		this.brand = brand;
-	}
+	}*/
 
 	//Setters
 	public void setId(String id){this.id = id;}
@@ -72,4 +86,20 @@ public class ItemDto implements Serializable, Identifiable<String>
 	public String getBrand(){return (this.brand == null) ? this.brand : this.brand.toLowerCase();}
 	//public List<Content> getContents(){return this.contents;}
 	//public Profile getProfile(){return this.profile;}
+
+	//@Override
+	public String toString(int indents){
+		String indent = "\n";
+		for(int i = 0; i < indents; i++){
+			indent += "    ";
+		}
+        StringBuilder sb = new StringBuilder(indent).append("id: ").append(((this.id == null) ? "null" : this.id))
+			.append(indent).append("positionx: ").append(((this.positionx == null) ? "null" : this.positionx))
+			.append(indent).append("positiony:").append(((this.positiony == null) ? "null" : this.positiony))
+			.append(indent).append("type:").append(((this.type == null) ? "null" : this.type))
+			.append(indent).append("size:").append(((this.size == null) ? "null" : this.size))
+			.append(indent).append("retailer:").append(((this.retailer == null) ? "null" : this.retailer))
+			.append(indent).append("brand:").append(((this.brand == null) ? "null" : this.brand));
+        return sb.toString();		
+	}
 }

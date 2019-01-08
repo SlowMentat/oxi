@@ -2,6 +2,8 @@ package oxi.models;
 
 import javax.persistence.*;
 import javax.persistence.CascadeType;
+import java.util.Objects;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -46,13 +48,14 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 	@JsonIdentityReference(alwaysAsId=true)
 	private Outfit outfit;	
 	
-	@ManyToMany(cascade={CascadeType.PERSIST, CascadeType.MERGE}, mappedBy="contents")	//Item entity is the owner
+	//@ManyToMany(cascade={CascadeType.PERSIST, CascadeType.MERGE}, mappedBy="contents")	//Item entity is the owner
+	@OneToMany(cascade=CascadeType.ALL, orphanRemoval = true, mappedBy = "content")
 	//@MapKeyColumn(name="clothing_type")
 	@RestResource(rel="vendor_0")
 	@JsonProperty("items")
 	@JsonIdentityReference(alwaysAsId=true)
-	//private Map<String, Item> items;	
-	private List<Item> items;
+	//private Map<String, Item> items;*
+	private List<ItemContent> items = new ArrayList<>();
 	
 	@OneToOne(cascade=CascadeType.MERGE, mappedBy="content")
 	@RestResource(rel="vendor_1")
@@ -66,7 +69,7 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 	public Content(){
 	}
 
-	public Content(UUID id, String coverpicuri, Picture picture, List<Item> items){
+	public Content(UUID id, String coverpicuri, Picture picture, List<ItemContent> items){
 		super();
 		this.id = id;
 		this.coverpicuri = coverpicuri;
@@ -101,16 +104,79 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 			logger.warn("!!PICTURE IS NULL!!");
 		}
 	}	
-	public void setItems(List<Item> items){
+	/*public void setItems(List<Item> items){
 		logger.debug("Setting items list in Content entity");
 		this.items = this.<Item, Content>setManyToManyParents(items, this.items, this);
-	}
+	}*/
 	
-	public void addItem(Item item){
+	/*public void setItems(List<Item> items){
+		logger.debug("adding items to itemContent jointable");
+		if(!items.isEmpty()){
+			for(Item item : items){
+				addItem(item);
+			}
+		}
+	}*/
+
+	/*public void addItem(Item item){
 		logger.debug("ADDING ITEM TO items[]");
 		this.items.add(item);
 		if(item.getContents() == null) item.setContents(new ArrayList<Content>());
-		if (!item.getContents().contains(this)) item.addContent(this);
+		if(!item.getContents().contains(this)) item.addContent(this);
+	}*/
+
+	public void addItem(Item item, Float positionx, Float positiony){
+		ItemContent itemContent = new ItemContent(item, this);
+		itemContent.setPositionx(positionx);
+		itemContent.setPositiony(positiony);
+		this.items.add(itemContent);
+		item.getContents().add(itemContent);		
+	}
+
+	public void addItem(ItemContent itemContent){
+		this.items.add(itemContent);
+		itemContent.getItem().getContents().add(itemContent);
+	}
+
+	public void removeItem(Item item){
+		for(Iterator<ItemContent> iterator = items.iterator(); iterator.hasNext();){
+			ItemContent itemContent = iterator.next();
+
+			if(itemContent.getContent().equals(this) && itemContent.getItem().equals(item)){
+				iterator.remove();
+				itemContent.getItem().getContents().remove(itemContent);  //Needed for bi-directional mapping
+				itemContent.setContent(null);
+				itemContent.setItem(null);
+			}
+		}
+	}
+
+	public void removeItem(String itemId){
+		for(Iterator<ItemContent> iterator = items.iterator(); iterator.hasNext();){
+			ItemContent itemContent = iterator.next();
+			logger.debug("Content#removeItem: content equal = " + itemContent.getContent().equals(this));
+			logger.debug("\nContent#removeItem:  itemContent#getItem() = \"" + itemContent.getItem().getId() + "\", \nitemId parameter = \"" + itemId + "\"\n");
+			logger.debug("Content#removeItem: item ids equal = " + itemContent.getItem().getId().toString().equalsIgnoreCase(itemId));
+			if(itemContent.getContent().equals(this) && itemContent.getItem().getId().toString().equals(itemId)){
+				logger.debug("Content#removeItem: itemContent = \n" + itemContent.toString());
+				iterator.remove();
+				itemContent.getItem().getContents().remove(itemContent);  //Needed for bi-directional mapping
+				itemContent.setContent(null);
+				itemContent.setItem(null);
+			}
+		}
+	}
+
+	public void removeItems(List<Integer> excludedIndices){
+		int ind = 0;
+		for(ItemContent itemContent : items){
+			if(excludedIndices.contains(ind)) break;
+			items.remove(ind);
+			itemContent.getItem().getContents().remove(itemContent);  //Needed for bi-directional mapping
+			itemContent.setContent(null);
+			itemContent.setItem(null);
+			ind++;
+		}
 	}
 	
 	//Getters==========================================================================	
@@ -131,7 +197,7 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 		return this.items;
 	}*/
 	
-	public List<Item> getItems(){
+	public List<ItemContent> getItems(){
 		logger.warn("GETTING items MAP");
 		return this.items;
 	}
@@ -154,41 +220,63 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 	@Override 
 	public <T extends Relational> void internalAddChild(T targetChild){
 		logger.debug("internalAddChild invoked");
-		if(this.items == null){
+		/*if(this.items == null){
 			logger.debug("instantiating new List<T>");
-			this.items = new ArrayList<Item>();
+			this.items = new ArrayList<ItemContent>();
 		}
-		this.items.add((Item)targetChild);
+		this.items.add((ItemContent)targetChild);*/
+
+		Item childItem = (Item) targetChild;
+		ItemContent itemContent = new ItemContent(childItem, this);
+		this.items.add(itemContent);
+		childItem.getContents().add(itemContent);
 	}
+
 	@Override
 	public <T extends Relational> void internalRemoveChild(T targetChild){
 		this.items.remove((Item)targetChild);
 	}
+
 	
-	@Override 
-	public String toString(){
+	//@Override 
+	public String toString(int indents){
+		String indent = "\n";
+		for(int i = 0; i < indents; i++){
+			indent += "    ";
+		}
 		logger.debug("building Content string");
-        StringBuilder sb = new StringBuilder("\nId: ").append(this.id)
-			.append("\ncoverpicuri: ").append(this.coverpicuri)
-			.append("\noutfits: [");
-		if(this.outfit != null){
-			logger.debug("building outfit string");
-			sb.append(outfit.getId());
-		}else{
-			logger.debug("profile.outfits is null");
-		}
-		sb.append("]");
-		sb.append("\nitems: [");
-		if(this.items != null){
-			for (Item item: this.items) {
-				logger.debug("building item string");
-				sb.append("	").append(item.getId());
+        StringBuilder sb = new StringBuilder(indent).append("id: ").append((this.id == null ? "null" : this.id))
+        	.append(indent).append("outfit: ").append(outfit == null ? "null" : outfit.getId() == null ? "null" : outfit.getId().toString())
+			.append(indent).append("coverpicuri: ").append(this.coverpicuri)
+			.append(indent).append("items: [");
+			for (ItemContent itemContent: this.items) {
+				sb.append(indent).append("{")
+					.append((itemContent == null ? "null" : itemContent.toString(indents + 1))).append(", ")
+					.append(indent).append("},");
 			}
-		}else{
-			logger.debug("Content.items is null");
-		}
-		sb.append("]");
-		sb.append("\npicture: {").append(this.picture).append("\n}");
+			sb.append(indent).append("],")
+				.append(indent).append("picture: {")
+				.append(picture == null ? "null" : picture.toString(indents + 1))
+				.append(indent).append("}");
         return sb.toString();
+	}
+
+	@Override
+	public String toString(){
+		return toString(0);
+	}
+
+
+	@Override
+	public boolean equals(Object object){
+		if(this == object) return true;
+		if(this == null || getClass() != object.getClass()) return false;
+		Content content = (Content) object;
+		return Objects.equals(id, content.getId());
+	}
+
+	@Override
+	public int hashCode(){
+		return Objects.hash(id);
 	}
 }

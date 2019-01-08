@@ -10,20 +10,26 @@ import java.io.Serializable;
 import org.springframework.hateoas.core.*;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Identifiable;
+import com.fasterxml.jackson.annotation.*;
+
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 
+@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=RetailerDto.class)
 public class RetailerDto implements Serializable, Identifiable<String>
 {
 	private static final Logger logger = LogManager.getLogger(RetailerDto.class);
+	@JsonProperty("id")
 	private String id;	
 	private String name;
 	private String link;
 	private Integer red;
 	private Integer blue;
 	private Integer green;
+
+	public RetailerDto(){}
 
 	public RetailerDto(String id, String name, String link, Integer red, Integer blue, Integer green){
 		super();
@@ -34,6 +40,29 @@ public class RetailerDto implements Serializable, Identifiable<String>
 		this.blue = blue; 
 		this.green = green;
 	}
+
+	/*	@JsonCreator
+	public RetailerDto(
+		@JsonProperty("id")
+		String id, 
+		@JsonProperty("name")
+		String name, 
+		@JsonProperty("link")
+		String link, 
+		@JsonProperty("red")
+		Integer red, 
+		@JsonProperty("blue")
+		Integer blue, 
+		@JsonProperty("green")
+		Integer green){
+		super();
+		this.id = id;
+		this.name = name;
+		this.link = link;
+		this.red = red;
+		this.blue = blue; 
+		this.green = green;
+	}*/
 
 	//Setters==========================================================================	
 	public void setId(String id){this.id = id;}

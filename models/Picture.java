@@ -79,22 +79,24 @@ public class Picture extends RelatedEntity implements Serializable, Identifiable
 			logger.warn("Content parameter is null");
 		}
 	}
-	
+
+	public String toString(int indents) {
+		String indent = "\n";
+		for(int i = 0; i < indents; i++){
+			indent += "    ";
+		}
+		StringBuilder sb = new StringBuilder(indent).append("id: ").append(((this.id == null) ? "null" : id))
+			.append(indent).append("smalluri: ").append(this.smalluri)
+			.append(indent).append("largeuri:").append(this.largeuri)
+			.append(indent).append("thumbnail:").append(this.thumbnailuri)
+			.append(indent).append(indent).append("content: ").append((this.content == null ? "null" : this.content.getId() == null ? "null" : content.getId().toString()));
+		
+		return sb.toString();
+	}	
+
 	@Override
 	public String toString(){
-		logger.debug("building Picture string");
-        StringBuilder sb = new StringBuilder("\nid: ").append(this.id)
-			.append("\nsmalluri: ").append(this.smalluri)
-			.append("\nlargeuri:").append(this.largeuri)
-			.append("\nthumbnail:").append(this.thumbnailuri)
-			.append("\ncontent: ");
-		if(this.content != null){		
-			logger.debug("building outfit string");
-			sb.append(this.content.getIdText());
-		}else{
-			logger.debug("profile.content is null");
-		}
-        return sb.toString();
+		return toString(0);
 	}
 	
 }
