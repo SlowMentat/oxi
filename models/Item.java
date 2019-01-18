@@ -29,50 +29,44 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	@GenericGenerator(name = "uuid2", strategy = "uuid2")
 	@Column(columnDefinition = "BINARY(16)")
 	private UUID id;
-	@Column(name = "id_text", updatable = false, insertable = false)
+
+	@Column(name = "id_text", columnDefinition="VARCHAR(36)", updatable = false, insertable = false)
 	private String idText;
-	/*private Float positionx;
-	private Float positiony;*/
-	//private String link;
+
+	@Column(name = "type",  columnDefinition="VARCHAR(36)")
 	private String type;
 
-	/*@ManyToOne(cascade=CascadeType.ALL)
-	@RestResource(rel="vendor_1")
-	@JsonProperty("size")
-	@JsonIdentityReference(alwaysAsId=true)	
-	@JsonBackReference*/
+	@Column(name = "size",  columnDefinition="VARCHAR(36)")
 	private String size;
-	
-	/*@ManyToOne(cascade=CascadeType.ALL)
-	@RestResource(rel="vendor_1")
-	@JsonProperty("brand")
-	@JsonIdentityReference(alwaysAsId=true)	*/
-	//@JsonBackReference
+
 	@Column(name="brand_id", columnDefinition = "BINARY(16)")
 	private UUID brand;
-	@Column(name = "brand_id_text", updatable = false, insertable = false)
+
+	@Column(name = "brand_id_text",  columnDefinition="VARCHAR(36)", updatable = false, insertable = false)
 	private String brandText;
 
-	/*@ManyToOne(cascade=CascadeType.ALL)
-	@RestResource(rel="vendor_1")
-	@JsonProperty("retailer")
-	@JsonIdentityReference(alwaysAsId=true)	*/
-	//@JsonBackReference
 	@Column(name="retailer_id", columnDefinition = "BINARY(16)")
 	private UUID retailer;
-	@Column(name = "retailer_id_text", updatable = false, insertable = false)
+
+	@Column(name = "retailer_id_text",  columnDefinition="VARCHAR(36)",  updatable = false, insertable = false)
 	private String retailerText;
 
-	//@ManyToMany(cascade={CascadeType.PERSIST, CascadeType.MERGE})
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval= true, mappedBy = "item")
-	@RestResource(rel="client_0")
+	@RestResource(rel="client_0")	
 	@JsonIdentityReference(alwaysAsId=true)
-	/*@JoinTable(
-		name="item_content",
-		joinColumns=@JoinColumn(name="item_id", referencedColumnName="id"),
-		inverseJoinColumns=@JoinColumn(name="content_id", referencedColumnName="id")
-	)*/
 	private List<ItemContent> contents = new ArrayList<>();
+
+	@ManyToOne(cascade=CascadeType.ALL)
+	@RestResource(rel="picture")
+	@JoinColumn(name="picture_id")
+	@JsonIdentityReference(alwaysAsId=true)
+	private Picture picture;
+
+	/*@Column(name = "picture_id_text", columnDefinition="VARCHAR(36)", updatable = false, insertable = false)
+	private String pictureText;*/
+
+	private boolean isRetailPicture = false;
+	private boolean isMonetizable = false;
 	
 	@ManyToOne(cascade=CascadeType.ALL)
 	@RestResource(rel="client_1")
@@ -93,6 +87,8 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 		this.size = size;
 		this.retailer = retailer;
 		this.brand = brand;
+		this.isRetailPicture = false;
+		this.isMonetizable = false;
 	}
 	
 	//Setters
@@ -106,10 +102,10 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	public void setSize(String size){this.size = size;}
 	public void setBrand(UUID brand){this.brand = brand;}
 	public void setRetailer(UUID retailer){this.retailer = retailer;}	
-	public void setProfile(Profile profile){
-		this.profile = profile;
-	}
-	
+	public void setProfile(Profile profile){this.profile = profile;}
+	public void setPicture(Picture picture){this.picture = (Picture)this.setManyToOneParent(picture, this.picture, this);}	
+	public void setIsRetailPicture(boolean isRetailPicture){this.isRetailPicture = isRetailPicture;}
+	public void setIsMonetizable(boolean isMonetizable){this.isMonetizable = isMonetizable;}
 	/*public void setContents(List<Content> contents){
 		//this.contents = (List<Content>)(Object)this.setManyToManyParents(contents, this.contents, this);
 		this.contents = this.<Content, Item>setManyToManyParents(contents, this.contents, this);
@@ -121,13 +117,11 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 		if(!this.contents.contains(content)) content.addItem(this);
 	}*/
 	
+
 	//Getters
 	//@Override
 	public UUID getId(){return this.id;}
 	public String getIdText(){return this.idText;}
-	/*public Float getPositionx(){return this.positionx;}
-	public Float getPositiony(){return this.positiony;}*/
-	//public String getLink(){return this.link;}
 	public String getSize(){return this.size;}
 	public UUID getBrand(){return this.brand;}
 	public String getBrandText(){return this.brandText;}
@@ -135,6 +129,9 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	public String getRetailerText(){return this.retailerText;}
 	public String getType(){return this.type;}
 	public List<ItemContent> getContents(){return this.contents;}
+	public Picture getPicture(){return this.picture;}
+	public boolean getIsRetailPicture(){return this.isRetailPicture;}
+	public boolean getIsMonetizable(){return this.isMonetizable;}
 	public Profile getProfile(){return this.profile;}
 	
 	@Override 

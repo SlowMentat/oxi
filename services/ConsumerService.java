@@ -874,7 +874,16 @@ public class ConsumerService implements ClientService{
 				Page<ItemDto> itemDtos = itemRep.findAll(pageable).map(new Converter<Item, ItemDto>(){
 					@Override
 					public ItemDto convert(Item item){
-						return new ItemDto(item.getIdText(), null, null, item.getType(), item.getSize(), item.getRetailer().toString(), item.getBrand().toString());
+						String coverpicuri = (item.getPicture() != null) ? item.getPicture().getSmalluri() : "";
+						return new ItemDto(
+							item.getIdText(), 
+							null, 
+							null, 
+							item.getType(), 
+							item.getSize(), 
+							item.getRetailer().toString(), 
+							item.getBrand().toString(), 
+							coverpicuri);
 					}	
 				});
 				return itemPRAP.toResource(itemDtos, this::toResource);

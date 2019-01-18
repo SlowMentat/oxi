@@ -3,6 +3,7 @@ package oxi.models;
 import javax.persistence.*;
 import javax.persistence.CascadeType;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.UUID;
 import java.io.Serializable;
 import java.lang.*;
@@ -42,6 +43,12 @@ public class Picture extends RelatedEntity implements Serializable, Identifiable
 	@JsonIdentityReference(alwaysAsId=true)	
 	//@JsonManagedReference
 	private Content content;
+
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="picture")
+	@RestResource(rel="items")
+	@JsonIdentityReference(alwaysAsId=true)
+	private List<Item> items;
+
 	
 	public Picture(){
 	}
@@ -54,24 +61,20 @@ public class Picture extends RelatedEntity implements Serializable, Identifiable
 	}
 	
 	//Getters
-	//@Override
 	public UUID getId(){return this.id;}
 	public String getIdText(){return this.idText;}
 	public String getSmalluri(){return this.smalluri;}
 	public String getLargeuri(){return this.largeuri;}
 	public String getThumbnailuri(){return this.thumbnailuri;}
 	public Content getContent(){return this.content;}
+	public List<Item> getItems(){return this.items;}
 	
 	//Setters
-	//@Override
 	public void setId(UUID id){this.id = id;}
-	//public void setIdText(String idText){this.idText = idText;}
 	public void setSmalluri(String smalluri){this.smalluri = smalluri;}
 	public void setLargeuri(String largeuri){this.largeuri = largeuri;}
 	public void setThumbnailuri(String thumbnailuri){this.thumbnailuri = thumbnailuri;}
 	public void setContent(Content content){
-		logger.warn("setting Content property of Picture POJO");
-		//this.content = content;
 		if(content != null){
 			this.content = content;
 			if(this.content.getPicture() != this) this.content.setPicture(this);
@@ -79,6 +82,38 @@ public class Picture extends RelatedEntity implements Serializable, Identifiable
 			logger.warn("Content parameter is null");
 		}
 	}
+
+	public void setItems(List<Item> items){this.items = items;}
+
+	@JsonAnySetter
+	public void addItem(Item item){
+		this.items.add(item);
+		if (item.getPicture() != this) item.setPicture(this);
+	}
+
+	@Override 
+	public <T extends Relational> void internalAddChild(T targetChild){
+		if(this.items == null){
+			logger.debug("instantiating new List<T>");
+			this.items = new ArrayList<Item>();
+		}
+		if (!this.items.contains((Item)targetChild)) this.items.add((Item)targetChild);
+	}
+	@Override
+	public <T extends Relational> void internalRemoveChild(T targetChild){
+		this.items.remove((Item)targetChild);
+	}
+
+
+/*
+	public void setItem(Item item){
+		if(item != null){
+			this.item = item;
+			if(this.item.getPicture() != this) this.item.setPicture(this);
+		}else{
+			logger.warn("Item parameter is null");
+		}
+	}*/
 
 	public String toString(int indents) {
 		String indent = "\n";
@@ -89,7 +124,15 @@ public class Picture extends RelatedEntity implements Serializable, Identifiable
 			.append(indent).append("smalluri: ").append(this.smalluri)
 			.append(indent).append("largeuri:").append(this.largeuri)
 			.append(indent).append("thumbnail:").append(this.thumbnailuri)
-			.append(indent).append(indent).append("content: ").append((this.content == null ? "null" : this.content.getId() == null ? "null" : content.getId().toString()));
+			.append(indent).append(indent).append("content: ").append((this.content == null ? "null" : this.content.getId() == null ? "null" : content.getId().toString()))
+			.append(indent).append("items: [");
+		for (Item item: this.items){
+			sb.append(indent).append("{")
+			.append(((item == null) ? "null" : item.getIdText()/*.toString(indents + 1)*/))
+			.append(indent).append("}, ");
+		}
+		sb.append(indent).append("]");
+			//.append(indent).append(indent).append("item: ").append((this.item == null ? "null" : this.item.getId() == null ? "null" : item.getId().toString()));
 		
 		return sb.toString();
 	}	

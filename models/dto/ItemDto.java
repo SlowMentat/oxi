@@ -24,6 +24,7 @@ public class ItemDto implements Serializable, Identifiable<String>
 	private String size;
 	private String retailer;
 	private String brand;
+	private String coverpicuri;
 
 	public ItemDto(){}
 
@@ -36,6 +37,18 @@ public class ItemDto implements Serializable, Identifiable<String>
 		this.size = size;
 		this.retailer = retailer;
 		this.brand = brand;
+	}
+
+	public ItemDto(String id, Float positionx, Float positiony, String type, String size, String retailer, String brand, String coverpicuri){
+		//super();
+		this.id = id;
+		this.positionx = positionx;
+		this.positiony = positiony;
+		this.type = type;
+		this.size = size;
+		this.retailer = retailer;
+		this.brand = brand;
+		this.coverpicuri = coverpicuri;
 	}
 	//Had to add jackson annotations for calling controller with ArrayList<ItemDto> typed parameter
 	/*@JsonCreator
@@ -72,6 +85,7 @@ public class ItemDto implements Serializable, Identifiable<String>
 	public void setSize(String size){this.size = size;}	
 	public void setRetailer(String retailer){this.retailer = retailer;}
 	public void setBrand(String brand){this.brand = brand;}
+	public void setcoverpicuri(String coverpicuri){this.coverpicuri = coverpicuri;}
 	//public void setProfile(Profile profile){this.profile = profile;}	
 	//public void setContents(List<Content> contents){this.contents = contents;}
 	
@@ -84,6 +98,7 @@ public class ItemDto implements Serializable, Identifiable<String>
 	public String getSize(){return this.size;}
 	public String getRetailer(){return (this.retailer == null) ? this.retailer : this.retailer.toLowerCase();}
 	public String getBrand(){return (this.brand == null) ? this.brand : this.brand.toLowerCase();}
+	public String getcoverpicuri(){return this.coverpicuri;}
 	//public List<Content> getContents(){return this.contents;}
 	//public Profile getProfile(){return this.profile;}
 
@@ -99,7 +114,8 @@ public class ItemDto implements Serializable, Identifiable<String>
 			.append(indent).append("type:").append(((this.type == null) ? "null" : this.type))
 			.append(indent).append("size:").append(((this.size == null) ? "null" : this.size))
 			.append(indent).append("retailer:").append(((this.retailer == null) ? "null" : this.retailer))
-			.append(indent).append("brand:").append(((this.brand == null) ? "null" : this.brand));
+			.append(indent).append("brand:").append(((this.brand == null) ? "null" : this.brand))
+			.append(indent).append("coverpicuri:").append(((this.coverpicuri == null) ? "null" : this.coverpicuri));
         return sb.toString();		
 	}
 }
