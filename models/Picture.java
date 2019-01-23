@@ -126,10 +126,12 @@ public class Picture extends RelatedEntity implements Serializable, Identifiable
 			.append(indent).append("thumbnail:").append(this.thumbnailuri)
 			.append(indent).append(indent).append("content: ").append((this.content == null ? "null" : this.content.getId() == null ? "null" : content.getId().toString()))
 			.append(indent).append("items: [");
-		for (Item item: this.items){
-			sb.append(indent).append("{")
-			.append(((item == null) ? "null" : item.getIdText()/*.toString(indents + 1)*/))
-			.append(indent).append("}, ");
+		if(this.items != null){
+			for (Item item: this.items){
+				sb.append(indent).append("{")
+				.append(((item == null) ? "null" : item.getIdText()/*.toString(indents + 1)*/))
+				.append(indent).append("}, ");
+			}
 		}
 		sb.append(indent).append("]");
 			//.append(indent).append(indent).append("item: ").append((this.item == null ? "null" : this.item.getId() == null ? "null" : item.getId().toString()));

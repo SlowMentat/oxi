@@ -230,7 +230,9 @@ public class ConsumerService implements ClientService{
 				itemDtos.add(copyToItemDto(itemContent));
 			}
 			PictureDto pictureDto = copyToPictureDto(content.getPicture());
-			return new ContentDto(content.getId().toString(), content.getCoverpicuri(), pictureDto, itemDtos, null);
+			String outfitId = null;
+			if(content.getOutfit()  != null) outfitId = content.getOutfit().getIdText();
+			return new ContentDto(content.getId().toString(), content.getCoverpicuri(), pictureDto, itemDtos, outfitId);
 		}
 		return null;
 	}
@@ -571,6 +573,19 @@ public class ConsumerService implements ClientService{
 		}		
 	}
 
+	@Transactional
+	public ResponseEntity<?> updateOutfitCoverpic(String id, String username, OutfitCoverpicDto outfitCoverpicDto){
+		Profile profile = profileRep.findByUsername(username);
+		if(profile.getUsername().equals(username)){
+			Outfit outfit = outfitRep.findById(UUID.fromString(id));
+			outfit.setCoverpicuri(outfitCoverpicDto.getCoverpicuri());
+			entityManager.merge(outfit);
+			return new ResponseEntity<String>("", HttpStatus.OK);
+		}else{
+			return new ResponseEntity<String>("User does not have permissions to edit this resouce", HttpStatus.UNAUTHORIZED);
+		}
+	}
+
 	public List<?> readContents(String outfitId){
 		List<ContentDto> contents = contentRep.findByOutfitId(UUID.fromString(outfitId));
 		return contents.stream().map(this::toResource).collect(Collectors.toList());
@@ -580,7 +595,7 @@ public class ConsumerService implements ClientService{
 		Page<ContentDto> contentDtos = contentRep.findByItemId(UUID.fromString(itemId), pageable).map(new Converter<Content, ContentDto>(){
 			@Override
 			public ContentDto convert(Content content){
-				return new ContentDto(content.getIdText(), content.getCoverpicuri(), null, null, content.getOutfit().getIdText());
+				return new ContentDto(content.getIdText(), content.getCoverpicuri(), new PictureDto(content.getPicture()), null, content.getOutfit().getIdText());
 			}	
 		});
 		return contentPRAP.toResource(contentDtos, this::toResource);
@@ -707,14 +722,15 @@ public class ConsumerService implements ClientService{
 			logger.debug("picture after persist = " + picture);
 			pictureDtoResult = copyToPictureDto(picture);
 			content.setOutfit(parentOutfit);
+			contentDtosResult.add(copyToContentDto(content));
 			logger.debug("ConsumerService#createContents: parentOutfit = " + parentOutfit.toString());
 			//contentDtosResult.add(new ContentDto(content.getId().toString(), content.getCoverpicuri(), pictureDtoResult, itemsDtosResult));
 		}
 		entityManager.merge(parentOutfit);
-
+/*
 		for(Content content : parentOutfit.getContents()){
 			contentDtosResult.add(copyToContentDto(content));
-		}
+		}*/
 		
 		return contentDtosResult;
 	}

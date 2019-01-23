@@ -322,10 +322,20 @@ public class ConsumerController{
 
 	@RestResource(exported = true)
 	@RequestMapping(value = "/contents/items/{itemId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getContents(final Principal principa, @PathVariable("itemId") String itemId, @PageableDefault Pageable pageable){
+	public ResponseEntity<?> getContents(final Principal principal, @PathVariable("itemId") String itemId, @PageableDefault Pageable pageable){
 		return new ResponseEntity<PagedResources<?>>(consumerService.getContentsByItemId(itemId, pageable), HttpStatus.OK);
 	}
 
+	@RestResource(exported = true)
+	@RequestMapping(value = "/outfit/{id}", method = RequestMethod.PATCH)
+	public ResponseEntity<?> updateOutfitCoverpic(final Principal principal, @RequestBody OutfitCoverpicDto outfitCoverpicDto, @PathVariable("id") String id){
+		String username = principal.getName();
+		try{
+			return consumerService.updateOutfitCoverpic(id, username, outfitCoverpicDto);
+		}catch(Exception e){
+			return new ResponseEntity<Exception>(e, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
 	/*
 	******************************************************************

@@ -33,6 +33,13 @@ public class PictureDto implements Serializable, Identifiable<String>
 		this.largeuri = largeuri;
 	}
 
+	public PictureDto(Picture picture){
+		this.id = picture.getIdText();
+		this.thumbnailuri = picture.getThumbnailuri();
+		this.smalluri = picture.getSmalluri();
+		this.largeuri = picture.getLargeuri();
+	}
+
 	/*@JsonCreator
 	public PictureDto(
 		@JsonProperty("id")

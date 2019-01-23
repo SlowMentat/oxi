@@ -79,7 +79,7 @@ public class ContentDto implements Serializable, Identifiable<String>
 	//public Outfit getOutfit(){return this.outfit;}
 	public PictureDto getPicture(){return this.picture;}
 	public List<ItemDto> getItems(){return this.items;}
-	public String getOutfitId(){return this.outfitId;}
+	public String getOutfitId(){return (this.outfitId == null) ? this.outfitId : this.outfitId.toLowerCase();}
 
 	//@Override 
 	public String toString(int indents){
