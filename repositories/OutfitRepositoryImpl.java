@@ -179,4 +179,45 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 		logger.debug(outfitTuples.size());
 		return new PageImpl<Outfit>(outfitTuples, pageable, outfitCount);
 	}
+
+	@Override
+	public Page<Outfit> getAllOutfitsWithUsername(Pageable pageable){
+		Outfit outfit;
+		Profile profile;
+		List<Outfit> outfits = new ArrayList<Outfit>();
+		Session session = entityManager.unwrap(Session.class);	
+		String outfitQ = "select {o.*}, {p.*} from outfit o join profile p on p.id=o.profile_id";
+		String countQ = "select count(o.id) as cnt from outfit o";
+ 
+		Long outfitCount = (Long)session.createSQLQuery(countQ)
+			.addScalar("cnt", LongType.INSTANCE)
+			.uniqueResult();
+
+		List<Object[]> outfitProfileTuples = session.createSQLQuery(outfitQ)
+			.addEntity("o", Outfit.class)
+			.addEntity("p", Profile.class)
+			.setFirstResult(pageable.getOffset())
+			.setMaxResults(pageable.getPageSize())
+			.list();
+
+		for(Object[] tuple : outfitProfileTuples){
+			outfit = (Outfit)tuple[0];
+			profile = (Profile)tuple[1];
+			if(profile != null){
+				if(profile.getUsername() != null){
+					logger.debug("profile.username = " + ((Profile)tuple[1]).getUsername());
+				}else{
+					logger.debug("profile.username is null!");
+				}
+			}else{
+				logger.debug("profile is null");
+			}
+			outfit.setUsername(profile.getUsername());
+			outfits.add(outfit);
+		}
+
+		logger.debug("outfitProfileTuples Size = ");
+		logger.debug(outfitProfileTuples.size());
+		return new PageImpl<Outfit>(outfits, pageable, outfitCount);
+	}
 }

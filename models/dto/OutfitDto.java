@@ -44,6 +44,7 @@ public class OutfitDto implements Serializable, Identifiable<String>
 	//@JsonIdentityReference(alwaysAsId=true)
 	private List<ContentDto> contents;
 	private String coverpicuri;
+	private String username;
 
 	public OutfitDto(){}
 
@@ -54,6 +55,16 @@ public class OutfitDto implements Serializable, Identifiable<String>
 		this.comments = comments;
 		this.contents = contents;
 		this.coverpicuri = coverpicuri;
+	}
+
+	public OutfitDto(String id, int likes, String comments, List<ContentDto> contents, String coverpicuri, String username){
+		//super();
+		this.id = id;
+		this.likes = likes;
+		this.comments = comments;
+		this.contents = contents;
+		this.coverpicuri = coverpicuri;
+		this.username = username;
 	}
 		
 	/*@JsonCreator
@@ -85,6 +96,7 @@ public class OutfitDto implements Serializable, Identifiable<String>
 	//Profile getProfile();
 	public List<ContentDto> getContents(){return this.contents;}
 	public String getCoverpicuri(){return this.coverpicuri;}
+	public String getUsername(){return this.username;}
 
 	//Setters
 	public void setId(String id){this.id = id;}
@@ -92,7 +104,7 @@ public class OutfitDto implements Serializable, Identifiable<String>
 	public void setComments(String comments){this.comments = comments;}
 	public void setContents(List<ContentDto> contents){logger.debug("contents[] = " + contents); this.contents = contents;}
 	public void setCoverpicuri(String coverpicuri){this.coverpicuri = coverpicuri;}
-
+	public void setUsername(String username){this.username = username;}
 
 	public String toString(int indents) {
 		String indent = "\n";

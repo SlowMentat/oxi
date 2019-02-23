@@ -16,8 +16,11 @@ import org.springframework.data.domain.Pageable;
 public interface OutfitRepositoryCustom /*extends PagingAndSortingRepository<Outfit, Long>*/{
 	@Query(value="")
 	Page<OutfitDto> findByProfileId(UUID id, Pageable pageable);
+
 	@Query(value="")
 	Page<Outfit> findAll(Pageable pageable);
 	//@Query(value="")
 	//Outfit persist(Outfit outfit);
+	@Query(value="SELECT o FROM Outfit o")
+	Page<Outfit> getAllOutfitsWithUsername(Pageable pageable);
 }

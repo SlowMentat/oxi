@@ -58,6 +58,8 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 	//@JsonManagedReference
 	private Profile profile;
 
+	private String username;
+
 	/*@Column(name = "profile_id_text", updatable = false)
 	private String profileText;*/
 	
@@ -73,6 +75,16 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 		this.contents = contents;
 		this.coverpicuri = coverpicuri;
 	}
+
+	public Outfit(UUID id, int likes, String comments, List<Content> contents, String coverpicuri, String username){
+		//super();
+		this.id = id;
+		this.likes = likes;
+		this.comments = comments;
+		this.contents = contents;
+		this.coverpicuri = coverpicuri;
+		this.username = username;
+	}
 	
 	//Setters
 	//@Override
@@ -81,6 +93,7 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 	public void setLikes(int likes){this.likes = likes;}		
 	public void setComments(String comments){this.comments = comments;}	
 	public void setCoverpicuri(String uri){this.coverpicuri = uri;}	
+	public void setUsername(String username){this.username = username;}
 	//set the binary and text profile ids and assures that changes are propogated to all child entity objects
 	public void setProfile(Profile profile){
 		
@@ -126,6 +139,7 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 	public Profile getProfile(){return this.profile;}
 	public List<Content> getContents(){return this.contents;}
 	public String getCoverpicuri(){return this.coverpicuri;}
+	public String getUsername(){return this.username;}
 	
 	//Auxillary methods
 	/*@Override

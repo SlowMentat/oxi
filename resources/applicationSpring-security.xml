@@ -28,6 +28,7 @@
         <!--<http auto-config="false" entry-point-ref="http403EntryPoint">-->
         <http auto-config="false" entry-point-ref="authenticationEntryPoint" disable-url-rewriting="true">
                 <csrf request-matcher-ref="csrfSecurityRequestMatcher"/>
+                <intercept-url pattern="/consumer/outfits"      access="permitAll" method="OPTIONS" />
                 <intercept-url pattern="/consumer/createUser"   access="permitAll"/>
                 <intercept-url pattern="/login"                 access="permitAll"/>
                 <intercept-url pattern="/logout"                access="permitAll"/>
@@ -105,7 +106,7 @@
                 <beans:property name="authenticationManager" ref="defaultAuthenticationManager" />
                 <beans:property name="authenticationSuccessHandler">
                     <beans:bean class="oxi.security.CustomLoginSuccessHandler">
-                        <beans:constructor-arg name="defaultTargetUrl" value="http://72.14.177.220/gs-convert-jar-to-war-0.1.0/consumer/profile" /> <!--the default redirect url on successful login-->
+                        <beans:constructor-arg name="defaultTargetUrl" value="https://www.oxisalechannel.com/gs-convert-jar-to-war-0.1.0/consumer/profile" /> <!--the default redirect url on successful login-->
                     </beans:bean>
                 </beans:property>
         </beans:bean>

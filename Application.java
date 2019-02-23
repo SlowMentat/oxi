@@ -28,6 +28,7 @@ import org.springframework.core.io.*;
 import org.springframework.data.rest.webmvc.config.*;
 import org.springframework.data.web.config.*;
 import org.springframework.data.jpa.repository.config.*;
+import org.springframework.data.repository.query.*;
 
 import com.fasterxml.jackson.databind.*;
 
@@ -65,7 +66,7 @@ import java.util.Arrays;
 //Addition annotations
 @EnableSpringDataWebSupport
 @EntityScan(basePackages="oxi.models")
-@EnableJpaRepositories(basePackages="oxi.repositories")
+@EnableJpaRepositories(basePackages="oxi.repositories"/*, queryLookupStrategy=QueryLookupStrategy.Key.USE_DECLARED_QUERY*/)
 @EnableWebSecurity
 @EnableHypermediaSupport(type = HypermediaType.HAL)
 @EnableWebMvc

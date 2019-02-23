@@ -561,10 +561,10 @@ public class ConsumerService implements ClientService{
 	public PagedResources<?> readFilteredOutfits(String filter, Pageable pageable){
 		switch(filter){
 			case "all":
-				Page<OutfitDto> outfits = outfitRep.findAll(pageable).map(new Converter<Outfit, OutfitDto>(){
+				Page<OutfitDto> outfits = outfitRep.getAllOutfitsWithUsername(pageable).map(new Converter<Outfit, OutfitDto>(){
 					@Override
 					public OutfitDto convert(Outfit outfit){
-						return new OutfitDto(outfit.getIdText(), outfit.getLikes(), outfit.getComments(), new ArrayList<ContentDto>(5), outfit.getCoverpicuri());
+						return new OutfitDto(outfit.getIdText(), outfit.getLikes(), outfit.getComments(), new ArrayList<ContentDto>(5), outfit.getCoverpicuri(), outfit.getUsername());
 					}	
 				});
 				return outfitPRAP.toResource(outfits, this::toResource);
