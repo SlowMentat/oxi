@@ -19,9 +19,12 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import oxi.models.*;
+import oxi.models.retailer.*;
 import oxi.repositories.*;
+import oxi.repositories.retailer.*;
 //import oxi.util.assemblers.*;
 import oxi.models.dto.*;
+import oxi.models.dto.retailer.*;
 import oxi.models.projection.*;
 
 import org.springframework.stereotype.*;
@@ -70,6 +73,9 @@ public class RetailerService{
 	@Autowired private RetailerRepository retailerRep;
 	@Autowired private SizeRepository sizeRep;
 
+	@Autowired private RetailerAccountRepository retailerAccountRep;
+	@Autowired private SizeChartRepository sizeChartRep;
+
 	//Resource Assemblers
 	//@Autowired 
 	//private OutfitResourceAssembler outfitRA;
@@ -88,6 +94,7 @@ public class RetailerService{
 
 	@Autowired private PagedResourcesAssembler<Item> itemPRA;
 	@Autowired private PagedResourcesAssembler<ItemDto> itemPRAP;
+	@Autowired private PagedResourcesAssembler<ProductDto> productPRAP;
 
 	@Autowired private PagedResourcesAssembler<Brand> brandPRA;
 	@Autowired private PagedResourcesAssembler<BrandDto> brandPRAP;
@@ -122,6 +129,349 @@ public class RetailerService{
 
 	}
 	//=====================================================================================
+
+	private static PictureDto copyToPictureDto(Picture picture){
+		if(picture != null){
+			return new PictureDto(
+				picture.getId().toString(), 
+				picture.getThumbnailuri(), 
+				picture.getSmalluri(), 
+				picture.getLargeuri());
+		}
+		return null;
+	}
+
+	private static Picture copyToPicture(PictureDto pictureDto){
+		if(pictureDto != null){
+			if(pictureDto.getId() != null) return new Picture(
+				UUID.fromString(pictureDto.getId()), 
+				pictureDto.getThumbnailuri(), 
+				pictureDto.getSmalluri(), 
+				pictureDto.getLargeuri());	
+			else return new Picture(
+				null, 
+				pictureDto.getThumbnailuri(), 
+				pictureDto.getSmalluri(), 
+				pictureDto.getLargeuri());
+		}
+		return null;
+	}
+
+	private static SizeChart copyToSizeChart(SizeChartDto sizeChartDto){
+		if(sizeChartDto != null){			
+			return new SizeChart(sizeChartDto);
+			/*if(sizeChartDto.getId() != null) return new SizeChart(
+				UUID.fromString(sizeChartDto.getId()),
+				sizeChartDto.getChartName(),
+				copyTosizeGroups(sizeChartDto.getSizeGroupDtos()),
+				//copyToItems(sizeChartDto.getItems()))
+			else return new SizeChart(
+				null,
+				sizeChartDto.getSizeGroupDtos());*/
+		}
+		return null;
+	}
+
+	private static List<Item> copyToItems(List<ProductDto> productDtos){
+		if(productDtos != null){
+			List<Item> items = new ArrayList<Item>(productDtos.size());
+			for(ProductDto productDto : productDtos){
+				items.add(copyToItem(productDto));
+			}
+			return items;
+		}else{
+			return null;
+		} 
+	}
+
+	private static Item copyToItem(ProductDto productDto){
+		if(productDto != null){
+			return new Item(
+				null,
+				productDto.getProductId(),
+				productDto.getType(),
+				UUID.fromString(productDto.getSizeGroupId()),
+				productDto.getLink(),
+				productDto.getIsRetailPicture(),
+				productDto.getIsActive(),
+				copyToPicture(productDto.getPictureDto()),
+				copyToSizeChart(productDto.getSizeChartDto()),
+				null
+			);
+		}else{	
+			return null;
+		}
+	}
+
+	private static List<SizeGroup> copyTosizeGroups(List<SizeGroupDto> sizeGroupDtos){
+		if(sizeGroupDtos != null){
+			List<SizeGroup> sizeGroups = new ArrayList<SizeGroup>(sizeGroupDtos.size());
+			for(SizeGroupDto sizeGroupDto : sizeGroupDtos){
+				sizeGroups.add(copyToSizeGroup(sizeGroupDto));
+			}
+			return sizeGroups;
+		}else{
+			return null;
+		}
+	}
+
+	private static SizeGroup copyToSizeGroup(SizeGroupDto sizeGroupDto){
+		if(sizeGroupDto != null){
+			return new SizeGroup(sizeGroupDto);
+			/*return new SizeGroup(
+				UUID.fromString(sizeGroupDto.getId()),
+				sizeGroupDto.getSizeLabel(),
+				sizeGroupDto.getNeck(),
+				sizeGroupDto.getFullShoulder(),
+				sizeGroupDto.getHalfShoulder(),
+				sizeGroupDto.getChest(),
+				sizeGroupDto.getWaist(),
+				sizeGroupDto.getHip(),
+				sizeGroupDto.getSleeve(),
+				sizeGroupDto.getFrontLength(),
+				sizeGroupDto.getBackLength(),
+				sizeGroupDto.getPantOutseam(),
+				sizeGroupDto.getPantInseam(),
+				sizeGroupDto.getThigh(),
+				sizeGroupDto.getCalf()
+			);*/
+		}else{
+			return null;
+		}
+	}
+
+	@Transactional
+	public PagedResources<?> getProducts(String username, String filter, Pageable pageable) /*throws Exception*/{
+		RetailerAccount retailerAccount = retailerAccountRep.findByCompanyName(username);
+		//RetailerAccount retailerAccount = retailerAccountRep.findByUsername(username);
+		//if(retailerAccount == null) throw new Exception("invalid argument");
+		switch(filter){
+			case "all":
+				Page<ProductDto> productDtos = itemRep.getAllItemsWithRetailerAccount(retailerAccount.getId(), pageable).map(new Converter<Item, ProductDto>(){
+					@Override
+					public ProductDto convert(Item item){
+						return new ProductDto(item);
+					}
+				});
+				return productPRAP.toResource(productDtos, this::toResource);
+			default:
+				return null;
+		}
+	}
+
+	//TODO:  currently returning payload on successful transaction...
+	@Transactional
+	public ArrayList<ProductDto> updateProducts(ArrayList<ProductDto> productDtos, String companyName){
+		RetailerAccount retailerAccount = retailerAccountRep.findByCompanyName(companyName);
+		ArrayList<Item> items = new ArrayList<Item>(productDtos.size());
+
+		if(retailerAccount.getCompanyName().equals(companyName)){
+			for(ProductDto productDto : productDtos){
+
+				SizeChart sizeChart = sizeChartRep.findById(UUID.fromString(productDto.getSizeChartDto().getId()));
+				Item item = itemRep.findById(UUID.fromString(productDto.getId()));
+
+				item.setType(productDto.getType());
+				item.setLink(productDto.getLink());
+				item.setIsActive(productDto.getIsActive());
+				item.setPicture(copyToPicture(productDto.getPictureDto()));
+				item.setIsRetailPicture(productDto.getIsRetailPicture());
+				item.setSizeChart(sizeChart);
+				item.setSizeGroupId(UUID.fromString(productDto.getSizeGroupId()));
+
+				//entityManager.merge(sizeChart);
+				items.add(entityManager.merge(item));
+			}
+
+		}else{
+			logger.warn("Company, " + companyName + " does not have permissions to edit item");
+		}
+		return productDtos;
+	}
+
+	/*@Transactional
+	public ArrayList<ProductDto> updateProducts(HashMap<String, ArrayList<ProductDto>> sizeChartIdToProductDtoMap, String companyName){
+		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId));
+		RetailerAccount retailerAccount = retailerAccountRep.findByCompanyName(companyName);
+		
+
+		if(retailerAccount.companyName().equals(companyName)){
+			for(String sizeChartId : sizeChartIdToProductDtoMap.keySet()){
+
+				SizeChart sizeChart = sizeChartRep.findById(UUID.fromString(sizeChartId));
+				List<SizeChartSizeGroup> sizeChartsizeGroups = sizeChart.getItems();
+
+				for(ProductDto productDto : sizeChartIdToProductDtoMap.get(sizeChartId)){
+					//logger.debug(productDto.getId() + "\n");
+					int ind = -1;
+					for(SizeChartSizeGroup sizeChartSizeGroup : sizeChartsizeGroups){
+						ind++;
+						if(sizeChart.getId().equals(sizeChartSizeGroup.getSizeChart().getId()) && productDto.getId().equals(sizeChartSizeGroup.getItem().getId().toString())){
+							logger.debug("RetailerService#updateItems: sizeChartsizeGroups = \n" + sizeChartSizeGroup.toString());
+							sizeChartSizeGroup.getItem().setType(productDto.getType()); 
+							sizeChartSizeGroup.getItem().setSizeGroup(UUID.fromString(productDto.getSizeGroups()));
+							sizeChartSizeGroup.getItem().setRetailer(UUID.fromString(productDto.getRetailer()));
+							sizeChartSizeGroup.getItem().setBrand(UUID.fromString(productDto.getBrand()));
+							entityManager.merge(sizeChartSizeGroup);
+							sizeChartsizeGroups.set(ind, sizeChartSizeGroup);
+							logger.debug("RetailerService#updateItems: updated sizeChartSizeGroup = \n" + sizeChartSizeGroup.toString());
+							break;
+						}
+					}
+
+
+				}
+
+				sizeChart = entityManager.merge(sizeChart);
+				//TODO:  add sizeChart to Retailer Account entity
+				//outfit.getContents().set(outfit.getContents().indexOf(sizeChart), sizeChart);
+			}
+		}else{
+			logger.warn("User, " + username + " does not have permissions to edit item");
+		}
+		return copyToOutfitDto(outfit);
+		//return copyToContentDto(sizeChart)
+	}*/
+
+	@Transactional
+	public ArrayList<ProductDto> createProducts(ArrayList<ProductDto> productDtos, String companyName){
+		RetailerAccount retailerAccount = retailerAccountRep.findByCompanyName(companyName);
+		if(retailerAccount.getCompanyName().equals(companyName)){
+
+			List<Item> items = new ArrayList<Item>(productDtos.size());
+			for(ProductDto productDto : productDtos){
+
+				/*SizeChart sizeChart = null;
+				Picture picture = null;
+
+				if(productDto.getSizeChartDto().getId() != null) sizeChart = sizeChartRep.findById(UUID.fromString(productDto.getSizeChartDto().getId()));
+				else sizeChart = copyToSizeChart(productDto.getSizeChartDto());
+
+				//Note picture reference should already have been persisted to DB before making call to createProducts
+				if(productDto.getPictureDto().getId() != null) picture = pictureRep.findById(UUID.fromString(productDto.getPictureDto().getId()));
+				else picture = copyToPicture(productDto.getPictureDto());
+
+				Item item = new Item(
+					null,
+					productDto.getProductId(),
+					productDto.getType(),
+					productDto.getSizeGroupId(),
+					productDto.getLink(),
+					productDto.getIsRetailPicture(),
+					productDto.getIsActive(),
+					null,
+					null,
+					null
+				);				
+				item.setSizeChart(sizeChart);
+				item.setPicture(picture);*/
+				Item item = new Item(productDto);
+				item.setRetailerAccount(retailerAccount);
+				entityManager.persist(item);
+				items.add(item);
+			}
+
+			int n = 0;
+			for(ProductDto productDto : productDtos){
+				productDto.setId(items.get(n).getId().toString());
+				n++;
+			}
+		}else{
+			logger.warn("Company, " + companyName + " does not have permissions to edit item");
+		}
+
+		return(productDtos);
+	}
+
+	/*@Transactional
+	public ArrayList<ProductDto> activateProducts(ArrayList<ProductDto> productDtos, String companyName){
+		
+	}*/
+
+	@Transactional
+	private void savePicture(String imgFileName){
+		if(imgFileName != null){
+			Picture picture = new Picture();
+			picture.setLargeuri(imgFileName);
+			pictureRep.saveAndFlush(picture);
+		}else{
+			return;
+		}
+	}
+
+
+
+	/*
+	saves jpeg data to filesystem
+	@param MulitpartHttpServletRequest data 
+	@return String indicating generated filename.
+	*/
+	@Transactional
+	public PictureDto saveImage(MultipartHttpServletRequest data){
+		logger.debug("ConsumerService.saveImage() invoked");
+		PictureUpdateDto pictureUpdateDto = imageService.saveImage(data);
+		Picture picture = copyToPicture(pictureUpdateDto);
+		entityManager.persist(picture);
+		pictureUpdateDto.setId(picture.getId().toString());
+		return pictureUpdateDto;
+	}
+	
+	/*
+	saves jpeg data to filesystem, and creates an entry in PictureDeleted with associating picture entity.
+	TODO:  Finiah implementing multiple files identified by a multipart contentId parameter
+	@param MulitpartHttpServletRequest data 
+	@param String contentId
+	@returns json picture object of existing picture entity having properties modified with new image filnames.
+	*/
+	@Transactional
+	public List<PictureUpdateDto> updateImage(MultipartHttpServletRequest data, String contentId){
+		//send existing image to the PictureDeleteTable
+		Content content = contentRep.findById(UUID.fromString(contentId));
+		Picture picture = content.getPicture();
+		//Picture picture = pictureRep.findById(UUID.fromString(pictureId));
+		PictureDelete pd = new PictureDelete(picture);
+		logger.debug("PictureDelete created = " + pd.toString());
+		pictureDeleteRep.saveAndFlush(pd);
+		//save the new image data to fs and return in picture json with existing id.
+		PictureUpdateDto pictureUpdateDto = imageService.saveImage(data);
+		pictureUpdateDto.setId(picture.getId().toString());
+		pictureUpdateDto.setContentId(contentId);
+		List<PictureUpdateDto> pictureUpdateDtos = new ArrayList<PictureUpdateDto>();
+		pictureUpdateDtos.add(pictureUpdateDto);
+		return pictureUpdateDtos;		
+	}
+
+	public byte[] getImage(String filename/*, HttpServletResponse response*/){
+		//Path file = Paths.get(imgfolder+filename);
+		byte[] image = null;
+		logger.debug("in ConsumerService.getImage()");
+		String subfolder = "";
+		switch(filename.substring(0, Math.min(filename.length(), 3))){
+			case "sml":
+				subfolder = "small/";
+				break;
+			case "lrg":
+				subfolder = "large/";
+				break;
+			case "tnl":
+				subfolder = "thumbnail/";
+				break;
+			default:
+				logger.debug("no matching prefix in filename");
+				break;
+		}
+		try{
+			iStream = new FileInputStream(imgfolder + subfolder + filename + ".jpg");
+			image = IOUtils.toByteArray(iStream);
+			logger.debug("image byte[] length = " + image.length);
+			return image;
+			/*Files.copy(file, response.getOutputStream());
+			response.getOutputStream.flush();*/
+		}catch(IOException e){
+			logger.debug(e);
+		}
+		return image;
+	}
 
 
 	private <T extends Identifiable<String>> ResourceSupport toResource(T dto){		

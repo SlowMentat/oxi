@@ -8,9 +8,13 @@ import org.springframework.data.domain.*;
 import java.util.*;
 
 @RepositoryRestResource(collectionResourceRel="Item", path="item")
-public interface ItemRepository extends JpaRepository<Item, UUID>{
+public interface ItemRepository extends JpaRepository<Item, UUID>, ItemRepositoryCustom{
 	
 	@RestResource(exported=true, path="byid", rel="SearchAllById")
 	@Query(value = "SELECT * FROM item WHERE profile_id = ?1", nativeQuery = true)
 	List<Item> findByProfileId(long profileid/*, Pageable pageable*/);
+
+	Item findById(UUID id);
+
+	//List<Item> findByProductOwner(String productOwner);
 } 

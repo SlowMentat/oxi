@@ -55,7 +55,7 @@ import oxi.models.*;
 import oxi.repositories.*;
 import oxi.models.dto.*;
 import oxi.models.projection.*;
-import oxi.services.ConsumerService;
+import oxi.services.RetailerService;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -81,38 +81,31 @@ import org.springframework.http.*;
 
 //@RestController
 //@Controller
-@RequestMapping("/consumer")
+@RequestMapping("/retailer")
 @RepositoryRestController
-public class ConsumerController{
-	public static final String defaultExceptionResponse = "Our servers seem to have freyed a bit.\nPlease wait a moment and try your request agian.";
+public class RetailerController{
+	public static final String defaultExceptionResponse = "Our servers seem to have ran into a problem.\nPlease wait a moment and try your request agian.";
 
 	//Services
 	@Autowired
-	private ConsumerService consumerService;
-	private static final Logger logger = LogManager.getLogger(ConsumerController.class);
+	private RetailerService retailerService;
+	private static final Logger logger = LogManager.getLogger(RetailerController.class);
 
-	/*@RequestMapping(value="*", method=RequestMethod.OPTIONS)
-	public ResponseEntity<?> preflight(){
-		logger.debug("yo!");
-		return new ResponseEntity<>(null, HttpStatus.OK);
-	}*/
-
-	//@Secured ({"ROLE_USER"})
-	@RequestMapping(value="/uploadPhoto", method=RequestMethod.POST)
+	/*@RequestMapping(value="/uploadPhoto", method=RequestMethod.POST)
 	public ResponseEntity<?> uploadImage(MultipartHttpServletRequest requestData){
 		StringWriter stringWriter = new StringWriter();
 		PrintWriter printWriter = new PrintWriter(stringWriter);
 
 		//try{
 			logger.debug("/uploadPhoto content length = " + requestData.getContentLength() + " bytes");
-			PictureDto pictureDto = consumerService.saveImage(requestData);
+			PictureDto pictureDto = retailerService.saveImage(requestData);
 			return new ResponseEntity<PictureDto>(pictureDto, HttpStatus.CREATED);
-		/*}catch(Exception e){
-			e.printStackTrace(printWriter);
-			logger.debug(stringWriter.toString()); //stack trace as stirng		
-		}finally{			
-			return new ResponseEntity<String>(defaultExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);	
-		}*/
+		//}catch(Exception e){
+		//	e.printStackTrace(printWriter);
+		//	logger.debug(stringWriter.toString()); //stack trace as stirng		
+		//}finally{			
+		//	return new ResponseEntity<String>(defaultExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);	
+		//}
 	}
 
 	@RequestMapping(value="/updatePhoto/{contentId}", method=RequestMethod.POST) //TODO:  Override multipart resolver to allow for put requests
@@ -122,7 +115,7 @@ public class ConsumerController{
 
 		try{
 			logger.debug("/updatePhoto content length = " + requestData.getContentLength() + " bytes");
-			List<PictureUpdateDto> pictureUpdateDto = consumerService.updateImage(requestData, contentId);
+			List<PictureUpdateDto> pictureUpdateDto = retailerService.updateImage(requestData, contentId);
 			return new ResponseEntity<List<PictureUpdateDto>>(pictureUpdateDto, HttpStatus.OK);
 		}catch(Exception e){
 			e.printStackTrace(printWriter);
@@ -130,22 +123,22 @@ public class ConsumerController{
 		}finally{			
 			return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-	}
+	}*/
 	
-	@RequestMapping(value="/image/{filename}", method=RequestMethod.GET/*, produces = MediaType.IMAGE_JPEG_VALUE*/)
+	@RequestMapping(value="/image/{filename}", method=RequestMethod.GET)
 	public @ResponseBody byte[] getImage(@PathVariable String filename) throws IOException{
-		return consumerService.getImage(filename);
+		return retailerService.getImage(filename);
 	}
+/*
+	//@RequestMapping(value="/image2/{filename}", method=RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
+	//public @ResponseBody byte[] getImageProduces(@PathVariable String filename) throws IOException{
+	//	return retailerService.getImage(filename);
+	//}
 
-	/*@RequestMapping(value="/image2/{filename}", method=RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
-	public @ResponseBody byte[] getImageProduces(@PathVariable String filename) throws IOException{
-		return consumerService.getImage(filename);
-	}*/
-
-	/*@RequestMapping(value="/image2/{filename}", method=RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
-	public byte[] getImageByte(@PathVariable("filename") String filename) throws IOException{
-		return consumerService.getImage(filename);
-	}*/
+	//@RequestMapping(value="/image2/{filename}", method=RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
+	//public byte[] getImageByte(@PathVariable("filename") String filename) throws IOException{
+	//	return retailerService.getImage(filename);
+	//}
 
 
 	@RequestMapping(value="/image3/{filename}", method=RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
@@ -153,53 +146,53 @@ public class ConsumerController{
 	public ResponseEntity<byte[]> getImageResponseEntity(@PathVariable("filename") String filename) throws IOException{
 		final HttpHeaders headers = new HttpHeaders();
     	headers.setContentType(MediaType.IMAGE_JPEG);
-		return new ResponseEntity<byte[]>(consumerService.getImage(filename), headers, HttpStatus.CREATED);
+		return new ResponseEntity<byte[]>(retailerService.getImage(filename), headers, HttpStatus.CREATED);
 	}	
 
-	/*
-	******************************************************************
-	HTTP Request handling methods (GET and POST) for BRAND resource
-	******************************************************************
-	*/
+	//
+	//******************************************************************
+	//HTTP Request handling methods (GET and POST) for BRAND resource
+	//******************************************************************
+	//
 	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
 	@RequestMapping(value="/brands", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getBrands(@PageableDefault Pageable pageable){
 		try{
-			return new ResponseEntity<PagedResources<?>>(consumerService.readBrands(pageable), HttpStatus.OK);
+			return new ResponseEntity<PagedResources<?>>(retailerService.readBrands(pageable), HttpStatus.OK);
 		}catch(Exception e){
 			return new ResponseEntity<String>(defaultExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
-	/*
-	******************************************************************
-	HTTP Request handling methods (GET and POST) for RETAILER resource
-	******************************************************************
-	*/
+	
+	//******************************************************************
+	//HTTP Request handling methods (GET and POST) for RETAILER resource
+	//******************************************************************
+	
 	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
 	@RequestMapping(value="/retailers", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getRetailers(@PageableDefault Pageable pageable){
 		try{
-			return new ResponseEntity<PagedResources<?>>(consumerService.readRetailers(pageable), HttpStatus.OK);
+			return new ResponseEntity<PagedResources<?>>(retailerService.readRetailers(pageable), HttpStatus.OK);
 		}catch(Exception e){
 			logger.debug(e.toString());
 			return new ResponseEntity<String>(defaultExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
-	/*
-	******************************************************************
-	HTTP Request handling methods (GET and POST) for SIZE resource
-	******************************************************************
-	*/
+	
+	//******************************************************************
+	//HTTP Request handling methods (GET and POST) for SIZE resource
+	//******************************************************************
+	//
 
-	/*
-	******************************************************************
-	HTTP Request handling methods (GET and POST) for OUTFIT resource
-	******************************************************************
-	*/
+	//
+	//******************************************************************
+	//HTTP Request handling methods (GET and POST) for OUTFIT resource
+	//******************************************************************
+	//
 	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
 	@RequestMapping(value="/outfit", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -209,18 +202,18 @@ public class ConsumerController{
 		//try{	
 			long startTime = System.currentTimeMillis();
 
-			//ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.saveOutfit(outfit, username), HttpStatus.CREATED);
-			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.addOutfit(outfitDto, username), HttpStatus.CREATED);
+			//ResponseEntity<?> responseEntity = new ResponseEntity<>(retailerService.saveOutfit(outfit, username), HttpStatus.CREATED);
+			ResponseEntity<?> responseEntity = new ResponseEntity<>(retailerService.addOutfit(outfitDto, username), HttpStatus.CREATED);
 
 			long endTime = System.currentTimeMillis();
-			logger.debug("ConsumerService execution time for call to saveOutfit: " + (endTime - startTime) + "ms");
+			logger.debug("RetailerService execution time for call to saveOutfit: " + (endTime - startTime) + "ms");
 			return responseEntity;
-		/*}catch(Exception e){
-			logger.debug("Could not save new outfit data from /outfit controller\n" + e);
-			throw new Exception("Could not save new outfit data from /outfit controller", e);
-		}finally{			
-			return new ResponseEntity<String>(defaultExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);	
-		}*/
+		//}catch(Exception e){
+		//	logger.debug("Could not save new outfit data from /outfit controller\n" + e);
+		//	throw new Exception("Could not save new outfit data from /outfit controller", e);
+		//}finally{			
+		//	return new ResponseEntity<String>(defaultExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);	
+		//}
 	}
 
 	//@PreAuthorize("#name == principal.username")
@@ -229,7 +222,7 @@ public class ConsumerController{
 	@CrossOrigin(origins = "https://oxisalechannel.com")
 	@RequestMapping(value="/outfit/{id}", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public HttpEntity<?> readOutfit(@PathVariable("id") String id){
-		return new ResponseEntity<>(consumerService.readOutfit(id), HttpStatus.OK);
+		return new ResponseEntity<>(retailerService.readOutfit(id), HttpStatus.OK);
 	}
 
 	@RestResource(exported = true)
@@ -237,7 +230,7 @@ public class ConsumerController{
 	@RequestMapping(value = "/outfits/{username}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> readOutfits(@PathVariable("username") String username, @PageableDefault Pageable pageable){
 		logger.debug("username = <" + username + ">");
-		return new ResponseEntity<PagedResources<?>>(consumerService.readOutfits(username, pageable), HttpStatus.OK);
+		return new ResponseEntity<PagedResources<?>>(retailerService.readOutfits(username, pageable), HttpStatus.OK);
 	}
 
 	@RestResource(exported = true)
@@ -248,27 +241,27 @@ public class ConsumerController{
 			String username = principal.getName();
 			logger.debug("username = <" + username + ">");
 			logger.debug("Principal Name: " + principal.getName());
-			return new ResponseEntity<PagedResources<?>>(consumerService.readOutfits(username, pageable), HttpStatus.OK);
+			return new ResponseEntity<PagedResources<?>>(retailerService.readOutfits(username, pageable), HttpStatus.OK);
 		}else{
-			return new ResponseEntity<PagedResources<?>>(consumerService.readFilteredOutfits(filter, pageable), HttpStatus.OK);
+			return new ResponseEntity<PagedResources<?>>(retailerService.readFilteredOutfits(filter, pageable), HttpStatus.OK);
 		}
 	}
 
 
-	/*
-	******************************************************************
-	HTTP Request handling methods (GET and POST) for CONTENT resource
-	******************************************************************
-	*/
+	//
+	//******************************************************************
+	//HTTP Request handling methods (GET and POST) for CONTENT resource
+	//******************************************************************
+	//
 
 	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
 	@RequestMapping(value="/contents/{outfitId}", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> createContents(final Principal principal, @PathVariable("outfitId") String outfitId, @RequestBody ArrayList<ContentDto> contentDtos){
 		String username = principal.getName();
-		//ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.addContents(contents, username, outfitId), HttpStatus.CREATED);
+		//ResponseEntity<?> responseEntity = new ResponseEntity<>(retailerService.addContents(contents, username, outfitId), HttpStatus.CREATED);
 		//try{
-			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.createContents(contentDtos, outfitId), HttpStatus.CREATED);
+			ResponseEntity<?> responseEntity = new ResponseEntity<>(retailerService.createContents(contentDtos, outfitId), HttpStatus.CREATED);
 			return responseEntity;
 		//}catch(Exception e){
 		//	return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -284,9 +277,9 @@ public class ConsumerController{
 		logger.debug("Request Body Received: " + contentDto);
 		try{	
 			long startTime = System.currentTimeMillis();
-			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.createContent(contentDto, outfitId), HttpStatus.CREATED);
+			ResponseEntity<?> responseEntity = new ResponseEntity<>(retailerService.createContent(contentDto, outfitId), HttpStatus.CREATED);
 			long endTime = System.currentTimeMillis();
-			logger.debug("ConsumerService execution time for call to saveContent: " + (endTime - startTime) + "ms");
+			logger.debug("RetailerService execution time for call to saveContent: " + (endTime - startTime) + "ms");
 			return responseEntity;
 		}catch(Exception e){
 			return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -299,7 +292,7 @@ public class ConsumerController{
 	public ResponseEntity<?> updateContent(final Principal principal, @PathVariable String outfitId, @RequestBody ContentDto contentDto){
 		String username = principal.getName();
 		try{
-			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.updateContent(contentDto, outfitId), HttpStatus.OK);
+			ResponseEntity<?> responseEntity = new ResponseEntity<>(retailerService.updateContent(contentDto, outfitId), HttpStatus.OK);
 			return responseEntity;
 		}catch(Exception e){
 			return new ResponseEntity<Exception>(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -312,7 +305,7 @@ public class ConsumerController{
 	public ResponseEntity<?> updateContents(final Principal principal, @PathVariable String outfitId, @RequestBody ArrayList<ContentDto> contentDtos){
 		String username = principal.getName();
 		try{
-			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.updateContents(contentDtos, outfitId), HttpStatus.OK);
+			ResponseEntity<?> responseEntity = new ResponseEntity<>(retailerService.updateContents(contentDtos, outfitId), HttpStatus.OK);
 			return responseEntity;
 		}catch(Exception e){
 			return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -321,14 +314,14 @@ public class ConsumerController{
 
 	@RestResource(exported = true)
 	@RequestMapping(value = "/contents/{outfitId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getContents(@PathVariable("outfitId") String outfitId/*, @PageableDefault Pageable pageable*/){
-		return new ResponseEntity<List<?>>(consumerService.readContents(outfitId), HttpStatus.OK);
+	public ResponseEntity<?> getContents(@PathVariable("outfitId") String outfitId){
+		return new ResponseEntity<List<?>>(retailerService.readContents(outfitId), HttpStatus.OK);
 	}
 
 	@RestResource(exported = true)
 	@RequestMapping(value = "/contents/items/{itemId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getContents(final Principal principal, @PathVariable("itemId") String itemId, @PageableDefault Pageable pageable){
-		return new ResponseEntity<PagedResources<?>>(consumerService.getContentsByItemId(itemId, pageable), HttpStatus.OK);
+		return new ResponseEntity<PagedResources<?>>(retailerService.getContentsByItemId(itemId, pageable), HttpStatus.OK);
 	}
 
 	@RestResource(exported = true)
@@ -336,17 +329,17 @@ public class ConsumerController{
 	public ResponseEntity<?> updateOutfitCoverpic(final Principal principal, @RequestBody OutfitCoverpicDto outfitCoverpicDto, @PathVariable("id") String id){
 		String username = principal.getName();
 		try{
-			return consumerService.updateOutfitCoverpic(id, username, outfitCoverpicDto);
+			return retailerService.updateOutfitCoverpic(id, username, outfitCoverpicDto);
 		}catch(Exception e){
 			return new ResponseEntity<Exception>(e, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-	}
+	}*/
 
-	/*
-	******************************************************************
-	HTTP Request handling methods (GET and POST) for ITEM resource
-	******************************************************************
-	*/
+	//
+	//******************************************************************
+	//HTTP Request handling methods (GET and POST) for ITEM resource
+	//******************************************************************
+	//
 
 	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
@@ -355,23 +348,23 @@ public class ConsumerController{
 		//try{
 			filter = filter == null ? "" : filter;
 			String username = principal.getName();		
-			return new ResponseEntity<PagedResources<?>>(consumerService.getFilteredItems(username, filter, pageable), HttpStatus.OK);
-		/*}catch(Exception e){
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}*/
+			return new ResponseEntity<PagedResources<?>>(retailerService.getProducts(username, filter, pageable), HttpStatus.OK);
+		//}catch(Exception e){
+		//	return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		//}
 	}
 
-	@Secured({"ROLE_USER"})
+	/*@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
 	@RequestMapping(value="/items/{outfitId}", method=RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> uploadExistingItems(final Principal principal, @PathVariable String outfitId, @RequestBody HashMap<String, ArrayList<ItemDto>> payload){
 		String username = principal.getName();
 		//try{	
-			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.updateItems(payload, username, outfitId), HttpStatus.OK);
+			ResponseEntity<?> responseEntity = new ResponseEntity<>(retailerService.updateItems(payload, username, outfitId), HttpStatus.OK);
 			return responseEntity;
-		/*}catch(Exception e){
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}*/
+		//}catch(Exception e){
+		//	return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		//}
 	}
 
 	@Secured({"ROLE_USER"})
@@ -380,11 +373,11 @@ public class ConsumerController{
 	public ResponseEntity<?> removeItemsFromContent(final Principal principal, @PathVariable String outfitId, @RequestBody HashMap<String, ArrayList<String>> payload){
 		String username = principal.getName();
 		//try{	
-			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.removeItemsFromContent(payload, username, outfitId), HttpStatus.OK);
+			ResponseEntity<?> responseEntity = new ResponseEntity<>(retailerService.removeItemsFromContent(payload, username, outfitId), HttpStatus.OK);
 			return responseEntity;
-		/*}catch(Exception e){
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}*/
+		//}catch(Exception e){
+		//	return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		//}
 	}
 
 	@Secured({"ROLE_USER"})
@@ -393,11 +386,11 @@ public class ConsumerController{
 	public ResponseEntity<?> uploadNewItems(final Principal principal, @PathVariable String outfitId, @RequestBody HashMap<String, ArrayList<ItemDto>> payload){
 		String username = principal.getName();
 		//try{	
-			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.addItems(payload, username, outfitId), HttpStatus.CREATED);
+			ResponseEntity<?> responseEntity = new ResponseEntity<>(retailerService.addItems(payload, username, outfitId), HttpStatus.CREATED);
 			return responseEntity;
-		/*}catch(Exception e){
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}*/
+		//}catch(Exception e){
+		//	return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		//}
 	}
 
 	@Secured({"ROLE_USER"})
@@ -406,32 +399,32 @@ public class ConsumerController{
 	public ResponseEntity<?> deleteItems(final Principal principal, @PathVariable String outfitId, @RequestBody HashMap<String, ArrayList<ItemDto>> payload){
 		String username = principal.getName();
 		//try{	
-			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.addItems(payload, username, outfitId), HttpStatus.CREATED);
+			ResponseEntity<?> responseEntity = new ResponseEntity<>(retailerService.addItems(payload, username, outfitId), HttpStatus.CREATED);
 			return responseEntity;
-		/*}catch(Exception e){
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}*/
+		//}catch(Exception e){
+		//	return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		//}
 	}
 
-
-	/*
-	******************************************************************
-	HTTP Request handling methods (GET and POST) for LIKE and BOOKMARk resource
-	******************************************************************
-	*/
-
+*/
+	//
+	//******************************************************************
+	//HTTP Request handling methods (GET and POST) for LIKE and BOOKMARk resource
+	//******************************************************************
+	//
+/*
 	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
 	@RequestMapping(value="/like/{recipientUsername}", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> like(final Principal principal, @PathVariable String recipientUsername){
 		String username = principal.getName();
 		//try{	
-			//ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.likeOutfit(username, recipientUsername), HttpStatus.CREATED);
-			consumerService.likeOutfit(username, recipientUsername);
+			//ResponseEntity<?> responseEntity = new ResponseEntity<>(retailerService.likeOutfit(username, recipientUsername), HttpStatus.CREATED);
+			retailerService.likeOutfit(username, recipientUsername);
 			return new ResponseEntity<>(HttpStatus.CREATED);
-		/*}catch(Exception e){
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}*/
+		//}catch(Exception e){
+		//	return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		//}
 	}
 
 	@Secured({"ROLE_USER"})
@@ -440,13 +433,13 @@ public class ConsumerController{
 	public ResponseEntity<?> bookmark(final Principal principal, @PathVariable String itemId){
 		String username = principal.getName();
 		//try{	
-			//ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.bookmarkItem(username, itemId), HttpStatus.CREATED);
-			consumerService.bookmarkItem(username, itemId);
+			//ResponseEntity<?> responseEntity = new ResponseEntity<>(retailerService.bookmarkItem(username, itemId), HttpStatus.CREATED);
+			retailerService.bookmarkItem(username, itemId);
 			return new ResponseEntity<>(HttpStatus.CREATED);
-		/*}catch(Exception e){
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}*/
-	}
+		//}catch(Exception e){
+		//	return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		//}
+	}//
 
 	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
@@ -454,12 +447,12 @@ public class ConsumerController{
 	public ResponseEntity<?> bookmark(final Principal principal, @RequestBody ArrayList<String> itemIds){
 		String username = principal.getName();
 		//try{	
-			//ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.bookmarkItem(username, itemId), HttpStatus.CREATED);
-			consumerService.bookmarkItems(username, itemIds);
+			//ResponseEntity<?> responseEntity = new ResponseEntity<>(retailerService.bookmarkItem(username, itemId), HttpStatus.CREATED);
+			retailerService.bookmarkItems(username, itemIds);
 			return new ResponseEntity<>(HttpStatus.CREATED);
-		/*}catch(Exception e){
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}*/
+		//}catch(Exception e){
+		//	return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		//}
 	}
 
 	@Secured({"ROLE_USER"})
@@ -468,20 +461,20 @@ public class ConsumerController{
 	public ResponseEntity<?> follow(final Principal principal, @PathVariable String recipientUsername){
 		String username = principal.getName();
 		//try{	
-			//ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.followUser(username, recipientUsername), HttpStatus.CREATED);
-			consumerService.followUser(username, recipientUsername);
+			//ResponseEntity<?> responseEntity = new ResponseEntity<>(retailerService.followUser(username, recipientUsername), HttpStatus.CREATED);
+			retailerService.followUser(username, recipientUsername);
 			return new ResponseEntity<>(HttpStatus.CREATED);
-		/*}catch(Exception e){
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}*/
+		//}catch(Exception e){
+		//	return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		//}
 	}
+*/
 
-
-	/*
-	******************************************************************
-	HTTP Request handling methods (GET and POST) for PROFILE resource
-	******************************************************************
-	*/
+	//
+	//******************************************************************
+	//HTTP Request handling methods (GET and POST) for PROFILE resource
+	//******************************************************************
+/*
 	//@PreAuthorize("#name == principal.username")
 	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
@@ -489,7 +482,7 @@ public class ConsumerController{
 	public ResponseEntity<?> postProfile(final Principal principal, @RequestBody ProfileDto profile){
 		try{
 			logger.debug("Request Body Received: " + profile);
-			return new ResponseEntity(consumerService.createProfile(profile, principal.getName()), HttpStatus.CREATED);
+			return new ResponseEntity(retailerService.createProfile(profile, principal.getName()), HttpStatus.CREATED);
 		}catch(Exception e){
 			logger.error(e);
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
@@ -503,7 +496,7 @@ public class ConsumerController{
 	public ResponseEntity<?> putProfile(final Principal principal, @RequestBody ProfileDto profile){
 		try{
 			logger.debug("Request Body Received: " + profile);
-			return new ResponseEntity(consumerService.updateProfile(profile, principal.getName()), HttpStatus.CREATED);
+			return new ResponseEntity(retailerService.updateProfile(profile, principal.getName()), HttpStatus.CREATED);
 		}catch(Exception e){	
 			logger.error(e);		
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
@@ -515,7 +508,7 @@ public class ConsumerController{
 	@RequestMapping(value="/profile/{username}", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getProfile(final Principal principal, @PathVariable("username") String username){
 		try{
-			return new ResponseEntity(consumerService.readProfile(username), HttpStatus.OK);			
+			return new ResponseEntity(retailerService.readProfile(username), HttpStatus.OK);			
 		}catch(Exception e){
 			logger.error(e);
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
@@ -529,26 +522,26 @@ public class ConsumerController{
 		try{
 			logger.debug("Principal Name:  " + principal.getName());
 			if(outfitId == null || outfitId.isEmpty()){
-				return new ResponseEntity(consumerService.readProfile(principal.getName()), HttpStatus.OK);
+				return new ResponseEntity(retailerService.readProfile(principal.getName()), HttpStatus.OK);
 			}else{//TODO:  Check if parameter is a valid UUID string
-				return new ResponseEntity(consumerService.readMetric(outfitId), HttpStatus.OK);
+				return new ResponseEntity(retailerService.readMetric(outfitId), HttpStatus.OK);
 			}
 		}catch(Exception e){
 			logger.error(e);
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
 		}
-	}
+	}*/
 
 
 	/*@RequestMapping(value="/createUser", method=RequestMethod.POST)
 	public void createUser(@RequestParam String email, @RequestParam String password, @RequestParam(required = false) String username){
-		consumerService.provisionUser(new UserDto(email, password, username));
-	}*/
+		retailerService.provisionUser(new UserDto(email, password, username));
+	}
 	@Secured({"ROLE_ANONYMOUS"})
 	@RequestMapping(value="/createUser", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> createUser(@RequestBody UserDto userDto){
-		return consumerService.provisionUser(userDto);
-	}
+		return retailerService.provisionUser(userDto);
+	}*/
 
 
 }

@@ -2,6 +2,7 @@ package oxi.models.dto;
 
 import oxi.models.projection.*;
 import oxi.models.*;
+import oxi.models.dto.*;
 import java.lang.*;
 import java.util.List;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ public class ProfileDto extends RelatedEntity implements Serializable, Identifia
 	private float pantInseam;
 	private float thigh;
 	private float calf;
+	private ToleranceDto toleranceDto;
 	/*private List<OutfitDto> outfits;
 	private List<ItemDto> items;
 	private UserDto user;*/
@@ -66,7 +68,8 @@ public class ProfileDto extends RelatedEntity implements Serializable, Identifia
 		float pantOutseam,
 		float pantInseam,
 		float thigh,
-		float calf
+		float calf,
+		ToleranceDto toleranceDto
 		//List<OutfitDto> outfits,
 		//List<ItemDto> items
 		/*UserDto user*/){
@@ -91,6 +94,7 @@ public class ProfileDto extends RelatedEntity implements Serializable, Identifia
 		this.pantInseam = pantInseam;
 		this.thigh = thigh;
 		this.calf = calf;
+		this.toleranceDto = toleranceDto;
 		//this.outfits = outfits;
 		//this.items = items;
 		//this.user = user;
@@ -139,6 +143,8 @@ public class ProfileDto extends RelatedEntity implements Serializable, Identifia
 	public void setThigh(float thigh){this.thigh = thigh;}
 
 	public void setCalf(float calf){this.calf = calf;}
+
+	public void setToleranceDto(ToleranceDto toleranceDto){this.toleranceDto = toleranceDto;}
 
 	/*public void setItems(List<ItemDto> items){this.items = items;}	
 
@@ -190,6 +196,8 @@ public class ProfileDto extends RelatedEntity implements Serializable, Identifia
 	public float getThigh(){return this.thigh;}
 
 	public float getCalf(){return this.calf;}
+
+	public ToleranceDto getToleranceDto(){return this.toleranceDto;}
 
 	/*public List<OutfitDto> getOutfits(){return this.outfits;}
 

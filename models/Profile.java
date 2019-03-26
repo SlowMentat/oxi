@@ -41,7 +41,9 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	private String country;
 	private String dateOfBirth;
 	private String bodyShape;
+	@Column(nullable=false, columnDefinition="BOOLEAN default false")
 	private boolean mens;
+	@Column(nullable=false, columnDefinition="BOOLEAN default false")
 	private boolean womens;
 	private float height;
 	private float neck;
@@ -57,6 +59,11 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	private float pantInseam;
 	private float thigh;
 	private float calf;
+
+	@OneToOne(cascade=CascadeType.ALL, mappedBy="profile")
+	@RestResource(rel="tolerance")
+	@JsonIdentityReference(alwaysAsId=true)
+	private Tolerance tolerance;
 	
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="profile")
 	@RestResource(rel="outfits")
@@ -137,8 +144,18 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 		}
 		//if (outfit.getProfile() != this) outfit.setProfile(this);
 	}
+
+	public void setTolerance(Tolerance tolerance){
+		if(tolerance != null){
+			this.tolerance = tolerance;
+			if(this.tolerance.getProfile() != this) this.tolerance.setProfile(this);
+		}else{
+			logger.warn("tolerance parameter is null");
+		}
+	}
 	
-		//Getters
+	
+	//Getters
 	@Override
 	public UUID getId(){return this.id;}
 
@@ -183,6 +200,8 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	public float getThigh(){return this.thigh;}
 
 	public float getCalf(){return this.calf;}
+
+	public Tolerance getTolerance(){return this.tolerance;}
 
 	public List<Outfit> getOutfits(){
 		//return Collections.unmodifiableList(this.outfits);

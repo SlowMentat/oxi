@@ -31,7 +31,7 @@ public class ItemResourceAssembler extends ResourceAssemblerSupport<Item, ItemDt
 		resource.getPositiony(item.getPositiony());
 		resource.setLink(item.getLink());
 		resource.setType(item.getType());
-		resource.setSize(item.getSize());
+		resource.setSize(item.getSizeGroups());
 
 		//TODO:  add paged resource linkes
 		return resource;

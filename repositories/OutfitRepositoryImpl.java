@@ -5,6 +5,8 @@ import oxi.models.dto.OutfitDto;
 import oxi.models.dto.ContentDto;
 import oxi.models.dto.ItemDto;
 import oxi.models.dto.PictureDto;
+import oxi.models.dto.retailer.SizeGroupDto;
+import oxi.models.retailer.SizeGroup;
 import oxi.models.projection.OutfitProjection;
 import oxi.models.projection.ContentProjection;
 import oxi.repositories.OutfitRepositoryCustom;
@@ -66,6 +68,8 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 		Item item;
 		ItemContent itemContent;
 		Picture picture;
+		SizeGroup sizeGroup;
+
 		List<OutfitDto> outfitDtos = new ArrayList<OutfitDto>();
 		List<ContentDto> contentDtos = new ArrayList<ContentDto>();
 		ArrayList<ItemDto> items;
@@ -77,10 +81,11 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 		String outfitQ = "select {o.*} from outfit o where o.profile_id = :id";
 		//String contentItemQ = "select {c.*}, {i.*} from item i, content c join item_content ic on ic.content_id=c.id where i.id = ic.item_id and c.outfit_id in (:outfitIdList)";
 		//"select c.id, c.coverpicuri, c.outfit_id, i.id, i.link, i.positionx, i.positiony, i.size, i.type, i.profile_id 
-		String contentItemQ = "select {c.*}, {i.*}, {ic.*}, {p.*} "+
-			"from item i, picture p, content c " +
+		String contentItemQ = "select {c.*}, {i.*}, {ic.*}, {p.*}, {*.sg} "+
+			"from item i, picture p, content c size_group sg " +
 			"join item_content ic on ic.content_id=c.id " +
 			"where i.id = ic.item_id " +
+			"and i.size_group_id = sg.id " +
 			"and c.outfit_id in (:outfitIdList) " +
 			"and p.content_id=c.id";/* +
 			"union all select c.id, c.coverpicuri, c.outfit_id, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null " +
@@ -119,6 +124,7 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 			.addEntity("i", Item.class)
 			.addEntity("ic", ItemContent.class)
 			.addEntity("p", Picture.class)
+			.addEntity("sg", SizeGroup.class)
 			//.setParameterList("outfitIdList", Arrays.asList(UUID.fromString("3a5f73ae-a986-11e8-8336-f23c9150975d"), UUID.fromString("078e417f-a986-11e8-8336-f23c9150975d")), UUIDBinaryType.INSTANCE)
 			.setParameterList("outfitIdList", idToOutfitDtoMap.keySet(), UUIDBinaryType.INSTANCE)
 			.list();
@@ -129,6 +135,7 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 			item = (Item)tuple[1];
 			itemContent = (ItemContent)tuple[2];
 			picture = (Picture)tuple[3];
+			sizeGroup = (SizeGroup)tuple[4];
 			//content.setPicture(picture);
 			if(!contentToItemMap.containsKey(content)){
 				items = new ArrayList<ItemDto>(9);
@@ -136,7 +143,17 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 				picture.setContent(content);
 				items = contentToItemMap.get(content);
 			}			
-			if(item != null) items.add(new ItemDto(item.getIdText(), itemContent.getPositionx(), itemContent.getPositiony(), item.getType(), item.getSize(), item.getRetailerText(), item.getBrandText()));
+			if(item != null){
+				items.add(new ItemDto(
+					item.getIdText(), 
+					itemContent.getPositionx(), 
+					itemContent.getPositiony(), 
+					item.getType(), 
+					new SizeGroupDto(sizeGroup), 
+					item.getRetailerText(), 
+					item.getBrandText()
+				));
+			}
 			contentToItemMap.put(content, items);
 		}
 

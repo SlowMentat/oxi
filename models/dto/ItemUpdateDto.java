@@ -2,6 +2,7 @@ package oxi.models.dto;
 
 import oxi.models.projection.*;
 import oxi.models.*;
+import oxi.models.dto.retailer.SizeGroupDto;
 import java.lang.*;
 import java.util.List;
 import java.util.ArrayList;
@@ -16,8 +17,8 @@ public class ItemUpdateDto extends ItemDto
 {
 	private String contentId;
 
-	public ItemUpdateDto(String id, Float positionx, Float positiony, String type, String size, String retailer, String brand){
-		super(id, positionx, positiony, type, size, retailer, brand);
+	public ItemUpdateDto(String id, Float positionx, Float positiony, String type, SizeGroupDto SizeGroupDto, String retailer, String brand){
+		super(id, positionx, positiony, type, SizeGroupDto, retailer, brand);
 	}
 
 	//Setters

@@ -73,12 +73,16 @@ public class PictureDto implements Serializable, Identifiable<String>
 	//public void setContentId(String contentId){this.contentId = contentId;}
 	//public void setContent(Content content){this.content = content;}
 
-	@Override
-	public String toString(){
+	//@Override
+	public String toString(int indents){
+		String indent = "\n";
+		for(int i = 0; i < indents; i++){
+			indent += "    ";
+		}
         StringBuilder sb = new StringBuilder("\nid: ").append(this.id == null ? "null" : this.id)
-			.append("\nsmalluri: ").append(this.smalluri)
-			.append("\nlargeuri:").append(this.largeuri)
-			.append("\nthumbnailuri: ").append(this.thumbnailuri);
+			.append(indent).append("\nsmalluri: ").append(this.smalluri)
+			.append(indent).append("\nlargeuri:").append(this.largeuri)
+			.append(indent).append("\nthumbnailuri: ").append(this.thumbnailuri);
 			//.append("\ncontentId: ").append(this.contentId);
         return sb.toString();
 	}

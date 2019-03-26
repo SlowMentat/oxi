@@ -19,10 +19,12 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import oxi.models.*;
+import oxi.models.retailer.*;
 import oxi.repositories.*;
 //import oxi.util.assemblers.*;
 import oxi.models.dto.*;
 import oxi.models.projection.*;
+import oxi.models.dto.retailer.*;
 
 import org.springframework.stereotype.*;
 import org.springframework.web.multipart.*;
@@ -145,7 +147,8 @@ public class ConsumerService implements ClientService{
 			profile.getPantOutseam(),
 			profile.getPantInseam(),
 			profile.getThigh(),
-			profile.getCalf()
+			profile.getCalf(),
+			copyToToleranceDto(profile.getTolerance())
 			); 
 	}
 
@@ -173,8 +176,24 @@ public class ConsumerService implements ClientService{
 		profile.setPantInseam(profileDto.getPantInseam());
 		profile.setThigh(profileDto.getThigh());
 		profile.setCalf(profileDto.getCalf());
+		profile.setTolerance(copyToTolerance(profileDto.getToleranceDto()));
 		logger.debug("finished copy.");
 		return profile;
+	}
+
+	private static Tolerance copyToTolerance(ToleranceDto toleranceDto){
+		if(toleranceDto != null){
+			return new Tolerance(toleranceDto);
+
+		}
+		return null;
+	}
+
+	private static ToleranceDto copyToToleranceDto(Tolerance tolerance){
+		if(tolerance != null){
+			return new ToleranceDto(tolerance);
+		}
+		return null;
 	}
 
 	private static OutfitDto copyToOutfitDto(Outfit outfit){
@@ -258,14 +277,18 @@ public class ConsumerService implements ClientService{
 
 	private static ItemDto copyToItemDto(ItemContent itemContent){
 		if(itemContent != null){
-			return new ItemDto(
+			ItemDto itemDto = new ItemDto(itemContent.getItem());
+			itemDto.setPositiony(itemContent.getPositiony());
+			itemDto.setPositionx(itemContent.getPositionx());
+			return itemDto;
+			/*return new ItemDto(
 				itemContent.getItem().getId().toString(), 
 				itemContent.getPositionx(), 
 				itemContent.getPositiony(), 
 				itemContent.getItem().getType(), 
-				itemContent.getItem().getSize(), 
+				null,//itemContent.getItem().getSizeGroupId(), 
 				itemContent.getItem().getRetailer().toString(), 
-				itemContent.getItem().getBrand().toString());
+				itemContent.getItem().getBrand().toString());*/
 		}
 		return null;
 	}
@@ -273,20 +296,21 @@ public class ConsumerService implements ClientService{
 	private static Item copyToItem(ItemDto itemDto){
 		if(itemDto != null){
 			if(itemDto.getId() != null && !itemDto.getId().isEmpty()){
-				return new Item(
+				return new Item(itemDto);
+				/*return new Item(
 					UUID.fromString(itemDto.getId()), 
 					itemDto.getType(), 
-					itemDto.getSize(), 
+					UUID.fromString(itemDto.getSizeGroupDto().getId()), 
 					UUID.fromString(itemDto.getRetailer()), 
-					UUID.fromString(itemDto.getBrand()));
+					UUID.fromString(itemDto.getBrand()));*/
 			}
-			
-			Item item = new Item(
+			Item item = new Item(itemDto);
+			/*Item item = new Item(
 				null, 
 				itemDto.getType(), 
-				itemDto.getSize(), 
+				UUID.fromString(itemDto.getSizeGroupDto().getId()),  
 				UUID.fromString(itemDto.getRetailer()), 
-				UUID.fromString(itemDto.getBrand()));
+				UUID.fromString(itemDto.getBrand()));*/
 
 			//item.setContents(new ArrayList<ItemContent>());
 			return item;
@@ -340,52 +364,7 @@ public class ConsumerService implements ClientService{
 			logger.debug(outfit);
 			Profile profile = profileRep.findByUsername(username);
 			if(profile != null){
-				//List<UUID> contentIds = new ArrayList<UUID>(contentsCount);
-				/*List<Content> contents = new ArrayList<Content>(contentsCount);
-				for(Content c : outfit.getContents()){
-					List<Item> items = c.getItems();
-					Picture p = c.getPicture();
-					if(p != null){
-						if(p.getId() != null){
-							pictureRep.save(entityManager.merge(p));
-						}else{
-							entityManager.persist(p);
-						}
-						logger.debug("picture after persist = " + p);
-						c.setPicture(p);
-					}else{
-						logger.debug("picture property from Content object is null");
-					}*/
-					/*if(c.getId() != null){
-						logger.debug("content id is not null");
-						logger.debug("content id = " + c.getId());
-						//contentRep.save(entityManager.merge(c));
-						contentRep.save(entityManager.persist(c));
-					}else{
-						logger.debug("content id is null");
-						entityManager.persist(c);
-					}
-					logger.debug("content after persist = " + c);
-					List<ItemDto> itemDtos = new ArrayList<ItemDto>(c.getItems().size());
-					for(Item i : c.getItems()){
-						if(i.getId() != null) itemRep.save(entityManager.merge(i));
-						else entityManager.persist(i);
-						itemDtos.add(new ItemDto(i.getId().toString().toUpperCase(), i.getPositionx(), i.getPositiony(), i.getType(), i.getSize(), i.getRetailer().toString().toUpperCase(), i.getBrand().toString().toUpperCase()));
-					}
-					contents.add(c);
-					Picture picture = c.getPicture();
-					PictureDto pictureDto = picture == null ? null : new PictureDto(picture.getId().toString().toUpperCase(), picture.getThumbnailuri(), picture.getSmalluri(), picture.getLargeuri());
-					contentDtos.add(new ContentDto(c.getId().toString().toUpperCase(), c.getCoverpicuri(), pictureDto, itemDtos));
-				}
-				//DOTO:  see about getting rid of this loop
-				for(Content c : contents){
-					outfit.addContent(c);
-				}*/
 				outfit.setProfile(profile);
-				/*if(outfit.getId() != null) outfitRep.save(entityManager.merge(outfit));
-				else entityManager.persist(outfit);*/
-				//profile.setOutfit(outfit);
-				//entityManager.persist(profile);
 				outfitDto = copyToOutfitDto(entityManager.merge(outfit));
 				//outfit.setProfile(profile);
 				logger.debug("outfit after persist = ");
@@ -393,7 +372,6 @@ public class ConsumerService implements ClientService{
 			}else{
 				logger.warn("No profile exists for user!");
 			}
-			//outfitDto = new OutfitDto(outfit.getId().toString().toUpperCase(), outfit.getLikes(), outfit.getComments(), contentDtos, outfit.getCoverpicuri());
 		}else{
 			logger.warn("Rejecting Outfit entity. Outfit entity contains no Content childeren. Outfit entity must have at least 1 Content child entity");
 		}
@@ -461,6 +439,10 @@ public class ConsumerService implements ClientService{
 		return outfitDto;
 	}
 
+
+	//=====================================================================================
+	//Item
+
 	@Transactional
 	public OutfitDto updateItems(HashMap<String, ArrayList<ItemDto>> contentIdToItemMap, String username, String outfitId){
 		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId));
@@ -488,7 +470,7 @@ public class ConsumerService implements ClientService{
 							itemContent.setPositionx(itemDto.getPositionx()); 
 							itemContent.setPositiony(itemDto.getPositiony());
 							itemContent.getItem().setType(itemDto.getType()); 
-							itemContent.getItem().setSize(itemDto.getSize());
+							itemContent.getItem().setSizeGroupId(UUID.fromString(itemDto.getSizeGroupDto().getId()));
 							itemContent.getItem().setRetailer(UUID.fromString(itemDto.getRetailer()));
 							itemContent.getItem().setBrand(UUID.fromString(itemDto.getBrand()));
 							entityManager.merge(itemContent);
@@ -612,14 +594,15 @@ public class ConsumerService implements ClientService{
 			Item item = copyToItem(itemDto);
 			entityManager.persist(item);
 			content.addItem(item, itemDto.getPositionx(), itemDto.getPositiony());
-			itemsDto.add(new ItemDto(
+			itemsDto.add(new ItemDto(item));
+			/*itemsDto.add(new ItemDto(
 				item.getId().toString(), 
 				itemDto.getPositionx(), 
 				itemDto.getPositiony(), 
 				item.getType(), 
-				item.getSize(), 
+				item.getSizeGroupId().toString(), 
 				item.getRetailer().toString(), 
-				item.getBrand().toString()));
+				item.getBrand().toString()));*/
 		}
 		if(picture != null){
 			picture.setContent(content);
@@ -656,14 +639,15 @@ public class ConsumerService implements ClientService{
 			Item item = copyToItem(itemDto);
 			entityManager.persist(item);
 			content.addItem(item, itemDto.getPositionx(), itemDto.getPositiony());
-			itemsDto.add(new ItemDto(
+			itemsDto.add(new ItemDto(item));
+			/*itemsDto.add(new ItemDto(
 				item.getId().toString(), 
 				itemDto.getPositionx(), 
 				itemDto.getPositiony(), 
 				item.getType(), 
-				item.getSize(), 
+				item.getSizeGroupId().toString(), 
 				item.getRetailer().toString(), 
-				item.getBrand().toString()));
+				item.getBrand().toString()));*/
 		}
 		if(picture != null){
 			picture.setContent(content);
@@ -706,14 +690,19 @@ public class ConsumerService implements ClientService{
 				logger.debug("ConsumerService#createContents: item after persist/merge = " + item.toString() + "\n");
 				logger.debug("ConsumerService#createContents: item#contents after persist/merge =" + item.getContents().toString() + "\n");
 				content.addItem(item, itemDto.getPositionx(), itemDto.getPositiony());
-				itemsDtosResult.add(new ItemDto(
+
+				ItemDto iDto = new ItemDto(item);
+				iDto.setPositiony(itemDto.getPositiony());
+				iDto.setPositionx(itemDto.getPositionx());
+				itemsDtosResult.add(iDto);
+				/*itemsDtosResult.add(new ItemDto(
 					item.getId().toString(), 
 					itemDto.getPositionx(), 
 					itemDto.getPositiony(), 
 					item.getType(), 
-					item.getSize(), 
+					item.getSizeGroupId().toString(), 
 					item.getRetailer().toString(), 
-					item.getBrand().toString()));
+					item.getBrand().toString()));*/
 			}
 
 			Picture picture = pictureRep.findById(content.getPicture().getId());
@@ -727,10 +716,6 @@ public class ConsumerService implements ClientService{
 			//contentDtosResult.add(new ContentDto(content.getId().toString(), content.getCoverpicuri(), pictureDtoResult, itemsDtosResult));
 		}
 		entityManager.merge(parentOutfit);
-/*
-		for(Content content : parentOutfit.getContents()){
-			contentDtosResult.add(copyToContentDto(content));
-		}*/
 		
 		return contentDtosResult;
 	}
@@ -769,14 +754,10 @@ public class ConsumerService implements ClientService{
 			itemContent.setPositiony(itemDto.getPositiony());
 			content.addItem(itemContent);	
 
-			itemDtos.add(new ItemDto(
-				item.getId().toString(), 
-				itemDto.getPositionx(), 
-				itemDto.getPositiony(), 
-				item.getType(), 
-				item.getSize(), 
-				item.getRetailer().toString(), 
-				item.getBrand().toString()));		
+			ItemDto iDto = new ItemDto(item);
+			iDto.setPositiony(itemDto.getPositiony());
+			iDto.setPositionx(itemDto.getPositionx());
+			itemDtos.add(iDto);		
 		}
 
 		/*for(ItemDto itemDto : contentDto.getItems()){
@@ -805,7 +786,7 @@ public class ConsumerService implements ClientService{
 				itemDto.getPositionx(), 
 				itemDto.getPositiony(), 
 				item.getType(), 
-				item.getSize(), 
+				item.getSizeGroupId(), 
 				item.getRetailer().toString(), 
 				item.getBrand().toString()));
 		}
@@ -891,15 +872,16 @@ public class ConsumerService implements ClientService{
 					@Override
 					public ItemDto convert(Item item){
 						String coverpicuri = (item.getPicture() != null) ? item.getPicture().getSmalluri() : "";
+						return new ItemDto(item);/*
 						return new ItemDto(
 							item.getIdText(), 
 							null, 
 							null, 
 							item.getType(), 
-							item.getSize(), 
+							item.getSizeGroupId().toString(), 
 							item.getRetailer().toString(), 
 							item.getBrand().toString(), 
-							coverpicuri);
+							coverpicuri);*/
 					}	
 				});
 				return itemPRAP.toResource(itemDtos, this::toResource);

@@ -1,5 +1,6 @@
 package oxi.models;
 
+import oxi.models.dto.PictureDto;
 import javax.persistence.*;
 import javax.persistence.CascadeType;
 import java.util.List;
@@ -58,6 +59,13 @@ public class Picture extends RelatedEntity implements Serializable, Identifiable
 		this.thumbnailuri = thumbnailuri;
 		this.smalluri = smalluri;
 		this.largeuri = largeuri;
+	}
+
+	public Picture(PictureDto pictureDto){
+		this.id = UUID.fromString(pictureDto.getId());
+		this.thumbnailuri = pictureDto.getThumbnailuri();
+		this.smalluri = pictureDto.getSmalluri();
+		this.largeuri = pictureDto.getLargeuri();
 	}
 	
 	//Getters

@@ -92,14 +92,17 @@ public class ContentRepositoryImpl implements ContentRepositoryCustom {
 			}else{
 				itemDtos = contentToItemMap.get(content);
 			}
-			if(item != null) itemDtos.add(new ItemDto(
+			ItemDto iDto = new ItemDto(item);
+			iDto.setPositionx(itemContent.getPositionx());
+			iDto.setPositiony(itemContent.getPositiony());
+			if(item != null) itemDtos.add(iDto/*new ItemDto(
 				item.getIdText(), 
 				itemContent.getPositionx(), 
 				itemContent.getPositiony(), 
 				item.getType(), 
-				item.getSize(), 
+				item.getSizeGroupId(), 
 				item.getRetailerText(), 
-				item.getBrandText()));
+				item.getBrandText())*/);
 			contentToItemMap.put(content, itemDtos);
 		}
 		Picture picture = null;
