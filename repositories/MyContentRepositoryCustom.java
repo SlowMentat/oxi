@@ -12,7 +12,7 @@ import org.springframework.data.jpa.repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-public interface ContentRepositoryCustom /*extends PagingAndSortingRepository<Outfit, Long>*/{
+public interface MyContentRepositoryCustom /*extends PagingAndSortingRepository<Outfit, Long>*/{
 	@Query(value="")
 	List<ContentDto> findByOutfitId(UUID id);
 }

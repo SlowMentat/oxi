@@ -25,10 +25,10 @@ public class SizeChartSizeGroupId implements Serializable{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(SizeChartSizeGroupId.class);
 
-	@Column(name = "size_group_id")
+	@Column(name = "size_group_id", columnDefinition = "BINARY(16)")
 	private UUID sizeGroupId;
 
-	@Column(name = "size_chart_id")
+	@Column(name = "size_chart_id", columnDefinition = "BINARY(16)")
 	private UUID sizeChartId;
 
 	private SizeChartSizeGroupId(){}

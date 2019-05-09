@@ -13,7 +13,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 	<jpa:repositories base-package="oxi.repositories"/>
 
         <!--Enable annotation-driven transaction management-->
-        <tx:annotation-driven proxy-target-class="true" transaction-manager="transactionManager"/>
+        <!--<tx:annotation-driven proxy-target-class="true" transaction-manager="transactionManager"/>-->
         
         <!--Create the datasource bean-->
         <bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource">

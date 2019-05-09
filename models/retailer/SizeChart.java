@@ -42,8 +42,8 @@ public class SizeChart extends RelatedEntity implements Serializable, Identifiab
 	private UUID id;
 	@Column(name = "id_text", columnDefinition="VARCHAR(36)", updatable = false, insertable = false)
 	private String idText;
-	@Column(name = "chart_name", columnDefinition="VARCHAR(36)")
-	private String chartName;
+	@Column(name = "name", columnDefinition="VARCHAR(36)")
+	private String name;
 	//private List<SizeChartSizeGroupId> sizeChartSizeGroupId;
 
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval= true, mappedBy = "sizeChart")
@@ -51,10 +51,10 @@ public class SizeChart extends RelatedEntity implements Serializable, Identifiab
 	@JsonIdentityReference(alwaysAsId=true)
 	private List<SizeChartSizeGroup> sizeGroups = new ArrayList<SizeChartSizeGroup>();
 
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval= true, mappedBy = "sizeChart")
-	@RestResource(rel="client_0")	
-	@JsonIdentityReference(alwaysAsId=true)
-	private List<Item> items = new ArrayList<>();
+	//@OneToMany(cascade = CascadeType.ALL, orphanRemoval= true, mappedBy = "sizeChart")
+	//@RestResource(rel="client_0")	
+	//@JsonIdentityReference(alwaysAsId=true)
+	//private List<Item> items = new ArrayList<>();
 
 	@ManyToOne(cascade=CascadeType.ALL)
 	@RestResource(rel="client_1")
@@ -66,19 +66,19 @@ public class SizeChart extends RelatedEntity implements Serializable, Identifiab
 
 	public SizeChart(
 		UUID id, 
-		String chartName,
-		List<SizeChartSizeGroup> sizeGroups,
-		List<Item> items){
+		String name,
+		List<SizeChartSizeGroup> sizeGroups
+		/*List<Item> items*/){
 		//super();
 		this.id = id;
-		this.chartName = chartName;
+		this.name = name;
 		this.sizeGroups = sizeGroups;
-		this.items = items;
+		//this.items = items;
 	}
 
 	public SizeChart(SizeChartDto sizeChartDto){
 		this.id = sizeChartDto.getId() != null ? UUID.fromString(sizeChartDto.getId()) : null;
-		this.chartName = sizeChartDto.getChartName();
+		this.name = sizeChartDto.getChartName();
 		this.sizeGroups = new ArrayList<SizeChartSizeGroup>(sizeChartDto.getSizeGroupDtos().size());
 		for(SizeGroupDto sizeGroupDto : sizeChartDto.getSizeGroupDtos()){
 			sizeGroups.add(new SizeChartSizeGroup(new SizeGroup(sizeGroupDto), this));
@@ -87,17 +87,17 @@ public class SizeChart extends RelatedEntity implements Serializable, Identifiab
 
 	//Setters
 	public void setId(UUID id){this.id = id;}
-	public void setChartName(String chartName){this.chartName = chartName;}
+	public void setName(String name){this.name = name;}
 	public void setRetailerAccount(RetailerAccount retailerAccount){this.retailerAccount = (RetailerAccount)this.setManyToOneParent(retailerAccount, this.retailerAccount, this);}
-	public void setItems(List<Item> items){
-		this.items = items;
-	}
+	//public void setItems(List<Item> items){
+	//	this.items = items;
+	//}
 
-	@JsonAnySetter
-	public void addItem(Item item){
-		this.items.add(item);
-		if (item.getSizeChart() != this) item.setSizeChart(this);
-	}
+	//@JsonAnySetter
+	//public void addItem(Item item){
+	//	this.items.add(item);
+	//	if (item.getSizeChart() != this) item.setSizeChart(this);
+	//}
 
 	public void addSizeGroup(SizeGroup sizeGroup){
 		SizeChartSizeGroup sizeChartSizeGroup = new SizeChartSizeGroup(sizeGroup, this);
@@ -167,8 +167,8 @@ public class SizeChart extends RelatedEntity implements Serializable, Identifiab
 	public String getIdText(){return this.idText;}
 	public List<SizeChartSizeGroup> getSizeGroups(){return this.sizeGroups;}
 	public RetailerAccount getRetailerAccount(){return this.retailerAccount;}
-	public List<Item> getItems(){return this.items;}
-	public String getChartName(){return this.chartName;}
+	//public List<Item> getItems(){return this.items;}
+	public String getChartName(){return this.name;}
 
 	//@Override
 	public String toString(int indents){
@@ -177,7 +177,7 @@ public class SizeChart extends RelatedEntity implements Serializable, Identifiab
 			indent += "    ";
 		}
         StringBuilder sb = new StringBuilder(indent).append("id: ").append(((this.id == null) ? "null" : this.id))
-			.append(indent).append("chartName:").append(((this.chartName == null) ? "null" : this.chartName));
+			.append(indent).append("name:").append(((this.name == null) ? "null" : this.name));
         return sb.toString();		
 	}
 }

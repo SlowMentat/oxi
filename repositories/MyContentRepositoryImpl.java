@@ -7,7 +7,7 @@ import oxi.models.dto.ItemDto;
 import oxi.models.dto.PictureDto;
 import oxi.models.projection.OutfitProjection;
 import oxi.models.projection.ContentProjection;
-import oxi.repositories.ContentRepositoryCustom;
+import oxi.repositories.MyContentRepositoryCustom;
 
 //import org.hibernate.Query;
 import org.hibernate.transform.*;
@@ -44,7 +44,7 @@ import org.apache.logging.log4j.LogManager;
 
 //import org.springframework.data.domain.Page;
 
-public class ContentRepositoryImpl implements ContentRepositoryCustom {	
+public class MyContentRepositoryImpl implements MyContentRepositoryCustom {	
 	@Transient
 	private static final Logger logger = LogManager.getLogger(OutfitRepositoryImpl.class);
 	
@@ -99,7 +99,7 @@ public class ContentRepositoryImpl implements ContentRepositoryCustom {
 				item.getIdText(), 
 				itemContent.getPositionx(), 
 				itemContent.getPositiony(), 
-				item.getType(), 
+				item.getApparelType(), 
 				item.getSizeGroupId(), 
 				item.getRetailerText(), 
 				item.getBrandText())*/);

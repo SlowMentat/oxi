@@ -16,8 +16,8 @@ import oxi.models.dto.*;
 
 //@RepositoryRestResource(collectionResourceRel="Like", path="like")
 public interface LikeRepository extends JpaRepository<Like, UUID>{
-	@Query("SELECT l FROM Like AS l WHERE l.id = ?1")
-	Like findById(UUID Id);
+	//@Query("SELECT l FROM Like AS l WHERE l.id = ?1")
+	//Like findById(UUID Id);
 
 	@Query("SELECT l FROM Like AS l WHERE l.username = ?1 AND l.outfitId = ?2")
 	Like findByUsernameAndOutfitId(String username, UUID outfitId);

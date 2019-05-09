@@ -14,7 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface OutfitRepositoryCustom /*extends PagingAndSortingRepository<Outfit, Long>*/{
-	@Query(value="")
+	//@Query(value="select new oxi.models.dto.OutfitDto(o) from Outfit o")
 	Page<OutfitDto> findByProfileId(UUID id, Pageable pageable);
 
 	@Query(value="")

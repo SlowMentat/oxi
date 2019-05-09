@@ -44,6 +44,8 @@ public class PictureDto implements Serializable, Identifiable<String>
 	public PictureDto(
 		@JsonProperty("id")
 		String id, 
+		?
+		
 		@JsonProperty("thumbnailuri")
 		String thumbnailuri, 
 		@JsonProperty("smalluri")

@@ -48,6 +48,13 @@ public class OutfitDto implements Serializable, Identifiable<String>
 
 	public OutfitDto(){}
 
+	public OutfitDto(Outfit outfit){
+		this.id = outfit.getIdText();
+		this.likes = outfit.getLikes();
+		this.comments = outfit.getComments();
+		
+	}
+
 	public OutfitDto(String id, int likes, String comments, List<ContentDto> contents, String coverpicuri){
 		//super();
 		this.id = id;
@@ -60,6 +67,25 @@ public class OutfitDto implements Serializable, Identifiable<String>
 	public OutfitDto(String id, int likes, String comments, List<ContentDto> contents, String coverpicuri, String username){
 		//super();
 		this.id = id;
+		this.likes = likes;
+		this.comments = comments;
+		this.contents = contents;
+		this.coverpicuri = coverpicuri;
+		this.username = username;
+	}
+
+	public OutfitDto(UUID id, int likes, String comments, List<ContentDto> contents, String coverpicuri){
+		//super();
+		this.id = id.toString();
+		this.likes = likes;
+		this.comments = comments;
+		this.contents = contents;
+		this.coverpicuri = coverpicuri;
+	}
+
+	public OutfitDto(UUID id, int likes, String comments, List<ContentDto> contents, String coverpicuri, String username){
+		//super();
+		this.id = id.toString();
 		this.likes = likes;
 		this.comments = comments;
 		this.contents = contents;

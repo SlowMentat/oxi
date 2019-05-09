@@ -188,7 +188,7 @@ public class Tolerance extends RelatedEntity implements Serializable, Identifiab
 			}
 		}
 		else{
-			logger.warn("!!PICTURE IS NULL!!");
+			logger.warn("!!Profile IS NULL!!");
 		}
 	}	
 
@@ -311,4 +311,54 @@ public class Tolerance extends RelatedEntity implements Serializable, Identifiab
 
 	public float getMaxCalf(){return this.maxCalf;}
 
+
+	public String toString(int indents){
+		String indent = "\n";
+		for(int i = 0; i < indents; i++){
+			indent += "    ";
+		}
+		logger.debug("building Tolerance string");
+        StringBuilder sb = new StringBuilder("\nid: ").append(((id == null) ? "null" : id.toString()))
+			.append(indent).append("\nheight:").append(this.height)
+			.append(indent).append("\nminNeck:").append(this.minNeck)
+			.append(indent).append("\nminFullShoulder:").append(this.minFullShoulder)
+			.append(indent).append("\nminHalfShoulder:").append(this.minHalfShoulder)
+			.append(indent).append("\nminChest:").append(this.minChest)
+			.append(indent).append("\nminWaist:").append(this.minWaist)
+			.append(indent).append("\nminHip:").append(this.minHip)
+			.append(indent).append("\nminSleeve:").append(this.minSleeve)
+			.append(indent).append("\nminFrontLength:").append(this.minFrontLength)
+			.append(indent).append("\nminBackLength:").append(this.minBackLength)
+			.append(indent).append("\nminPantOutseam:").append(this.minPantOutseam)
+			.append(indent).append("\nminPantInseam:").append(this.minPantInseam)
+			.append(indent).append("\nminThigh:").append(this.minThigh)
+			.append(indent).append("\nminCalf:").append(this.minCalf)
+			.append(indent).append("\nmaxNeck:").append(this.maxNeck)
+			.append(indent).append("\nmaxFullShoulder:").append(this.maxFullShoulder)
+			.append(indent).append("\nmaxHalfShoulder:").append(this.maxHalfShoulder)
+			.append(indent).append("\nmaxChest:").append(this.maxChest)
+			.append(indent).append("\nmaxWaist:").append(this.maxWaist)
+			.append(indent).append("\nmaxHip:").append(this.maxHip)
+			.append(indent).append("\nmaxSleeve:").append(this.maxSleeve)
+			.append(indent).append("\nmaxFrontLength:").append(this.maxFrontLength)
+			.append(indent).append("\nmaxBackLength:").append(this.maxBackLength)
+			.append(indent).append("\nmaxPantOutseam:").append(this.maxPantOutseam)
+			.append(indent).append("\nmaxPantInseam:").append(this.maxPantInseam)
+			.append(indent).append("\nmaxThigh:").append(this.maxThigh)
+			.append(indent).append("\nmaxCalf:").append(this.maxCalf)
+			.append(indent).append("\nprofile: {\n")
+				.append(indent).append("    ").append("id: ")
+				.append( ((this.profile != null && this.profile.getId() != null) ?  profile.getId().toString() : "null") )
+				.append("\n").append(indent).append("}");
+		//sb.append("\nprofile: ").append(((profile.getId() == null) ? "null" : profile.getId().toString()));
+        return sb.toString();		
+	}
+
+	@Override
+	public String toString(){
+		return toString(0);
+	}
+
 }
+
+

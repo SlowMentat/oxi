@@ -13,6 +13,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.hateoas.*;
 import org.apache.logging.log4j.LogManager;
 
+//import org.springframework.security.core.userdetails;
+
 import org.hibernate.annotations.GenericGenerator;
 
 @Entity
@@ -51,6 +53,7 @@ public class User extends RelatedEntity implements Serializable, Identifiable<UU
 
 	//Constructor
 	public User(){
+		this.enabled = false;
 	}
 	
 	//Setters

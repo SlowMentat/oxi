@@ -20,22 +20,23 @@ public class SizeChartDto implements Serializable, Identifiable<String>
 {
 	@JsonProperty("id")
 	private String id;
-	private String chartName;
+	private String name;
+	private String apparelType;
 	private List<SizeGroupDto> sizeGroupDtos;
 
 	public SizeChartDto(){}
 
-	public SizeChartDto(String id, String chartName, List<SizeGroupDto> sizeGroupDtos){
+	public SizeChartDto(String id, String name, List<SizeGroupDto> sizeGroupDtos){
 		//super();
 		this.id = id;
-		this.chartName = chartName;
+		this.name = name;
 		this.sizeGroupDtos = sizeGroupDtos;
 	}
 
 	//ugh
 	public SizeChartDto(SizeChart sizeChart){
 		id = sizeChart.getIdText() != null ? sizeChart.getIdText() : null;
-		chartName = sizeChart.getChartName();
+		name = sizeChart.getChartName();
 		sizeGroupDtos = new ArrayList<SizeGroupDto>(sizeChart.getSizeGroups().size());
 		for(SizeChartSizeGroup sizeChartSizeGroup : sizeChart.getSizeGroups()){
 			sizeGroupDtos.add(new SizeGroupDto(sizeChartSizeGroup.getSizeGroup()));
@@ -44,13 +45,13 @@ public class SizeChartDto implements Serializable, Identifiable<String>
 
 	//Setters
 	public void setId(String id){this.id = id;}
-	public void setChartName(String chartName){this.chartName = chartName;}
+	public void setName(String name){this.name = name;}
 	public void setSizeGroupDtos(List<SizeGroupDto> sizeGroupDtos){this.sizeGroupDtos = sizeGroupDtos;}
 	
 	//Getters
 	@Override
 	public String getId(){return this.id;}
-	public String getChartName(){return this.chartName;}
+	public String getChartName(){return this.name;}
 	public List<SizeGroupDto> getSizeGroupDtos(){return this.sizeGroupDtos;}
 
 	//@Override
@@ -60,7 +61,7 @@ public class SizeChartDto implements Serializable, Identifiable<String>
 			indent += "    ";
 		}
         StringBuilder sb = new StringBuilder(indent).append("id: ").append(((this.id == null) ? "null" : this.id))
-			.append(indent).append("chartName:").append(((this.chartName == null) ? "null" : this.chartName))
+			.append(indent).append("name:").append(((this.name == null) ? "null" : this.name))
 			.append(indent).append("sizeGroupDtos: {");
 		if(this.sizeGroupDtos != null){
 			for(SizeGroupDto sizeGroupDto : this.sizeGroupDtos){

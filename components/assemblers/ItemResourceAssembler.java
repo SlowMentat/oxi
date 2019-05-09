@@ -30,7 +30,7 @@ public class ItemResourceAssembler extends ResourceAssemblerSupport<Item, ItemDt
 		resource.getPositionx(item.getPositionx());
 		resource.getPositiony(item.getPositiony());
 		resource.setLink(item.getLink());
-		resource.setType(item.getType());
+		resource.setApparelType(item.getApparelType());
 		resource.setSize(item.getSizeGroups());
 
 		//TODO:  add paged resource linkes

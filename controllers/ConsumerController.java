@@ -56,6 +56,10 @@ import oxi.repositories.*;
 import oxi.models.dto.*;
 import oxi.models.projection.*;
 import oxi.services.ConsumerService;
+import oxi.services.ValueService;
+import oxi.services.UserAccountService;
+import oxi.events.OnRegistrationCompleteEvent;
+import oxi.errors.UserAlreadyExistException;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -89,7 +93,12 @@ public class ConsumerController{
 	//Services
 	@Autowired
 	private ConsumerService consumerService;
+	@Autowired
+	private UserAccountService userAccountService;
+	@Autowired
+	private ValueService valueService;
 	private static final Logger logger = LogManager.getLogger(ConsumerController.class);
+
 
 	/*@RequestMapping(value="*", method=RequestMethod.OPTIONS)
 	public ResponseEntity<?> preflight(){
@@ -420,19 +429,19 @@ public class ConsumerController{
 	******************************************************************
 	*/
 
-	@Secured({"ROLE_USER"})
-	@RestResource(exported = true)
-	@RequestMapping(value="/like/{recipientUsername}", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> like(final Principal principal, @PathVariable String recipientUsername){
-		String username = principal.getName();
-		//try{	
-			//ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.likeOutfit(username, recipientUsername), HttpStatus.CREATED);
-			consumerService.likeOutfit(username, recipientUsername);
-			return new ResponseEntity<>(HttpStatus.CREATED);
-		/*}catch(Exception e){
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}*/
-	}
+	//@Secured({"ROLE_USER"})
+	//@RestResource(exported = true)
+	//@RequestMapping(value="/like/{recipientUsername}", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	//public ResponseEntity<?> like(final Principal principal, @PathVariable String recipientUsername){
+	//	String username = principal.getName();
+	//	//try{	
+	//		//ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.likeOutfit(username, recipientUsername), HttpStatus.CREATED);
+	//		consumerService.likeOutfit(username, recipientUsername);
+	//		return new ResponseEntity<>(HttpStatus.CREATED);
+	//	/*}catch(Exception e){
+	//		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	//	}*/
+	//}
 
 	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
@@ -462,19 +471,19 @@ public class ConsumerController{
 		}*/
 	}
 
-	@Secured({"ROLE_USER"})
-	@RestResource(exported = true)
-	@RequestMapping(value="/follow/{recipientUsername}", method=RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> follow(final Principal principal, @PathVariable String recipientUsername){
-		String username = principal.getName();
-		//try{	
-			//ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.followUser(username, recipientUsername), HttpStatus.CREATED);
-			consumerService.followUser(username, recipientUsername);
-			return new ResponseEntity<>(HttpStatus.CREATED);
-		/*}catch(Exception e){
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}*/
-	}
+	//@Secured({"ROLE_USER"})
+	//@RestResource(exported = true)
+	//@RequestMapping(value="/follow/{recipientUsername}", method=RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+	//public ResponseEntity<?> follow(final Principal principal, @PathVariable String recipientUsername){
+	//	String username = principal.getName();
+	//	//try{	
+	//		//ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.followUser(username, recipientUsername), HttpStatus.CREATED);
+	//		consumerService.followUser(username, recipientUsername);
+	//		return new ResponseEntity<>(HttpStatus.CREATED);
+	//	/*}catch(Exception e){
+	//		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	//	}*/
+	//}
 
 
 	/*
@@ -539,16 +548,48 @@ public class ConsumerController{
 		}
 	}
 
-
-	/*@RequestMapping(value="/createUser", method=RequestMethod.POST)
-	public void createUser(@RequestParam String email, @RequestParam String password, @RequestParam(required = false) String username){
-		consumerService.provisionUser(new UserDto(email, password, username));
-	}*/
-	@Secured({"ROLE_ANONYMOUS"})
-	@RequestMapping(value="/createUser", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> createUser(@RequestBody UserDto userDto){
-		return consumerService.provisionUser(userDto);
+	@Secured({"ROLE_USER"})
+	@RestResource(exported = true)
+	@RequestMapping(value="/follow", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> follow(final Principal principal, @RequestParam(value="username", required=true) String followee){
+		try{
+			FollowingDto followingDto = new FollowingDto(principal.getName(), followee);
+			valueService.follow(followingDto);
+			return new ResponseEntity(HttpStatus.OK);
+		}catch(Exception e){
+			logger.error(e);
+			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
+
+	@Secured({"ROLE_USER"})
+	@RestResource(exported = true)
+	@RequestMapping(value="/unfollow", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> unfollow(final Principal principal, @RequestParam(value="username", required=true) String followee){
+		try{
+			FollowingDto followingDto = new FollowingDto(principal.getName(), followee);
+			valueService.unfollow(followingDto);
+			return new ResponseEntity(HttpStatus.OK);
+		}catch(Exception e){
+			logger.error(e);
+			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Secured({"ROLE_USER"})
+	@RestResource(exported = true)
+	@RequestMapping(value="/following", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getFollowing(final Principal principal, @RequestParam(value="username", required=true) String followee){
+		try{
+			FollowingDto followingDto = new FollowingDto(principal.getName(), followee);
+			valueService.unfollow(followingDto);
+			return new ResponseEntity(HttpStatus.OK);
+		}catch(Exception e){
+			logger.error(e);
+			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
 
 
 }

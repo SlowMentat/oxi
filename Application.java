@@ -7,10 +7,17 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.*;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.support.SpringBootServletInitializer;
+
+//import org.springframework.boot.web.support.SpringBootServletInitializer;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+
 import org.springframework.boot.orm.jpa.*;
 import org.springframework.boot.autoconfigure.jackson.*;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+//import org.springframework.boot.context.embedded.*;
+
+//import org.springframework.boot.context.embedded.tomcat.*;
+import org.springframework.boot.web.embedded.tomcat.*;
 
 import org.springframework.web.servlet.config.annotation.*;//latest addition
 import org.springframework.http.*;
@@ -55,26 +62,37 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.*;
 import java.security.SecureRandom;
 
+//import org.springframework.core.annotation.Order;
+
 import java.util.*;
 import java.util.Arrays;
+import org.apache.catalina.connector.*;
+
+import org.springframework.data.mongodb.core.*;
+import com.mongodb.MongoClient;
+
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+
+
 
 //Standard annotions for any spring boot configuration class
 @Configuration
-@ComponentScan(basePackages = {"oxi.configs, oxi.controllers, oxi.models, oxi.repositories, oxi.services, oxi.util.assemblers, oxi.models.dto, oxi.security, oxi.components"})//removed oxi.security
+//@Order(1)
+@ComponentScan(basePackages = {"oxi.configs, oxi.controllers, oxi.models, oxi.services, oxi.util.assemblers, oxi.models.dto, oxi.security, oxi.components, oxi.listeners"})//removed oxi.security
 @EnableAutoConfiguration
 //@SpringBootApplication
 //Addition annotations
-@EnableSpringDataWebSupport
+//@EnableSpringDataWebSupport  // causes Exception:  The bean 'pageableResolver', defined in class path resource [org/springframework/data/rest/webmvc/config/RepositoryRestMvcConfiguration.class], ... could not be registered.
 @EntityScan(basePackages="oxi.models")
-@EnableJpaRepositories(basePackages="oxi.repositories"/*, queryLookupStrategy=QueryLookupStrategy.Key.USE_DECLARED_QUERY*/)
-@EnableWebSecurity
+//@EnableJpaRepositories(basePackages="oxi.repositories"/*, queryLookupStrategy=QueryLookupStrategy.Key.USE_DECLARED_QUERY*/)
+//@EnableWebSecurity
 @EnableHypermediaSupport(type = HypermediaType.HAL)
 @EnableWebMvc
 @ImportResource("/WEB-INF/classes/applicationContext.xml")
 public class Application extends SpringBootServletInitializer{
 
-    @Autowired
-    private ObjectMapper _halObjectMapper;
+    //@Autowired
+    //private ObjectMapper _halObjectMapper;
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
@@ -83,29 +101,5 @@ public class Application extends SpringBootServletInitializer{
     @Override
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
         return application.sources(Application.class);
-    }
-
-    @Bean
-    public Jackson2ObjectMapperBuilderCustomizer objectMapperBuilder() {
-        return builder -> builder.configure(_halObjectMapper);
-    }
-
-    @Bean 
-    public BCryptPasswordEncoder passwordEncoder(){
-        return new BCryptPasswordEncoder(11, new SecureRandom());
-    }
-
-
-    //configuration for 
-    @Autowired 
-    private CustomUserDetailsService customUserDetailsService;
-    @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
-    @Bean
-    public DaoAuthenticationProvider authProvider(){
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(customUserDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder);
-        return authProvider;
     }
 }

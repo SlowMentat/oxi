@@ -122,5 +122,15 @@
         <Root level="debug">
             <AppenderRef ref="ConsoleAppender" />
         </Root>
+
+        
+        <!--========================================-->
+        <!--============    mongodb    =============-->
+        <!--========================================-->
+
+
+        <Logger name="org.springframework.data.mongodb" level="debug" additivity="false">
+            <AppenderRef ref="ConsoleAppender" />
+        </Logger>
     </Loggers>
 </Configuration>

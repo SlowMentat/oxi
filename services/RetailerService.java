@@ -56,14 +56,14 @@ import org.springframework.security.crypto.bcrypt.*;
 public class RetailerService{
 	//Repositories
 	@Autowired private OutfitRepository outfitRep;
-	@Autowired private ContentRepository contentRep;
+	@Autowired private MyContentRepository contentRep;
 	@Autowired private ItemRepository itemRep;
 	@Autowired private PictureRepository pictureRep;
 	@Autowired private PictureDeleteRepository pictureDeleteRep;
 
 	@Autowired private BookmarkRepository bookmarkRep;
 	@Autowired private LikeRepository likeRep;
-	@Autowired private FollowRepository followRep;
+	@Autowired private FollowingRepository followRep;
 
 	@Autowired private ProfileRepository profileRep;
 	@Autowired private UserRepository userRep;
@@ -71,7 +71,7 @@ public class RetailerService{
 
 	@Autowired private BrandRepository brandRep;
 	@Autowired private RetailerRepository retailerRep;
-	@Autowired private SizeRepository sizeRep;
+	@Autowired private SizeLabelRepository sizeLabelRep;
 
 	@Autowired private RetailerAccountRepository retailerAccountRep;
 	@Autowired private SizeChartRepository sizeChartRep;
@@ -129,6 +129,12 @@ public class RetailerService{
 
 	}
 	//=====================================================================================
+
+
+	private ProductDto convertToProductDto(final Item item){
+		return new ProductDto(item);
+	}
+
 
 	private static PictureDto copyToPictureDto(Picture picture){
 		if(picture != null){
@@ -189,13 +195,13 @@ public class RetailerService{
 			return new Item(
 				null,
 				productDto.getProductId(),
-				productDto.getType(),
+				productDto.getApparelType(),
 				UUID.fromString(productDto.getSizeGroupId()),
 				productDto.getLink(),
 				productDto.getIsRetailPicture(),
 				productDto.getIsActive(),
 				copyToPicture(productDto.getPictureDto()),
-				copyToSizeChart(productDto.getSizeChartDto()),
+				UUID.fromString(productDto.getSizeChartDto().getId()),
 				null
 			);
 		}else{	
@@ -247,12 +253,13 @@ public class RetailerService{
 		//if(retailerAccount == null) throw new Exception("invalid argument");
 		switch(filter){
 			case "all":
-				Page<ProductDto> productDtos = itemRep.getAllItemsWithRetailerAccount(retailerAccount.getId(), pageable).map(new Converter<Item, ProductDto>(){
+				/*Page<ProductDto> productDtos = itemRep.getAllItemsWithRetailerAccount(retailerAccount.getId(), pageable).map(new Converter<Item, ProductDto>(){
 					@Override
 					public ProductDto convert(Item item){
 						return new ProductDto(item);
 					}
-				});
+				});*/
+				Page<ProductDto> productDtos = itemRep.getAllItemsWithRetailerAccount(retailerAccount.getId(), pageable).map(this::convertToProductDto);
 				return productPRAP.toResource(productDtos, this::toResource);
 			default:
 				return null;
@@ -268,14 +275,14 @@ public class RetailerService{
 		if(retailerAccount.getCompanyName().equals(companyName)){
 			for(ProductDto productDto : productDtos){
 
-				SizeChart sizeChart = sizeChartRep.findById(UUID.fromString(productDto.getSizeChartDto().getId()));
-				Item item = itemRep.findById(UUID.fromString(productDto.getId()));
+				SizeChart sizeChart = sizeChartRep.findById(UUID.fromString(productDto.getSizeChartDto().getId())).get();
+				Item item = itemRep.findById(UUID.fromString(productDto.getId())).get();
 
-				item.setType(productDto.getType());
-				item.setLink(productDto.getLink());
+				//item.setApparelType(productDto.getApparelType());
+				//item.setLink(productDto.getLink());
 				item.setIsActive(productDto.getIsActive());
 				item.setPicture(copyToPicture(productDto.getPictureDto()));
-				item.setIsRetailPicture(productDto.getIsRetailPicture());
+				//item.setIsRetailPicture(productDto.getIsRetailPicture());
 				item.setSizeChart(sizeChart);
 				item.setSizeGroupId(UUID.fromString(productDto.getSizeGroupId()));
 
@@ -289,49 +296,49 @@ public class RetailerService{
 		return productDtos;
 	}
 
-	/*@Transactional
-	public ArrayList<ProductDto> updateProducts(HashMap<String, ArrayList<ProductDto>> sizeChartIdToProductDtoMap, String companyName){
-		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId));
-		RetailerAccount retailerAccount = retailerAccountRep.findByCompanyName(companyName);
-		
-
-		if(retailerAccount.companyName().equals(companyName)){
-			for(String sizeChartId : sizeChartIdToProductDtoMap.keySet()){
-
-				SizeChart sizeChart = sizeChartRep.findById(UUID.fromString(sizeChartId));
-				List<SizeChartSizeGroup> sizeChartsizeGroups = sizeChart.getItems();
-
-				for(ProductDto productDto : sizeChartIdToProductDtoMap.get(sizeChartId)){
-					//logger.debug(productDto.getId() + "\n");
-					int ind = -1;
-					for(SizeChartSizeGroup sizeChartSizeGroup : sizeChartsizeGroups){
-						ind++;
-						if(sizeChart.getId().equals(sizeChartSizeGroup.getSizeChart().getId()) && productDto.getId().equals(sizeChartSizeGroup.getItem().getId().toString())){
-							logger.debug("RetailerService#updateItems: sizeChartsizeGroups = \n" + sizeChartSizeGroup.toString());
-							sizeChartSizeGroup.getItem().setType(productDto.getType()); 
-							sizeChartSizeGroup.getItem().setSizeGroup(UUID.fromString(productDto.getSizeGroups()));
-							sizeChartSizeGroup.getItem().setRetailer(UUID.fromString(productDto.getRetailer()));
-							sizeChartSizeGroup.getItem().setBrand(UUID.fromString(productDto.getBrand()));
-							entityManager.merge(sizeChartSizeGroup);
-							sizeChartsizeGroups.set(ind, sizeChartSizeGroup);
-							logger.debug("RetailerService#updateItems: updated sizeChartSizeGroup = \n" + sizeChartSizeGroup.toString());
-							break;
-						}
-					}
-
-
-				}
-
-				sizeChart = entityManager.merge(sizeChart);
-				//TODO:  add sizeChart to Retailer Account entity
-				//outfit.getContents().set(outfit.getContents().indexOf(sizeChart), sizeChart);
-			}
-		}else{
-			logger.warn("User, " + username + " does not have permissions to edit item");
-		}
-		return copyToOutfitDto(outfit);
-		//return copyToContentDto(sizeChart)
-	}*/
+//	@Transactional
+//	public ArrayList<ProductDto> updateProducts(HashMap<String, ArrayList<ProductDto>> sizeChartIdToProductDtoMap, String companyName){
+//		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId));
+//		RetailerAccount retailerAccount = retailerAccountRep.findByCompanyName(companyName);
+//		
+//
+//		if(retailerAccount.companyName().equals(companyName)){
+//			for(String sizeChartId : sizeChartIdToProductDtoMap.keySet()){
+//
+//				SizeChart sizeChart = sizeChartRep.findById(UUID.fromString(sizeChartId));
+//				List<SizeChartSizeGroup> sizeChartsizeGroups = sizeChart.getItems();
+//
+//				for(ProductDto productDto : sizeChartIdToProductDtoMap.get(sizeChartId)){
+//					//logger.debug(productDto.getId() + "\n");
+//					int ind = -1;
+//					for(SizeChartSizeGroup sizeChartSizeGroup : sizeChartsizeGroups){
+//						ind++;
+//						if(sizeChart.getId().equals(sizeChartSizeGroup.getSizeChart().getId()) && productDto.getId().equals(sizeChartSizeGroup.getItem().getId().toString())){
+//							logger.debug("RetailerService#updateItems: sizeChartsizeGroups = \n" + sizeChartSizeGroup.toString());
+//							sizeChartSizeGroup.getItem().setApparelType(productDto.getApparelType()); 
+//							sizeChartSizeGroup.getItem().setSizeGroup(UUID.fromString(productDto.getSizeGroups()));
+//							sizeChartSizeGroup.getItem().setRetailer(UUID.fromString(productDto.getRetailer()));
+//							sizeChartSizeGroup.getItem().setBrand(UUID.fromString(productDto.getBrand()));
+//							entityManager.merge(sizeChartSizeGroup);
+//							sizeChartsizeGroups.set(ind, sizeChartSizeGroup);
+//							logger.debug("RetailerService#updateItems: updated sizeChartSizeGroup = \n" + sizeChartSizeGroup.toString());
+//							break;
+//						}
+//					}
+//
+//
+//				}
+//
+//				sizeChart = entityManager.merge(sizeChart);
+//				//TODO:  add sizeChart to Retailer Account entity
+//				//outfit.getContents().set(outfit.getContents().indexOf(sizeChart), sizeChart);
+//			}
+//		}else{
+//			logger.warn("User, " + username + " does not have permissions to edit item");
+//		}
+//		return copyToOutfitDto(outfit);
+//		//return copyToContentDto(sizeChart)
+//	}
 
 	@Transactional
 	public ArrayList<ProductDto> createProducts(ArrayList<ProductDto> productDtos, String companyName){
@@ -354,7 +361,7 @@ public class RetailerService{
 				Item item = new Item(
 					null,
 					productDto.getProductId(),
-					productDto.getType(),
+					productDto.getApparelType(),
 					productDto.getSizeGroupId(),
 					productDto.getLink(),
 					productDto.getIsRetailPicture(),
@@ -426,7 +433,7 @@ public class RetailerService{
 	@Transactional
 	public List<PictureUpdateDto> updateImage(MultipartHttpServletRequest data, String contentId){
 		//send existing image to the PictureDeleteTable
-		Content content = contentRep.findById(UUID.fromString(contentId));
+		Content content = contentRep.findById(UUID.fromString(contentId)).get();
 		Picture picture = content.getPicture();
 		//Picture picture = pictureRep.findById(UUID.fromString(pictureId));
 		PictureDelete pd = new PictureDelete(picture);

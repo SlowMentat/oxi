@@ -29,7 +29,7 @@
         <http auto-config="false" entry-point-ref="authenticationEntryPoint" disable-url-rewriting="true">
                 <csrf request-matcher-ref="csrfSecurityRequestMatcher"/>
                 <intercept-url pattern="/consumer/outfits"      access="permitAll" method="OPTIONS" />
-                <intercept-url pattern="/consumer/createUser"   access="permitAll"/>
+                <intercept-url pattern="/account/user"          access="permitAll"/>
                 <intercept-url pattern="/login"                 access="permitAll"/>
                 <intercept-url pattern="/logout"                access="permitAll"/>
                 <intercept-url pattern="/**"                    access="hasRole('ROLE_USER')" />

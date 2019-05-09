@@ -24,8 +24,9 @@ public interface SizeChartRepository extends JpaRepository<SizeChart, UUID>, Siz
 	//@RestResource(exported = false)
 	//@Query(value = "SELECT * FROM outfit WHERE id = ?1", nativeQuery = true)
 	///@Query("SELECT new oxi.models.dto.OutfitDto(o.Id, o.likes, o.comments, o.contents, o.coverpicuri) FROM Outfit AS o WHERE o.Id = ?1")
-	@Query("SELECT sc FROM SizeChart AS sc WHERE sc.id = ?1")
-	SizeChart findById(UUID Id);
+	
+	//@Query("SELECT sc FROM SizeChart AS sc WHERE sc.id = ?1")
+	//SizeChart findById(UUID Id);
 
 	//@RestResource(exported = false)
 	//@Query(value = "SELECT * FROM outfit \n#pageable\n", countQuery = "SELECT count(*) FROM outfit", nativeQuery = true)

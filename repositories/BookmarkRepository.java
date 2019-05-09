@@ -16,8 +16,8 @@ import oxi.models.dto.*;
 
 //@RepositoryRestResource(collectionResourceRel="Bookmark", path="bookmark")
 public interface BookmarkRepository extends JpaRepository<Bookmark, UUID>{
-	@Query("SELECT b FROM Bookmark AS b WHERE b.id = ?1")
-	Bookmark findById(UUID Id);
+	//@Query("SELECT b FROM Bookmark AS b WHERE b.id = ?1")
+	//Bookmark findById(UUID Id);
 
 	@Query("SELECT b FROM Bookmark AS b WHERE b.itemId = ?1")
 	Bookmark findByItemId(UUID Id);

@@ -56,7 +56,8 @@ public class ValueService{
 	@Autowired private ItemRepository itemRep;
 	@Autowired private BookmarkRepository bookmarkRep;
 	@Autowired private LikeRepository likeRep;
-	@Autowired private FollowRepository followRep;
+	@Autowired private FollowingRepository followingRep;
+	@Autowired private ProfileRepository profileRep;
 
 	//Paged Resource Assemblers 
 	@Autowired private PagedResourcesAssembler<Bookmark> bookmarPRA;
@@ -65,7 +66,7 @@ public class ValueService{
 	@Autowired private PagedResourcesAssembler<Like> likePRA;
 	//@Autowired private PagedResourcesAssembler<LikeDto> likePRAP; //TODO:  create this class
 
-	@Autowired private PagedResourcesAssembler<Follow> followPRA;
+	@Autowired private PagedResourcesAssembler<Following> followPRA;
 	//@Autowired private PagedResourcesAssembler<FollowDto> followPRAP; //TODO:  create this class
 
 	@Autowired 
@@ -96,6 +97,68 @@ public class ValueService{
 	}
 	//=====================================================================================
 
+
+
+	//Todo:  cache this.
+	@Transactional
+	public void follow(FollowingDto followingDto){
+		//build Following entity
+		Profile followeeProfile = profileRep.findByUsername(followingDto.getFolloweeUsername());
+		FollowingId id = new FollowingId(
+			profileRep.findByUsername(followingDto.getFollowerUsername()).getId(),
+			followeeProfile.getId()
+		);
+		entityManager.persist(new Following(id));
+
+		//update followee profiles.followers property
+		followeeProfile.getProfileStats().setFollowing((followeeProfile.getProfileStats().getFollowing() + 1L));
+		logger.debug("followeeProfile.followers = " + followeeProfile.getProfileStats().getFollowing());
+		entityManager.merge(followeeProfile);
+	}
+
+	@Transactional
+	public void unfollow(FollowingDto followingDto){		
+		Profile followeeProfile = profileRep.findByUsername(followingDto.getFolloweeUsername());
+		FollowingId id = new FollowingId(
+			profileRep.findByUsername(followingDto.getFollowerUsername()).getId(),
+			followeeProfile.getId()
+		);
+
+		Following following = new Following(id);
+		
+		followingRep.deleteById(id);
+	}
+
+	//Todo:  Currently doesn't work.  Eventually cache this.
+	@Transactional
+	public List<Following> getFollowing(String followeeUsername){		
+		Profile followeeProfile = profileRep.findByUsername(followeeUsername);
+		Following following = new Following();
+		FollowingId id = new FollowingId();
+
+		following.setId(id);
+
+		id.setFolloweeProfileId(followeeProfile.getId());
+		Example<Following> followingExample = Example.of(following);
+		
+		//Retreive cached followers' profile data snipets
+		return followingRep.findAll(followingExample);
+	}
+
+	/*@Transactional
+	public void like(){
+
+	}
+
+	@Transactional
+	public void unlike(){
+
+	}
+
+	@Transactional
+	public long getLikes(){
+
+	}*/
 
 	private <T extends Identifiable<String>> ResourceSupport toResource(T dto){		
 		//Link outfitLink = null;// links.linkForSingleResource(dto).withRel("outfit");

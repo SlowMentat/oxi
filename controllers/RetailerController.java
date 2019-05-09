@@ -535,12 +535,12 @@ public class RetailerController{
 
 	/*@RequestMapping(value="/createUser", method=RequestMethod.POST)
 	public void createUser(@RequestParam String email, @RequestParam String password, @RequestParam(required = false) String username){
-		retailerService.provisionUser(new UserDto(email, password, username));
+		retailerService.registerAccount(new UserDto(email, password, username));
 	}
 	@Secured({"ROLE_ANONYMOUS"})
 	@RequestMapping(value="/createUser", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> createUser(@RequestBody UserDto userDto){
-		return retailerService.provisionUser(userDto);
+		return retailerService.registerAccount(userDto);
 	}*/
 
 

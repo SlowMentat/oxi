@@ -16,12 +16,18 @@
         <!--<context:component-scan base-package="oxi.repositories, oxi.controllers, oxi.models, oxi.security"/>-->
         <!--<context:component-scan base-package="oxi.repositories, oxi.controllers, oxi.models, oxi.security"/>-->
         <!--<context:component-scan base-package="classpath:oxi/repositories, classpath:oxi/controllers, classpath:oxi/models, classpath:oxi/security"/>-->
-        <!--<context:component-scan base-package="classpath:repositories.ContentRepository"/>
+        <!--<context:component-scan base-package="classpath:repositories.MyContentRepository"/>
         <context:component-scan base-package="org.springframework.hateoas.Resource"/>
         <context:component-scan base-package="org.springframework.hateoas.ResourceAssembler"/>-->
         <import resource="applicationContext-persistence.xml"/>
-        <import resource="applicationSpring-security.xml"/>
+        <!--<import resource="applicationContext-persistence-mongo.xml"/>-->
+        <!--<import resource="applicationSpring-security.xml"/>-->
 
+        <bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+            <property name= "basename">
+                <value>/WEB-INF/classes/messages</value>
+            </property>
+        </bean>
     <beans profile="application">
         <context:property-placeholder location="classpath:resources.application.properties"/>
         <!--<bean id="consumerService" class="oxi.services.ConsumerService" />-->

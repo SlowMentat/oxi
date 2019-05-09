@@ -5,6 +5,8 @@ import java.io.IOException;
 import javax.servlet.http.*;
 import javax.servlet.ServletException;
 import org.springframework.security.core.Authentication;
+import org.springframework.context.annotation.*;
+
 
 public class CustomLoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
     public CustomLoginSuccessHandler(String defaultTargetUrl) {

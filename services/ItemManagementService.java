@@ -56,7 +56,7 @@ public class ItemManagementService{
 	@Autowired private ItemRepository itemRep;
 	@Autowired private BookmarkRepository bookmarkRep;
 	@Autowired private LikeRepository likeRep;
-	@Autowired private FollowRepository followRep;
+	@Autowired private FollowingRepository followRep;
 
 	//Paged Resource Assemblers 
 	@Autowired private PagedResourcesAssembler<Bookmark> bookmarPRA;
@@ -65,7 +65,7 @@ public class ItemManagementService{
 	@Autowired private PagedResourcesAssembler<Like> likePRA;
 	//@Autowired private PagedResourcesAssembler<LikeDto> likePRAP; //TODO:  create this class
 
-	@Autowired private PagedResourcesAssembler<Follow> followPRA;
+	@Autowired private PagedResourcesAssembler<Following> followPRA;
 	//@Autowired private PagedResourcesAssembler<FollowDto> followPRAP; //TODO:  create this class
 
 	@Autowired 

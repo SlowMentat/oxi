@@ -72,14 +72,14 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom{
 		List<Item> itemRetailerAccountTuples = session.createSQLQuery(itemQ)
 			.addEntity("i", Item.class)
 			.setParameter("retailerAccountId", retailerAccountId, UUIDBinaryType.INSTANCE)
-			.setFirstResult(pageable.getOffset())
+			.setFirstResult((int)pageable.getOffset())
 			.setMaxResults(pageable.getPageSize())
 			.list();
 
 		for(Item i : itemRetailerAccountTuples){
 			//item = (Item)tuple[0];
 			//retailerAccount = (RetailerAccount)tuple[1];
-			//if(retailerAccount != null){
+			//if(retailerAccount != null){ 
 			//	String getCompanyName = retailerAccount.getCompanyName();
 			//	if(getCompanyName != null){
 			//		logger.debug("retailerAccount.companyName = " + getCompanyName);

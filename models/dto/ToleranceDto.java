@@ -56,7 +56,7 @@ public class ToleranceDto extends RelatedEntity implements Serializable, Identif
 	private float maxThigh;
 	private float maxCalf;
 
-	private ProfileDto profileDto;
+	//private ProfileDto profileDto;
 	
 	
 	//Constructor
@@ -91,8 +91,8 @@ public class ToleranceDto extends RelatedEntity implements Serializable, Identif
 		float maxPantOutseam,
 		float maxPantInseam,
 		float maxThigh,
-		float maxCalf,
-		ProfileDto profileDto
+		float maxCalf
+		//ProfileDto profileDto
 		){
 		this.id = id;
 		this.height = height;
@@ -122,7 +122,7 @@ public class ToleranceDto extends RelatedEntity implements Serializable, Identif
 		this.maxPantInseam = maxPantInseam;
 		this.maxThigh = maxThigh;
 		this.maxCalf = maxCalf;
-		this.profileDto = profileDto;
+		//this.profileDto = profileDto;
 	}
 
 	public ToleranceDto(Tolerance tolerance){
@@ -162,7 +162,7 @@ public class ToleranceDto extends RelatedEntity implements Serializable, Identif
 
 	public void setHeight(float height){this.height = height;}
 
-	public void setProfileDto(ProfileDto profileDto){
+	/*public void setProfileDto(ProfileDto profileDto){
 		logger.warn("SETTING ProfileDto");
 		this.profileDto = profileDto;
 		if (this.profileDto != null){		
@@ -175,7 +175,7 @@ public class ToleranceDto extends RelatedEntity implements Serializable, Identif
 		else{
 			logger.warn("!!PICTURE IS NULL!!");
 		}
-	}	
+	}	*/
 
 	
 	public void setMinNeck(float minNeck){this.minNeck = minNeck;}
@@ -238,7 +238,7 @@ public class ToleranceDto extends RelatedEntity implements Serializable, Identif
 
 	public float getHeight(){return this.height;}
 
-	public ProfileDto getProfileDto(){return this.profileDto;}
+	//public ProfileDto getProfileDto(){return this.profileDto;}
 
 	
 	public float getMinNeck(){return this.minNeck;}

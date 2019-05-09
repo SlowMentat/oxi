@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.io.Serializable;
 import org.apache.commons.io.IOUtils;
 
-import oxi.models.*;
+/*import oxi.models.*;
 import oxi.models.dto.*;
 import oxi.repositories.*;
 
@@ -20,6 +20,5 @@ import org.springframework.data.domain.*;
 
 
 @Service
-abstract class BaseService{
-	
-}
+public abstract class BasicService implements BasicServable{
+}*/

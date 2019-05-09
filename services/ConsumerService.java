@@ -37,6 +37,7 @@ import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.core.convert.converter.*;
+import org.springframework.http.HttpHeaders;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -50,19 +51,21 @@ import org.hibernate.Session;
 
 import org.springframework.security.crypto.bcrypt.*;
 
+import static oxi.security.SecurityConfiguration.*;
+
 
 @Service
 public class ConsumerService implements ClientService{
 	//Repositories
 	@Autowired private OutfitRepository outfitRep;
-	@Autowired private ContentRepository contentRep;
+	@Autowired private MyContentRepository contentRep;
 	@Autowired private ItemRepository itemRep;
 	@Autowired private PictureRepository pictureRep;
 	@Autowired private PictureDeleteRepository pictureDeleteRep;
 
 	@Autowired private BookmarkRepository bookmarkRep;
 	@Autowired private LikeRepository likeRep;
-	@Autowired private FollowRepository followRep;
+	@Autowired private FollowingRepository followRep;
 
 	@Autowired private ProfileRepository profileRep;
 	@Autowired private UserRepository userRep;
@@ -70,7 +73,7 @@ public class ConsumerService implements ClientService{
 
 	@Autowired private BrandRepository brandRep;
 	@Autowired private RetailerRepository retailerRep;
-	@Autowired private SizeRepository sizeRep;
+	@Autowired private SizeLabelRepository sizeLabelRep;
 
 	//Resource Assemblers
 	//@Autowired 
@@ -123,32 +126,64 @@ public class ConsumerService implements ClientService{
 	public ConsumerService(){
 
 	}
-	//=====================================================================================
 
+
+	/*
+	* Converter functions for maping Paged entities to their respective Dtos
+	*/
+
+	private OutfitDto convertToOutfitDto(final Outfit outfit){
+		return new OutfitDto(outfit.getIdText(), outfit.getLikes(), outfit.getComments(), new ArrayList<ContentDto>(5), outfit.getCoverpicuri(), outfit.getUsername());
+	}
+
+	private ContentDto convertToContentDto(final Content content){
+		return new ContentDto(content.getIdText(), content.getCoverpicuri(), new PictureDto(content.getPicture()), null, content.getOutfit().getIdText());
+	}
+
+	private ItemDto convertToItemDto(final Item item){
+		String coverpicuri = (item.getPicture() != null) ? item.getPicture().getSmalluri() : "";
+		return new ItemDto(item);
+	}
+
+	private BrandDto convertToBrandDto(final Brand brand){
+		return new BrandDto(brand.getIdText(), brand.getName(), brand.getLink(), brand.getRed(), brand.getGreen(), brand.getBlue());
+	}
+
+	public RetailerDto convertToRetailerDto(final Retailer retailer){
+		return new RetailerDto(retailer.getIdText(), retailer.getName(), retailer.getLink(), retailer.getRed(), retailer.getGreen(), retailer.getBlue());
+	}
+
+
+	/*
+	* Helpler functions for copying DTOs to DAOs and vice versa.  
+	* TODO:  investigate leveraging map() or stream() 
+	*/
 	private static ProfileDto copyToProfileDto(Profile profile){
 		return new ProfileDto(
 			null,
 			profile.getUsername(),
 			profile.getCountry(),
 			profile.getDateOfBirth(),
-			profile.getBodyShape(),
-			profile.getMens(),
-			profile.getWomens(),
-			profile.getHeight(),
-			profile.getNeck(),
-			profile.getFullShoulder(),
-			profile.getHalfShoulder(),
-			profile.getChest(),
-			profile.getWaist(),
-			profile.getHip(),
-			profile.getSleeve(),
-			profile.getFrontLength(),
-			profile.getBackLength(),
-			profile.getPantOutseam(),
-			profile.getPantInseam(),
-			profile.getThigh(),
-			profile.getCalf(),
-			copyToToleranceDto(profile.getTolerance())
+			//profile.getBodyShape(),
+			//profile.getMens(),
+			//profile.getWomens(),
+			//profile.getHeight(),
+			//profile.getNeck(),
+			//profile.getFullShoulder(),
+			//profile.getHalfShoulder(),
+			//profile.getChest(),
+			//profile.getWaist(),
+			//profile.getHip(),
+			//profile.getSleeve(),
+			//profile.getFrontLength(),
+			//profile.getBackLength(),
+			//profile.getPantOutseam(),
+			//profile.getPantInseam(),
+			//profile.getThigh(),
+			//profile.getCalf(),
+			copyToUserMetricsDto(profile.getUserMetrics()),
+			copyToToleranceDto(profile.getTolerance()),
+			copyToProfileStatsDto(profile.getProfileStats())
 			); 
 	}
 
@@ -159,41 +194,60 @@ public class ConsumerService implements ClientService{
 		profile.setUsername(profileDto.getUsername());
 		profile.setCountry(profileDto.getCountry());
 		profile.setDateOfBirth(profileDto.getDateOfBirth());
-		profile.setBodyShape(profileDto.getBodyShape());
-		profile.setMens(profileDto.getMens());
-		profile.setWomens(profileDto.getWomens());
-		profile.setHeight(profileDto.getHeight());
-		profile.setNeck(profileDto.getNeck());
-		profile.setFullShoulder(profileDto.getFullShoulder());
-		profile.setHalfShoulder(profileDto.getHalfShoulder());
-		profile.setChest(profileDto.getChest());
-		profile.setWaist(profileDto.getWaist());
-		profile.setHip(profileDto.getHip());
-		profile.setSleeve(profileDto.getSleeve());
-		profile.setFrontLength(profileDto.getFrontLength());
-		profile.setBackLength(profileDto.getBackLength());
-		profile.setPantOutseam(profileDto.getPantOutseam());
-		profile.setPantInseam(profileDto.getPantInseam());
-		profile.setThigh(profileDto.getThigh());
-		profile.setCalf(profileDto.getCalf());
+		//profile.setBodyShape(profileDto.getBodyShape());
+		//profile.setMens(profileDto.getMens());
+		//profile.setWomens(profileDto.getWomens());
+		//profile.setHeight(profileDto.getHeight());
+		//profile.setNeck(profileDto.getNeck());
+		//profile.setFullShoulder(profileDto.getFullShoulder());
+		//profile.setHalfShoulder(profileDto.getHalfShoulder());
+		//profile.setChest(profileDto.getChest());
+		//profile.setWaist(profileDto.getWaist());
+		//profile.setHip(profileDto.getHip());
+		//profile.setSleeve(profileDto.getSleeve());
+		//profile.setFrontLength(profileDto.getFrontLength());
+		//profile.setBackLength(profileDto.getBackLength());
+		//profile.setPantOutseam(profileDto.getPantOutseam());
+		//profile.setPantInseam(profileDto.getPantInseam());
+		//profile.setThigh(profileDto.getThigh());
+		//profile.setCalf(profileDto.getCalf());
+		profile.setUserMetrics(copyToUserMetrics(profileDto.getUserMetricsDto()));
 		profile.setTolerance(copyToTolerance(profileDto.getToleranceDto()));
+		profile.setProfileStats(copyToProfileStats(profileDto.getProfileStatsDto()));
 		logger.debug("finished copy.");
 		return profile;
 	}
 
-	private static Tolerance copyToTolerance(ToleranceDto toleranceDto){
-		if(toleranceDto != null){
-			return new Tolerance(toleranceDto);
+	private static UserMetrics copyToUserMetrics(UserMetricsDto userMetricsDto){
+		return userMetricsDto != null ? (new UserMetrics(userMetricsDto)) : null;
+	}
 
+	private static UserMetricsDto copyToUserMetricsDto(UserMetrics userMetrics){
+		UserMetricsDto userMetricsDto = null;
+		if(userMetrics == null){
+			logger.debug("ConsumerService # copyToUserMetrics:  userMetrics parameter is null");
+		}else{
+			logger.debug("ConsumerService # copyToUserMetrics:  userMetrics parameter is NOT null");
+			userMetricsDto = new UserMetricsDto(userMetrics);
 		}
-		return null;
+		//return userMetrics != null ? (new UserMetricsDto(userMetrics)) : null;
+		return userMetricsDto;
+	}
+
+	private static Tolerance copyToTolerance(ToleranceDto toleranceDto){
+		return toleranceDto != null ? (new Tolerance(toleranceDto)) : null;
 	}
 
 	private static ToleranceDto copyToToleranceDto(Tolerance tolerance){
-		if(tolerance != null){
-			return new ToleranceDto(tolerance);
-		}
-		return null;
+		return tolerance != null ? (new ToleranceDto(tolerance)) : null;
+	}
+
+	private static ProfileStats copyToProfileStats(ProfileStatsDto profileStatsDto){
+		return profileStatsDto != null ? (new ProfileStats(profileStatsDto)) : null;
+	}
+
+	private static ProfileStatsDto copyToProfileStatsDto(ProfileStats profileStats){
+		return profileStats != null ? (new ProfileStatsDto(profileStats)) : null;
 	}
 
 	private static OutfitDto copyToOutfitDto(Outfit outfit){
@@ -285,7 +339,7 @@ public class ConsumerService implements ClientService{
 				itemContent.getItem().getId().toString(), 
 				itemContent.getPositionx(), 
 				itemContent.getPositiony(), 
-				itemContent.getItem().getType(), 
+				itemContent.getItem().getApparelType(), 
 				null,//itemContent.getItem().getSizeGroupId(), 
 				itemContent.getItem().getRetailer().toString(), 
 				itemContent.getItem().getBrand().toString());*/
@@ -299,7 +353,7 @@ public class ConsumerService implements ClientService{
 				return new Item(itemDto);
 				/*return new Item(
 					UUID.fromString(itemDto.getId()), 
-					itemDto.getType(), 
+					itemDto.getApparelType(), 
 					UUID.fromString(itemDto.getSizeGroupDto().getId()), 
 					UUID.fromString(itemDto.getRetailer()), 
 					UUID.fromString(itemDto.getBrand()));*/
@@ -307,7 +361,7 @@ public class ConsumerService implements ClientService{
 			Item item = new Item(itemDto);
 			/*Item item = new Item(
 				null, 
-				itemDto.getType(), 
+				itemDto.getApparelType(), 
 				UUID.fromString(itemDto.getSizeGroupDto().getId()),  
 				UUID.fromString(itemDto.getRetailer()), 
 				UUID.fromString(itemDto.getBrand()));*/
@@ -401,7 +455,7 @@ public class ConsumerService implements ClientService{
 				content.addItem(item, itemDto.getPositionx(), itemDto.getPositiony());
 			}
 
-			Picture picture = pictureRep.findById(content.getPicture().getId());
+			Picture picture = pictureRep.findById(content.getPicture().getId()).get();
 			picture.setContent(content);
 			entityManager.merge(picture);
 			content.setOutfit(outfit);
@@ -419,13 +473,13 @@ public class ConsumerService implements ClientService{
 	@Transactional
 	public OutfitDto addContents(List<Content> contents, String username, String outfitId){
 		OutfitDto outfitDto = null;
-		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId));
+		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId)).get();
 		//Verify that client is owner of outfitId
 		Profile profile = outfit.getProfile();
 		if(profile.getUsername().equals(username)){
 			//Add new contents to outfit.contents list
 			for(Content c : contents){
-				Picture picture = pictureRep.findById(c.getPicture().getId());
+				Picture picture = pictureRep.findById(c.getPicture().getId()).get();
 				entityManager.persist(picture);
 				picture.setContent(c);
 				c.setOutfit(outfit);
@@ -445,7 +499,7 @@ public class ConsumerService implements ClientService{
 
 	@Transactional
 	public OutfitDto updateItems(HashMap<String, ArrayList<ItemDto>> contentIdToItemMap, String username, String outfitId){
-		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId));
+		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId)).get();
 		Profile profile = outfit.getProfile();
 		List<ContentDto> contentDtos;
 
@@ -454,7 +508,7 @@ public class ConsumerService implements ClientService{
 			//entityManager.merge(outfit);
 			for(String contentId : contentIdToItemMap.keySet()){
 				//logger.debug(contentId + ": " + "{\n");
-				Content content = contentRep.findById(UUID.fromString(contentId));				
+				Content content = contentRep.findById(UUID.fromString(contentId)).get();				
 				//List<ItemContent> itemContents = content.getItems();
 				//entityManager.persist(content);
 
@@ -469,10 +523,10 @@ public class ConsumerService implements ClientService{
 							logger.debug("ConsumerService#updateItems: itemContents = \n" + itemContent.toString());
 							itemContent.setPositionx(itemDto.getPositionx()); 
 							itemContent.setPositiony(itemDto.getPositiony());
-							itemContent.getItem().setType(itemDto.getType()); 
-							itemContent.getItem().setSizeGroupId(UUID.fromString(itemDto.getSizeGroupDto().getId()));
-							itemContent.getItem().setRetailer(UUID.fromString(itemDto.getRetailer()));
-							itemContent.getItem().setBrand(UUID.fromString(itemDto.getBrand()));
+							//itemContent.getItem().setApparelType(itemDto.getApparelType()); 
+							itemContent.getItem().setSizeGroupId(UUID.fromString(itemDto.getSizeGroupId()));
+							//itemContent.getItem().setRetailer(UUID.fromString(itemDto.getRetailer()));
+							//itemContent.getItem().setBrand(UUID.fromString(itemDto.getBrand()));
 							entityManager.merge(itemContent);
 							itemContents.set(ind, itemContent);
 							logger.debug("ConsumerService#updateItems: updated itemContent = \n" + itemContent.toString());
@@ -496,13 +550,13 @@ public class ConsumerService implements ClientService{
 	//TODO  modify to reuse exisitng items
 	@Transactional
 	public OutfitDto addItems(HashMap<String, ArrayList<ItemDto>> contentIdToItemMap, String username, String outfitId){
-		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId));
+		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId)).get();
 		Profile profile = outfit.getProfile();
 		if(profile.getUsername().equals(username)){
 			//entityManager.persist(outfit);
 			//work on each content id key provided in the payload received
 			for(String contentId : contentIdToItemMap.keySet()){
-				Content content = contentRep.findById(UUID.fromString(contentId));
+				Content content = contentRep.findById(UUID.fromString(contentId)).get();
 				entityManager.persist(content);
 				for(ItemDto itemDto : contentIdToItemMap.get(contentId)){
 					Item item = copyToItem(itemDto);
@@ -535,7 +589,7 @@ public class ConsumerService implements ClientService{
 		Profile profile = profileRep.findByUsername(username);
 		Page<OutfitDto> outfits = outfitRep.findByProfileId(profile.getId(), pageable);
 		logger.debug("outfits return from repository: \n" + outfits);
-		// Tell PAR to use the user assembler for individual items.
+		// Tell Paged Resource Assembler to use the user assembler for individual items.
 		PagedResources<?> pagedOutfitResource = outfitPRAP.toResource(outfits, this::toResource);
 		return pagedOutfitResource;
 	}
@@ -543,12 +597,13 @@ public class ConsumerService implements ClientService{
 	public PagedResources<?> readFilteredOutfits(String filter, Pageable pageable){
 		switch(filter){
 			case "all":
-				Page<OutfitDto> outfits = outfitRep.getAllOutfitsWithUsername(pageable).map(new Converter<Outfit, OutfitDto>(){
+				/*Page<OutfitDto> outfits = outfitRep.getAllOutfitsWithUsername(pageable).get().map(new Converter<Outfit, OutfitDto>(){
 					@Override
 					public OutfitDto convert(Outfit outfit){
 						return new OutfitDto(outfit.getIdText(), outfit.getLikes(), outfit.getComments(), new ArrayList<ContentDto>(5), outfit.getCoverpicuri(), outfit.getUsername());
 					}	
-				});
+				});*/
+				Page<OutfitDto> outfits = outfitRep.getAllOutfitsWithUsername(pageable).map(this::convertToOutfitDto);
 				return outfitPRAP.toResource(outfits, this::toResource);
 			default:
 				return null;
@@ -559,7 +614,7 @@ public class ConsumerService implements ClientService{
 	public ResponseEntity<?> updateOutfitCoverpic(String id, String username, OutfitCoverpicDto outfitCoverpicDto){
 		Profile profile = profileRep.findByUsername(username);
 		if(profile.getUsername().equals(username)){
-			Outfit outfit = outfitRep.findById(UUID.fromString(id));
+			Outfit outfit = outfitRep.findById(UUID.fromString(id)).get();
 			outfit.setCoverpicuri(outfitCoverpicDto.getCoverpicuri());
 			entityManager.merge(outfit);
 			return new ResponseEntity<String>("", HttpStatus.OK);
@@ -574,12 +629,13 @@ public class ConsumerService implements ClientService{
 	}
 
 	public PagedResources<?> getContentsByItemId(String itemId, Pageable pageable){
-		Page<ContentDto> contentDtos = contentRep.findByItemId(UUID.fromString(itemId), pageable).map(new Converter<Content, ContentDto>(){
+		/*Page<ContentDto> contentDtos = contentRep.findByItemId(UUID.fromString(itemId), pageable).map(new Converter<Content, ContentDto>(){
 			@Override
 			public ContentDto convert(Content content){
 				return new ContentDto(content.getIdText(), content.getCoverpicuri(), new PictureDto(content.getPicture()), null, content.getOutfit().getIdText());
 			}	
-		});
+		});*/
+		Page<ContentDto> contentDtos = contentRep.findByItemId(UUID.fromString(itemId), pageable).map(this::convertToContentDto);
 		return contentPRAP.toResource(contentDtos, this::toResource);
 	}
 
@@ -599,7 +655,7 @@ public class ConsumerService implements ClientService{
 				item.getId().toString(), 
 				itemDto.getPositionx(), 
 				itemDto.getPositiony(), 
-				item.getType(), 
+				item.getApparelType(), 
 				item.getSizeGroupId().toString(), 
 				item.getRetailer().toString(), 
 				item.getBrand().toString()));*/
@@ -626,7 +682,7 @@ public class ConsumerService implements ClientService{
 	@Transactional
 	public ContentDto createContent(ContentDto contentDto, String parentId) throws Exception{
 		logger.debug("Creating Content");
-		Outfit parentOutfit = outfitRep.findById(UUID.fromString(parentId));
+		Outfit parentOutfit = outfitRep.findById(UUID.fromString(parentId)).get();
 
 		//return persistContent(parentOutfit, contentDto);
 
@@ -644,7 +700,7 @@ public class ConsumerService implements ClientService{
 				item.getId().toString(), 
 				itemDto.getPositionx(), 
 				itemDto.getPositiony(), 
-				item.getType(), 
+				item.getApparelType(), 
 				item.getSizeGroupId().toString(), 
 				item.getRetailer().toString(), 
 				item.getBrand().toString()));*/
@@ -668,7 +724,7 @@ public class ConsumerService implements ClientService{
 	@Transactional
 	public ArrayList<ContentDto> createContents(ArrayList<ContentDto> contentDtos, String parentId){// throws Exception{
 		logger.debug("Creating Contents");
-		Outfit parentOutfit = outfitRep.findById(UUID.fromString(parentId));
+		Outfit parentOutfit = outfitRep.findById(UUID.fromString(parentId)).get();
 		ArrayList<ContentDto> contentDtosResult = new ArrayList<ContentDto>(contentDtos.size());
 
 		for(ContentDto contentDto : contentDtos){
@@ -699,13 +755,13 @@ public class ConsumerService implements ClientService{
 					item.getId().toString(), 
 					itemDto.getPositionx(), 
 					itemDto.getPositiony(), 
-					item.getType(), 
+					item.getApparelType(), 
 					item.getSizeGroupId().toString(), 
 					item.getRetailer().toString(), 
 					item.getBrand().toString()));*/
 			}
 
-			Picture picture = pictureRep.findById(content.getPicture().getId());
+			Picture picture = pictureRep.findById(content.getPicture().getId()).get();
 			picture.setContent(content);
 			entityManager.merge(picture);
 			logger.debug("picture after persist = " + picture);
@@ -726,7 +782,7 @@ public class ConsumerService implements ClientService{
 	@Transactional
 	public ContentDto updateContent(ContentDto contentDto, String outfitId) throws Exception{
 		logger.debug("Updating Content");
-		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId));
+		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId)).get();
 		Content content = copyToContent(contentDto);
 		Picture picture = content.getPicture();
 		PictureDto pictureDto = null;
@@ -785,7 +841,7 @@ public class ConsumerService implements ClientService{
 				item.getId().toString(), 
 				itemDto.getPositionx(), 
 				itemDto.getPositiony(), 
-				item.getType(), 
+				item.getApparelType(), 
 				item.getSizeGroupId(), 
 				item.getRetailer().toString(), 
 				item.getBrand().toString()));
@@ -814,7 +870,7 @@ public class ConsumerService implements ClientService{
 
 	@Transactional
 	public OutfitDto removeItemsFromContent(HashMap<String, ArrayList<String>> contentIdToItemMap, String username, String outfitId){
-		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId));
+		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId)).get();
 		Profile profile = outfit.getProfile();
 		List<ContentDto> contentDtos;
 
@@ -868,22 +924,14 @@ public class ConsumerService implements ClientService{
 	public PagedResources<?> getFilteredItems(String username, String filter, Pageable pageable){
 		switch(filter){
 			case "all":
-				Page<ItemDto> itemDtos = itemRep.findAll(pageable).map(new Converter<Item, ItemDto>(){
+				/*Page<ItemDto> itemDtos = itemRep.findAll(pageable).map(new Converter<Item, ItemDto>(){
 					@Override
 					public ItemDto convert(Item item){
 						String coverpicuri = (item.getPicture() != null) ? item.getPicture().getSmalluri() : "";
-						return new ItemDto(item);/*
-						return new ItemDto(
-							item.getIdText(), 
-							null, 
-							null, 
-							item.getType(), 
-							item.getSizeGroupId().toString(), 
-							item.getRetailer().toString(), 
-							item.getBrand().toString(), 
-							coverpicuri);*/
+						return new ItemDto(item);
 					}	
-				});
+				});*/
+				Page<ItemDto> itemDtos = itemRep.findAll(pageable).map(this::convertToItemDto);
 				return itemPRAP.toResource(itemDtos, this::toResource);
 			//case "bookmarked":
 
@@ -953,7 +1001,7 @@ public class ConsumerService implements ClientService{
 		if(like == null){
 			//LIKE OUTFIT
 			entityManager.persist(new Like(null, username, UUID.fromString(outfitId)));
-			Outfit outfit = outfitRep.findById(UUID.fromString(outfitId));
+			Outfit outfit = outfitRep.findById(UUID.fromString(outfitId)).get();
 			outfit.setLikes((outfit.getLikes() + 1));
 			entityManager.merge(outfit);
 		}
@@ -968,18 +1016,18 @@ public class ConsumerService implements ClientService{
 	//=====================================================================================
 	//  follow
 
-	@Transactional
+	/*@Transactional
 	public void followUser(String followerUsername, String followedUsername){
 		Follow follow = followRep.findByFollowerUsernameAndFollowedUsername(followerUsername, followedUsername);
 		if(follow == null){
-			entityManager.persist(new Follow(null, followerUsername, followedUsername));
+			entityManager.persist(new Following(null, followerUsername, followedUsername));
 		}
 	}
 
 	@Transactional
 	public void unfollowUser(String followerUsername, String followedUsername){
 		followRep.deleteByFollowerUsernameAndFollowedUsername(followerUsername, followedUsername);
-	}
+	}*/
 
 
 	//=====================================================================================
@@ -992,6 +1040,8 @@ public class ConsumerService implements ClientService{
 	public ProfileDto readProfile(String username) throws Exception{
 		logger.debug("Reading Profile (id=" + username + ")");
 		Profile profile = profileRep.findByUsername(username);
+		logger.debug("profile object ofter findByUsername call to profile repository:");
+		logger.debug(profile.toString());
 		if (profile == null) throw new Exception("The spicified user does cannot be found");
 		return copyToProfileDto(profile);
 	}
@@ -1023,52 +1073,23 @@ public class ConsumerService implements ClientService{
 
 	@Transactional
 	public ProfileDto updateProfile(ProfileDto profileDto, String username) throws Exception{
-		if (profileDto.getUsername() == null || profileDto.getUsername().isEmpty() || !profileDto.getUsername().equals(username)){
-			throw new Exception("request invalid");
-		}else{
+		//if (profileDto.getUsername() == null || profileDto.getUsername().isEmpty() || !profileDto.getUsername().equals(username)){
+		//	throw new Exception("request invalid");
+		//}else{
 			profileDto.setId(profileRep.findByUsername(username).getId().toString());
 			Profile profile = copyToProfile(profileDto);
 			profile.setUser(userRep.findByUsername(profile.getUsername()));
+			//Ensure ProfileStats is not updated via this method
+			profile.setProfileStats(null);
 			profile = profileRep.save(entityManager.merge(profile));
 			return copyToProfileDto(profile);
-		}
+		//}
 	}
 
 
-	@Transactional
-	public ResponseEntity<?> provisionUser(UserDto userDto){
-		try{
-			String conflicts = "";
-			//check if data exists
-			conflicts += (userRep.findByEmail(userDto.getEmail()) != null) ? "email " : "";
-			conflicts += (userRep.findByUsername(userDto.getUsername()) != null) ? "username " : "";
-			if(conflicts.compareTo("") != 0){
-				return new ResponseEntity("Fields: " + conflicts, HttpStatus.CONFLICT);
-			}
+	
 
-			User user = new User();
-			user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-			user.setEmail(userDto.getEmail());
-			user.setUsername(userDto.getUsername());
-			user.setRoles(Arrays.asList(roleRep.findByName("ROLE_USER")));
-			user.setEnabled(true);
-			entityManager.persist(user);
-			logger.debug("User object persisted.  user.id: " + user.getId().toString());
-			//Create an empty Profile linked to this user
-			Profile profile = new Profile();
-			profile.setUser(user);
-			profile.setUsername(user.getUsername());
-			entityManager.persist(profile);
-			logger.debug("Profile object persisted.  profile.user.id: " + profile.getUser().getId().toString());
-			//userRep.saveAndFlush(user);	
 
-			//Set User roles
-						
-			return new ResponseEntity(user.getUsername(), HttpStatus.OK);
-		}catch(Exception e){
-			return new ResponseEntity("Our servers seem to have freyed a bit.\nPlease wait a moment and try your request agian.", HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
 
 	/*F
 	Makes call to data access layer (DAL) inserting new profile resource into database.
@@ -1084,28 +1105,30 @@ public class ConsumerService implements ClientService{
 	//=====================================================================================
 
 	public PagedResources<?> readBrands(Pageable pageable){
-		Page<BrandDto> brands = brandRep.findAll(pageable).map(new Converter<Brand, BrandDto>(){
+		/*Page<BrandDto> brands = brandRep.findAll(pageable).map(new Converter<Brand, BrandDto>(){
 			@Override
 			public BrandDto convert(Brand brand){
 				return new BrandDto(brand.getIdText(), brand.getName(), brand.getLink(), brand.getRed(), brand.getGreen(), brand.getBlue());
 			}	
-		});
+		});*/
+		Page<BrandDto> brands = brandRep.findAll(pageable).map(this::convertToBrandDto);
 		logger.debug("brands return from repository: \n" + brands);
 		return brandPRAP.toResource(brands, this::toResource);
 	}
 
 	public PagedResources<?> readRetailers(Pageable pageable){
-		Page<RetailerDto> retailers = retailerRep.findAll(pageable).map(new Converter<Retailer, RetailerDto>(){
+		/*Page<RetailerDto> retailers = retailerRep.findAll(pageable).map(new Converter<Retailer, RetailerDto>(){
 			@Override
 			public RetailerDto convert(Retailer retailer){
 				return new RetailerDto(retailer.getIdText(), retailer.getName(), retailer.getLink(), retailer.getRed(), retailer.getGreen(), retailer.getBlue());
 			}	
-		});
+		});*/
+		Page<RetailerDto> retailers = retailerRep.findAll(pageable).map(this::convertToRetailerDto);
 		logger.debug("retailers return from repository: \n" + retailers);
 		return retailerPRAP.toResource(retailers, this::toResource);
 	}
 
-	/*public List<Size> readSizes(){
+	/*public List<SizeLabel> readSizes(){
 		List<SizeDto> sizes = sizesRep.findAll();
 		logger.debug("sizes return from repository: \n" + sizes);
 		return sizes;
@@ -1147,7 +1170,7 @@ public class ConsumerService implements ClientService{
 	@Transactional
 	public List<PictureUpdateDto> updateImage(MultipartHttpServletRequest data, String contentId){
 		//send existing image to the PictureDeleteTable
-		Content content = contentRep.findById(UUID.fromString(contentId));
+		Content content = contentRep.findById(UUID.fromString(contentId)).get();
 		Picture picture = content.getPicture();
 		//Picture picture = pictureRep.findById(UUID.fromString(pictureId));
 		PictureDelete pd = new PictureDelete(picture);

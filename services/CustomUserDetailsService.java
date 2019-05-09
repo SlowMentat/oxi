@@ -35,38 +35,40 @@ public class CustomUserDetailsService implements UserDetailsService{
 	//@Autowired
 	//private IUserService service;	
 	@Autowired
-	private MessageSource messages;	
-	@Autowired
 	private RoleRepository roleRepository;
 	
 	@Override
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException{		
-		User user = userRepository.findByUsername(username);
-		if (user == null) {
-			logger.debug("username = " + username);
-			logger.debug("user is null");
-		    return new org.springframework.security.core.userdetails.User(
-		    	" ", 
-		    	" ", 
-		    	true, 
-		    	true, 
-		    	true, 
-		    	true, 
-		    	getAuthorities(Arrays.asList(roleRepository.findByName("ROLE_USER")))
-		    );
-		}	
-		logger.debug("username: " + user.getUsername());
-		logger.debug("password: " + user.getPassword());
-		logger.debug("email: " + user.getEmail());	
-		return new org.springframework.security.core.userdetails.User(
-			user.getUsername(), 
-			user.getPassword(), 
-			user.getEnabled(), 
-			true, 
-			true, 
-			true, 
-			getAuthorities(user.getRoles())
-		);
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException{	
+		boolean enabled = true;
+		boolean accountNonExpired = true;
+		boolean credentialsNonExpired = true;
+		boolean accountNonLocked = true;
+		try{
+			User user = userRepository.findByUsername(username);
+			if (user == null) {
+				throw new UsernameNotFoundException("No user found with username: " + username);
+			    //return new org.springframework.security.core.userdetails.User(
+			    //	" ", 
+			    //	" ", 
+			    //	true, 
+			    //	true, 
+			    //	true, 
+			    //	true, 
+			    //	getAuthorities(Arrays.asList(roleRepository.findByName("ROLE_USER")))
+			    //);
+			}	
+			return new org.springframework.security.core.userdetails.User(
+				user.getUsername(), 
+				user.getPassword(), 
+				user.getEnabled(), 
+				accountNonExpired, 
+				credentialsNonExpired, 
+				accountNonLocked, 
+				getAuthorities(user.getRoles())
+			);
+		}catch(Exception e){
+			throw new RuntimeException(e);
+		}
 	}
 	
 	private Collection<? extends GrantedAuthority> getAuthorities(Collection<Role> roles){	

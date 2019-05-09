@@ -14,6 +14,6 @@ import java.util.*;
 import oxi.models.projection.OutfitProjection;
 import oxi.models.dto.*;
 
-@RepositoryRestResource(collectionResourceRel="Size", path="size")
-public interface SizeRepository extends JpaRepository<Size, UUID>{
+@RepositoryRestResource(collectionResourceRel="SizeLabel", path="size")
+public interface SizeLabelRepository extends JpaRepository<SizeLabel, UUID>{
 } 

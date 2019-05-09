@@ -12,7 +12,7 @@ import org.springframework.data.domain.Page;
 import java.util.*;
 
 @RepositoryRestResource(collectionResourceRel="Content", path="content")
-public interface ContentRepository extends JpaRepository<Content, UUID>, ContentRepositoryCustom{
+public interface MyContentRepository extends JpaRepository<Content, UUID>, MyContentRepositoryCustom{
 	/*@RestResource(exported = false)
 	@Query(value = "SELECT * FROM content WHERE id = ?1", nativeQuery = true)
 	ContentProjection getOneDto(long id);*/
@@ -28,8 +28,9 @@ public interface ContentRepository extends JpaRepository<Content, UUID>, Content
 	//@Query(value = "SELECT new oxi.models.dto.ContentDto(c.Id, c.coverpicuri, c.picture, c.items) FROM Content AS c")
 	/*@Query("SELECT c FROM Content c WHERE c.outfit.Id = ?1")
 	Page<ContentProjection> findByOutfitId(Long Id, Pageable pageable);*/
-	@Query("SELECT c FROM Content AS c WHERE c.id = ?1")
-	Content findById(UUID Id);
+	
+	//@Query("SELECT c FROM Content AS c WHERE c.id = ?1")
+	//Content findById(UUID Id);
 
 	//@Query("SELECT c FROM Content AS c, ItemContent AS ic JOIN ic.item AS i WHERE i.id = ?1")
 	//@Query("SELECT ic, c FROM ItemContent AS ic, Content AS c WHERE c.id=ic.content.id AND ic.item.id = ?1")

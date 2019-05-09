@@ -39,8 +39,9 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	private String idText;
 	private String username;
 	private String country;
+	@Column(name = "date_of_birth")
 	private String dateOfBirth;
-	private String bodyShape;
+	/*private String bodyShape;
 	@Column(nullable=false, columnDefinition="BOOLEAN default false")
 	private boolean mens;
 	@Column(nullable=false, columnDefinition="BOOLEAN default false")
@@ -58,12 +59,23 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	private float pantOutseam;
 	private float pantInseam;
 	private float thigh;
-	private float calf;
+	private float calf;*/
 
 	@OneToOne(cascade=CascadeType.ALL, mappedBy="profile")
 	@RestResource(rel="tolerance")
 	@JsonIdentityReference(alwaysAsId=true)
 	private Tolerance tolerance;
+
+	@OneToOne(cascade=CascadeType.ALL, mappedBy="profile")
+	@RestResource(rel="profileStats")
+	@JsonIdentityReference(alwaysAsId=true)
+	private ProfileStats profileStats;
+
+	@OneToOne(cascade=CascadeType.ALL, mappedBy="profile")
+	@RestResource(rel="userMetrics")
+	@JsonIdentityReference(alwaysAsId=true)
+	private UserMetrics userMetrics;
+
 	
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="profile")
 	@RestResource(rel="outfits")
@@ -72,16 +84,16 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	//@JsonDeserialize(contentUsing=CustomOutfitDeserializer.class) 
 	private List<Outfit> outfits;
 	
-	@OneToMany(cascade=CascadeType.ALL, mappedBy="profile")
+	/*@OneToMany(cascade=CascadeType.ALL, mappedBy="profile")
 	@RestResource(rel="vendor_1")
 	@JsonIdentityReference(alwaysAsId=true)
 	//private List<Item> items;
-	private List<Item> items;
+	private List<Item> items;*/
 	
 	@OneToOne(cascade=CascadeType.ALL)
 	@RestResource(rel="vendor_3")
 	private User user;
-	
+
 	//Constructor
 	public Profile(){
 	}
@@ -96,7 +108,7 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	
 	public void setDateOfBirth(String dateOfBirth){this.dateOfBirth = dateOfBirth;}
 	
-	public void setBodyShape(String bodyShape){this.bodyShape = bodyShape;}
+	/*public void setBodyShape(String bodyShape){this.bodyShape = bodyShape;}
 
 	public void setMens(boolean mens){this.mens = mens;}
 	
@@ -130,6 +142,10 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 
 	public void setCalf(float calf){this.calf = calf;}
 
+	public void setFollowers(long followers){this.followers = followers;}
+
+	public void setPoints(long points){this.points = points;}*/
+
 	//Try to consolidate these methods
 	public void setOutfits(List<Outfit> outfits){
 		logger.warn("adding outfits list to Profile entity");
@@ -153,6 +169,24 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 			logger.warn("tolerance parameter is null");
 		}
 	}
+
+	public void setUserMetrics(UserMetrics userMetrics){
+		if(userMetrics != null){
+			this.userMetrics = userMetrics;
+			if(this.userMetrics.getProfile() != this) this.userMetrics.setProfile(this);
+		}else{
+			logger.warn("userMetrics parameter is null");
+		}
+	}
+
+	public void setProfileStats(ProfileStats profileStats){
+		if(profileStats != null){
+			this.profileStats = profileStats;
+			if(this.profileStats.getProfile() != this) this.profileStats.setProfile(this);
+		}else{
+			logger.warn("profileStats parameter is null");
+		}
+	}
 	
 	
 	//Getters
@@ -167,7 +201,7 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	
 	public String getDateOfBirth(){return this.dateOfBirth;}
 	
-	public String getBodyShape(){return this.bodyShape;}
+	/*public String getBodyShape(){return this.bodyShape;}
 
 	public boolean getMens(){return this.mens;}
 	
@@ -201,7 +235,15 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 
 	public float getCalf(){return this.calf;}
 
+	public long getFollowers(){return this.followers;}
+
+	public long getPoints(){return this.points;}*/
+
 	public Tolerance getTolerance(){return this.tolerance;}
+
+	public UserMetrics getUserMetrics(){return this.userMetrics;}
+
+	public ProfileStats getProfileStats(){return this.profileStats;}
 
 	public List<Outfit> getOutfits(){
 		//return Collections.unmodifiableList(this.outfits);
@@ -209,7 +251,7 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 		return this.outfits;
 	}
 	public User getUser(){return this.user;}
-	public List<Item> getItems(){return this.items;}
+	//public List<Item> getItems(){return this.items;}
 	
 	//Auxillary methods		
 	public void addOutfit(Outfit outfit){
@@ -263,9 +305,9 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 		this.outfits.remove(outfit);
 	}
 	*/
-	public void setItems(List<Item> items){
+	/*public void setItems(List<Item> items){
 		this.items = items;
-	}
+	}*/
 	
 	public void setUser(User user){
 		logger.debug("adding user to Profile entity");
@@ -285,6 +327,28 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 		}else{
 			logger.warn("user is null");
 		}
+	}
+	
+	public String toString(int indents){
+		String indent = "\n";
+		for(int i = 0; i < indents; i++){
+			indent += "    ";
+		}
+		logger.debug("building Profile string");
+        StringBuilder sb = new StringBuilder("\nid: ").append(((this.id == null) ? "null" : this.id.toString()))
+			.append("\nusername:").append(this.username)
+			.append("\ncountry:").append(this.country)
+			.append("\ndateOfBirth:").append(this.dateOfBirth)
+			.append("\ntolerance: {").append(this.tolerance != null ? this.tolerance.toString(indents + 1) : "null").append("\n}")
+			.append("\nprofileStats: {").append(this.profileStats != null ? this.profileStats.toString(indents + 1) : "null").append("\n}")
+			.append("\nuserMetrics: {").append(this.userMetrics != null ? this.userMetrics.toString(indents + 1) : "null").append("\n}");
+		//sb.append("\nprofile: ").append(((profile.getId() == null) ? "null" : profile.getId().toString()));
+        return sb.toString();		
+	}
+
+	@Override
+	public String toString(){
+		return toString(0);
 	}
 	
 	/*@Override

@@ -22,7 +22,7 @@ public class ProfileDto extends RelatedEntity implements Serializable, Identifia
 	private String username;
 	private String country;
 	private String dateOfBirth;
-	private String bodyShape;
+	/*private String bodyShape;
 	private boolean mens;
 	private boolean womens;
 	private float height;
@@ -38,8 +38,10 @@ public class ProfileDto extends RelatedEntity implements Serializable, Identifia
 	private float pantOutseam;
 	private float pantInseam;
 	private float thigh;
-	private float calf;
+	private float calf;*/
 	private ToleranceDto toleranceDto;
+	private ProfileStatsDto profileStatsDto;
+	private UserMetricsDto userMetricsDto;
 	/*private List<OutfitDto> outfits;
 	private List<ItemDto> items;
 	private UserDto user;*/
@@ -52,52 +54,17 @@ public class ProfileDto extends RelatedEntity implements Serializable, Identifia
 		String username,
 		String country,
 		String dateOfBirth,
-		String bodyShape,
-		boolean mens, 
-		boolean womens,
-		float heigh,
-		float neck,
-		float fullShoulder,
-		float halfShoulder, 
-		float chest,
-		float waist,
-		float hip,
-		float sleeve,
-		float frontLength,
-		float backLength,
-		float pantOutseam,
-		float pantInseam,
-		float thigh,
-		float calf,
-		ToleranceDto toleranceDto
-		//List<OutfitDto> outfits,
-		//List<ItemDto> items
-		/*UserDto user*/){
+		UserMetricsDto userMetricsDto,
+		ToleranceDto toleranceDto,
+		ProfileStatsDto profileStatsDto){
 		this.id = id;
 		this.username = username;
 		this.country = country;
 		this.dateOfBirth = dateOfBirth;
-		this.bodyShape = bodyShape;
-		this.mens = mens;
-		this.womens = womens;
-		this.height = height;
-		this.neck = neck;
-		this.fullShoulder = fullShoulder;
-		this.halfShoulder = halfShoulder;
-		this.chest = chest;
-		this.waist = waist;
-		this.hip = hip;
-		this.sleeve = sleeve;
-		this.frontLength = frontLength;
-		this.backLength = backLength;
-		this.pantOutseam = pantOutseam;
-		this.pantInseam = pantInseam;
-		this.thigh = thigh;
-		this.calf = calf;
 		this.toleranceDto = toleranceDto;
-		//this.outfits = outfits;
-		//this.items = items;
-		//this.user = user;
+		this.profileStatsDto = profileStatsDto;
+		this.userMetricsDto = userMetricsDto;
+		this.toleranceDto = toleranceDto;
 	}
 	
 	
@@ -110,7 +77,7 @@ public class ProfileDto extends RelatedEntity implements Serializable, Identifia
 	
 	public void setDateOfBirth(String dateOfBirth){this.dateOfBirth = dateOfBirth;}
 	
-	public void setBodyShape(String bodyShape){this.bodyShape = bodyShape;}
+	/*public void setBodyShape(String bodyShape){this.bodyShape = bodyShape;}
 
 	public void setMens(boolean mens){this.mens = mens;}
 	
@@ -142,9 +109,13 @@ public class ProfileDto extends RelatedEntity implements Serializable, Identifia
 
 	public void setThigh(float thigh){this.thigh = thigh;}
 
-	public void setCalf(float calf){this.calf = calf;}
+	public void setCalf(float calf){this.calf = calf;}*/
 
 	public void setToleranceDto(ToleranceDto toleranceDto){this.toleranceDto = toleranceDto;}
+
+	public void setProfileStatsDtoId(ProfileStatsDto profileStatsDto){this.profileStatsDto = profileStatsDto;}
+
+	public void setUserMetricsDto(UserMetricsDto userMetricsDto){this.userMetricsDto = userMetricsDto;}
 
 	/*public void setItems(List<ItemDto> items){this.items = items;}	
 
@@ -163,7 +134,7 @@ public class ProfileDto extends RelatedEntity implements Serializable, Identifia
 	
 	public String getDateOfBirth(){return this.dateOfBirth;}
 	
-	public String getBodyShape(){return this.bodyShape;}
+	/*public String getBodyShape(){return this.bodyShape;}
 
 	public boolean getMens(){return this.mens;}
 	
@@ -195,9 +166,13 @@ public class ProfileDto extends RelatedEntity implements Serializable, Identifia
 
 	public float getThigh(){return this.thigh;}
 
-	public float getCalf(){return this.calf;}
+	public float getCalf(){return this.calf;}*/
 
 	public ToleranceDto getToleranceDto(){return this.toleranceDto;}
+
+	public ProfileStatsDto getProfileStatsDto(){return this.profileStatsDto;}
+
+	public UserMetricsDto getUserMetricsDto(){return this.userMetricsDto;}
 
 	/*public List<OutfitDto> getOutfits(){return this.outfits;}
 

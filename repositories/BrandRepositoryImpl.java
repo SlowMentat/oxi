@@ -68,7 +68,7 @@ public class BrandRepositoryImpl implements BrandRepositoryCustom {
 
 		List<Outfit> outfitTuples = session.createSQLQuery(outfitQ)
 			.addEntity("o", Outfit.class)
-			.setFirstResult(pageable.getOffset())
+			.setFirstResult((int)pageable.getOffset())
 			.setMaxResults(pageable.getPageSize())
 			.list();
 		logger.debug("outfitTuples Size = ");

@@ -12,7 +12,7 @@ import org.apache.logging.log4j.LogManager;
 
 public class CsrfSecurityRequestMatcher implements RequestMatcher {
     private Pattern allowedMethods = Pattern.compile("^(GET|HEAD|TRACE|OPTIONS|POST|PUT|PATCH)$");
-    private RegexRequestMatcher unprotectedMatcher = new RegexRequestMatcher("/consumer/createUser|/login|/logout|/consumer/outfits/.|consumer/.|.", null);
+    private RegexRequestMatcher unprotectedMatcher = new RegexRequestMatcher("/account/user/register|/login|/logout|/consumer/outfits/.|consumer/.|.", null);
     private static final Logger logger = LogManager.getLogger(AjaxTimeoutRedirectFilter.class);
 
     //Returns boolean indicating whether the request should have CSRF token validated

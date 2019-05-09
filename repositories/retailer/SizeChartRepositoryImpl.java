@@ -86,7 +86,7 @@ public class SizeChartRepositoryImpl implements SizeChartRepositoryCustom {
 		//List<Long> outfitIds = new ArrayList(toIntExact(sizeChartCount));
 		List<SizeChart> sizeChartTuples = session.createSQLQuery(sizeChartQ)
 			.addEntity("sc", SizeChart.class)
-			.setFirstResult(pageable.getOffset())
+			.setFirstResult((int)pageable.getOffset())
 			.setMaxResults(pageable.getPageSize())
 			.setParameter("id", id, UUIDBinaryType.INSTANCE)
 			.list();
@@ -125,20 +125,20 @@ public class SizeChartRepositoryImpl implements SizeChartRepositoryCustom {
 			if(sizeGroup != null){
 				sizeGroupDtos.add(new SizeGroupDto(
 					sizeGroup.getIdText(), 
-					sizeGroup.getSizeLabel(), 
-					sizeGroup.getNeck(),
-					sizeGroup.getFullShoulder(),
-					sizeGroup.getHalfShoulder(),
-					sizeGroup.getChest(),
-					sizeGroup.getWaist(),
-					sizeGroup.getHip(),
-					sizeGroup.getSleeve(),
-					sizeGroup.getFrontLength(),
-					sizeGroup.getBackLength(),
-					sizeGroup.getPantOutseam(),
-					sizeGroup.getPantInseam(),
-					sizeGroup.getThigh(),
-					sizeGroup.getCalf()
+					sizeGroup.getSizeLabelId(), 
+					0,//sizeGroup.getNeck(),
+					0,//sizeGroup.getFullShoulder(),
+					0,//sizeGroup.getHalfShoulder(),
+					0,//sizeGroup.getChest(),
+					0,//sizeGroup.getWaist(),
+					0,//sizeGroup.getHip(),
+					0,//sizeGroup.getSleeve(),
+					0,//sizeGroup.getFrontLength(),
+					0,//sizeGroup.getBackLength(),
+					0,//sizeGroup.getPantOutseam(),
+					0,//sizeGroup.getPantInseam(),
+					0,//sizeGroup.getThigh(),
+					0//sizeGroup.getCalf()
 				));
 			}
 			sizeChartToSizeGroupDtosMap.put(sizeChart, sizeGroupDtos);
@@ -172,7 +172,7 @@ public class SizeChartRepositoryImpl implements SizeChartRepositoryCustom {
 
 		List<SizeChart> sizeChartTuples = session.createSQLQuery(sizeChartQ)
 			.addEntity("sc", SizeChart.class)
-			.setFirstResult(pageable.getOffset())
+			.setFirstResult((int)pageable.getOffset())
 			.setMaxResults(pageable.getPageSize())
 			.list();
 		logger.debug("sizeChartTuples Size = ");
@@ -196,7 +196,7 @@ public class SizeChartRepositoryImpl implements SizeChartRepositoryCustom {
 		List<Object[]> sizeChartRetailerAccountTuples = session.createSQLQuery(sizeChartQ)
 			.addEntity("sc", SizeChart.class)
 			.addEntity("ra", RetailerAccount.class)
-			.setFirstResult(pageable.getOffset())
+			.setFirstResult((int)pageable.getOffset())
 			.setMaxResults(pageable.getPageSize())
 			.list();
 

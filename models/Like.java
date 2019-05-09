@@ -20,7 +20,7 @@ import org.hibernate.annotations.GenericGenerator;
 //import oxi.models.projection.LikeProjection;
 
 @Entity
-@Table(name="otufit_like")
+@Table(name="likes")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="Like_id")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope=Like.class)
 public class Like extends RelatedEntity implements Serializable, Identifiable<UUID>{
