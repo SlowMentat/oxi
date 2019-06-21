@@ -75,6 +75,8 @@ public class ConsumerService implements ClientService{
 	@Autowired private RetailerRepository retailerRep;
 	@Autowired private SizeLabelRepository sizeLabelRep;
 
+	@Autowired private ApparelTypeRepository apparelTypeRep;
+
 	//Resource Assemblers
 	//@Autowired 
 	//private OutfitResourceAssembler outfitRA;
@@ -99,6 +101,9 @@ public class ConsumerService implements ClientService{
 
 	@Autowired private PagedResourcesAssembler<Retailer> retailerPRA;
 	@Autowired private PagedResourcesAssembler<RetailerDto> retailerPRAP;
+
+	@Autowired private PagedResourcesAssembler<ApparelType> apparelTypePRA;
+	@Autowired private PagedResourcesAssembler<ApparelTypeDto> apparelTypePRAP;
 
 	@Autowired 
 	private RepositoryEntityLinks links;
@@ -149,9 +154,13 @@ public class ConsumerService implements ClientService{
 		return new BrandDto(brand.getIdText(), brand.getName(), brand.getLink(), brand.getRed(), brand.getGreen(), brand.getBlue());
 	}
 
-	public RetailerDto convertToRetailerDto(final Retailer retailer){
-		return new RetailerDto(retailer.getIdText(), retailer.getName(), retailer.getLink(), retailer.getRed(), retailer.getGreen(), retailer.getBlue());
+	private ApparelTypeDto convertToApparelTypeDto(final ApparelType apparelType){
+		return new ApparelTypeDto(apparelType);
 	}
+
+	//public RetailerDto convertToRetailerDto(final Retailer retailer){
+	//	return new RetailerDto(retailer.getIdText(), retailer.getName(), retailer.getLink(), retailer.getRed(), retailer.getGreen(), retailer.getBlue());
+	//}
 
 
 	/*
@@ -257,7 +266,8 @@ public class ConsumerService implements ClientService{
 			for(Content content: outfit.getContents()){
 				contentDtos.add(copyToContentDto(content));
 			}
-			return new OutfitDto(outfit.getId().toString(), outfit.getLikes(), outfit.getComments(), contentDtos, outfit.getCoverpicuri());
+			//return new OutfitDto(outfit);
+			return new OutfitDto(outfit.getId().toString(), outfit.getLikes(), outfit.getComments(), contentDtos, outfit.getCoverpicuri(), outfit.getUsername());
 		}
 		return null;
 	}
@@ -400,6 +410,12 @@ public class ConsumerService implements ClientService{
 	}
 
 
+	@Transactional
+	public List<ApparelType> getAllApparelTypes(){
+		List<ApparelType> apparelTypes = apparelTypeRep.findAll();
+		return apparelTypes;
+	}
+
 
 	/*
 	Makes call to data access layer (DAL) inserting new outfit resource into database.
@@ -446,10 +462,21 @@ public class ConsumerService implements ClientService{
 			entityManager.persist(content);
 
 			for(ItemDto itemDto : contentDto.getItems()){
-				Item item = copyToItem(itemDto);
+				Item item = null;
 
-				if(item.getId() != null) entityManager.merge(item);
-				else entityManager.persist(item);
+				/*
+				* If id exists in itemDto then create a new Item object with itemDto's id value as UUID.  
+				* This object will be merged into the persistence context without overriding existing Item properties.
+				* Normally when adding existing items the user agent should send Item with only id field specified.  Precausions
+				* are taken here as an extra layer of protection from overriding existing item entities during a merge operation.
+				*/
+				if(itemDto.getId() != null){
+					item = new Item(UUID.fromString(itemDto.getId()));
+					entityManager.merge(item);
+				}else{
+					item = copyToItem(itemDto);
+					entityManager.persist(item);
+				}
 
 				logger.debug("ConsumerService#addOutfit:  item object = \n" + item.toString());
 				content.addItem(item, itemDto.getPositionx(), itemDto.getPositiony());
@@ -1040,8 +1067,8 @@ public class ConsumerService implements ClientService{
 	public ProfileDto readProfile(String username) throws Exception{
 		logger.debug("Reading Profile (id=" + username + ")");
 		Profile profile = profileRep.findByUsername(username);
-		logger.debug("profile object ofter findByUsername call to profile repository:");
-		logger.debug(profile.toString());
+		//logger.debug("profile object ofter findByUsername call to profile repository:");
+		//logger.debug(profile.toString());
 		if (profile == null) throw new Exception("The spicified user does cannot be found");
 		return copyToProfileDto(profile);
 	}
@@ -1076,13 +1103,18 @@ public class ConsumerService implements ClientService{
 		//if (profileDto.getUsername() == null || profileDto.getUsername().isEmpty() || !profileDto.getUsername().equals(username)){
 		//	throw new Exception("request invalid");
 		//}else{
-			profileDto.setId(profileRep.findByUsername(username).getId().toString());
+			Profile existingProfile = profileRep.findByUsername(username);
+			profileDto.setId(existingProfile.getId().toString());
+			profileDto.getUserMetricsDto().setId(existingProfile.getUserMetrics().getId().toString());
+			profileDto.getToleranceDto().setId(existingProfile.getTolerance().getId().toString());
+			//profileDto.getProfileStatsDto().setId()
+
 			Profile profile = copyToProfile(profileDto);
 			profile.setUser(userRep.findByUsername(profile.getUsername()));
 			//Ensure ProfileStats is not updated via this method
 			profile.setProfileStats(null);
-			profile = profileRep.save(entityManager.merge(profile));
-			return copyToProfileDto(profile);
+			Profile mergedProfile = entityManager.merge(profile);
+			return copyToProfileDto(mergedProfile);
 		//}
 	}
 
@@ -1116,17 +1148,23 @@ public class ConsumerService implements ClientService{
 		return brandPRAP.toResource(brands, this::toResource);
 	}
 
-	public PagedResources<?> readRetailers(Pageable pageable){
-		/*Page<RetailerDto> retailers = retailerRep.findAll(pageable).map(new Converter<Retailer, RetailerDto>(){
-			@Override
-			public RetailerDto convert(Retailer retailer){
-				return new RetailerDto(retailer.getIdText(), retailer.getName(), retailer.getLink(), retailer.getRed(), retailer.getGreen(), retailer.getBlue());
-			}	
-		});*/
-		Page<RetailerDto> retailers = retailerRep.findAll(pageable).map(this::convertToRetailerDto);
-		logger.debug("retailers return from repository: \n" + retailers);
-		return retailerPRAP.toResource(retailers, this::toResource);
+	public PagedResources<?> getApparelTypes(Pageable pageable){		
+		Page<ApparelTypeDto> apparelTypes = apparelTypeRep.findAll(pageable).map(this::convertToApparelTypeDto);
+		logger.debug("apparelTypes return from repository: \n" + apparelTypes);
+		return apparelTypePRAP.toResource(apparelTypes, this::toResource);
 	}
+
+	//public PagedResources<?> readRetailers(Pageable pageable){
+	//	/*Page<RetailerDto> retailers = retailerRep.findAll(pageable).map(new Converter<Retailer, RetailerDto>(){
+	//		@Override
+	//		public RetailerDto convert(Retailer retailer){
+	//			return new RetailerDto(retailer.getIdText(), retailer.getName(), retailer.getLink(), retailer.getRed(), retailer.getGreen(), retailer.getBlue());
+	//		}	
+	//	});*/
+	//	Page<RetailerDto> retailers = retailerRep.findAll(pageable).map(this::convertToRetailerDto);
+	//	logger.debug("retailers return from repository: \n" + retailers);
+	//	return retailerPRAP.toResource(retailers, this::toResource);
+	//}
 
 	/*public List<SizeLabel> readSizes(){
 		List<SizeDto> sizes = sizesRep.findAll();
@@ -1217,7 +1255,7 @@ public class ConsumerService implements ClientService{
 		return image;
 	}
 
-	private <T extends Identifiable<String>> ResourceSupport toResource(T dto){		
+	private <T extends Identifiable<?>> ResourceSupport toResource(T dto){		
 		//Link outfitLink = null;// links.linkForSingleResource(dto).withRel("outfit");
 		//SLink selfLink = links.linkForSingleResource(dto).withSelfRel();
 		return new Resource<T>(dto/*, null, selfLink*/);

@@ -1,6 +1,7 @@
 package oxi.models;
 
 import oxi.models.dto.*;
+import oxi.models.dto.UserMetricsDto;
 
 import javax.persistence.*;
 import javax.persistence.CascadeType;
@@ -68,6 +69,7 @@ public class UserMetrics implements Serializable, Identifiable<UUID>
 	}
 
 	public UserMetrics(UserMetricsDto userMetricsDto){
+		this.id = userMetricsDto.getId() == null || userMetricsDto.getId().isEmpty() ? null : UUID.fromString(userMetricsDto.getId());
 		this.bodyShape = userMetricsDto.getBodyShape();
 		this.mens = userMetricsDto.getMens();
 		this.womens = userMetricsDto.getWomens();
@@ -112,9 +114,9 @@ public class UserMetrics implements Serializable, Identifiable<UUID>
 	
 	public void setSleeve(float sleeve){this.sleeve = sleeve;}
 
-	public void setFrontLength(float FrontLength){this.frontLength = frontLength;}
+	public void setFrontLength(float frontLength){this.frontLength = frontLength;}
 
-	public void setBackLength(float BackLength){this.backLength = backLength;}
+	public void setBackLength(float backLength){this.backLength = backLength;}
 
 	public void setPantOutseam(float pantOutseam){this.pantOutseam = pantOutseam;}
 

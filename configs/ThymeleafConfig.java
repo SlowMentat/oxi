@@ -14,18 +14,32 @@ public class ThymeleafConfig{
 	
 	@Bean 
 	public SpringTemplateEngine springTemplateEngine(){
+    	// SpringTemplateEngine automatically applies SpringStandardDialect and
+    	// enables Spring's own MessageSource message resolution mechanisms.
 		SpringTemplateEngine templateEngine = new SpringTemplateEngine();
 		templateEngine.addTemplateResolver(htmlTemplateResolver());
+    	// Enabling the SpringEL compiler with Spring 4.2.4 or newer can
+    	// speed up execution in most scenarios, but might be incompatible
+    	// with specific cases when expressions in one template are reused
+    	// across different data types, so this flag is "false" by default
+    	// for safer backwards compatibility.
+    	templateEngine.setEnableSpringELCompiler(true);
 		return templateEngine;
 	}
 
 	@Bean
 	public SpringResourceTemplateResolver htmlTemplateResolver(){
+    	// SpringResourceTemplateResolver automatically integrates with Spring's own
+    	// resource resolution infrastructure, which is highly recommended.
 		SpringResourceTemplateResolver emailTemplateResolver = new SpringResourceTemplateResolver();
 		emailTemplateResolver.setPrefix("classpath:/templates/");
 		emailTemplateResolver.setSuffix(".html");
+    	// HTML is the default value, added here for the sake of clarity.		
 		emailTemplateResolver.setTemplateMode(TemplateMode.HTML);
 		emailTemplateResolver.setCharacterEncoding(StandardCharsets.UTF_8.name());
+    	// Template cache is true by default. Set to false if you want
+    	// templates to be automatically updated when modified.
+    	emailTemplateResolver.setCacheable(true);
 		return emailTemplateResolver;
 	}
 }

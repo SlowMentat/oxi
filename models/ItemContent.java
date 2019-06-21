@@ -36,6 +36,8 @@ public class ItemContent extends RelatedEntity{
 
 	@Column(name = "created_on")
 	private Date createdOn = new Date();
+	@Column(name = "size_label_id")
+	private Integer sizeLabelId;
 	private Float positionx;
 	private Float positiony;
 
@@ -53,6 +55,7 @@ public class ItemContent extends RelatedEntity{
 	public Item getItem(){return this.item;}
 	public Content getContent(){return this.content;}
 	public Date getCreatedOn(){return this.createdOn;}
+	public Integer getSizeLabelId(){return this.sizeLabelId;}
 	public Float getPositionx(){return this.positionx;}
 	public Float getPositiony(){return this.positiony;}
 
@@ -60,6 +63,7 @@ public class ItemContent extends RelatedEntity{
 	public void setItem(Item item){this.item = item;}
 	public void setContent(Content content){this.content = content;}
 	public void setCreatedOn(Date createdOn){this.createdOn = createdOn;}
+	public void setSizeLabelId(Integer sizeLabelId){this.sizeLabelId = sizeLabelId;}
 	public void setPositionx(Float positionx){this.positionx = positionx;}
 	public void setPositiony(Float positiony){this.positiony = positiony;}
 
@@ -75,6 +79,7 @@ public class ItemContent extends RelatedEntity{
         	.append(indent).append("}")
         	.append(indent).append("item: ").append(item.getId().toString())
 			.append(indent).append("content: ").append(content.getId().toString())
+			.append(indent).append("sizeLabelId: ").append(sizeLabelId == null ? "null" : sizeLabelId.toString())
         	.append(indent).append("positionx: ").append(positionx.toString())
 			.append(indent).append("positiony: ").append(positionx.toString());
         return sb.toString();

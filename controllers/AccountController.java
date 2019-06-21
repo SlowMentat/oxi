@@ -1,5 +1,8 @@
 package oxi.controllers;
 
+
+import oxi.security.SecurityConfiguration;
+
 import java.util.concurrent.atomic.AtomicLong;
 import javax.servlet.http.*;
 import javax.servlet.*;
@@ -15,6 +18,7 @@ import java.util.Calendar;
 import java.util.Locale;
 
 import oxi.models.Privilege;
+import oxi.models.Profile;
 import oxi.models.UserVerificationToken;
 import oxi.models.User;
 import oxi.models.dto.UserDto;
@@ -51,6 +55,8 @@ import org.springframework.security.access.annotation.*;
 
 import org.springframework.ui.Model;
 import org.springframework.web.context.request.WebRequest;
+
+import java.net.URI;
 
 
 @Controller
@@ -102,33 +108,47 @@ public class AccountController{
 	*/
 	//@Override
 	@Secured({"ROLE_ANONYMOUS"})
-	@RequestMapping(value = "/registrationConfirm", method = RequestMethod.GET)
-	public String confirmRegistration(WebRequest request, Model model, @RequestParam("token") String token){
-		Locale locale = request.getLocale();
+	@RequestMapping(value = "/user/confirm", method = RequestMethod.GET)
+	public ResponseEntity<?> confirmRegistration(@RequestParam(value="token", required=true) String token, HttpServletRequest request){
+	//public String confirmRegistration(WebRequest request, Model model, @RequestParam("token") String token){
+		try{
+			Locale locale = request.getLocale();
+			final HttpHeaders headers = new HttpHeaders();
+			UserVerificationToken userVerificationToken = userAccountService.getUserVerificationToken(token);
+	
+			//Make sure user agenst hitting this controller are sending tokens
+			if(userVerificationToken == null){
+				String message = messages.getMessage("auth.message.invalidToken", null, locale);
+				headers.setLocation(new URI(request.getServletPath() + "/user/failedRegistration"));
+				return new ResponseEntity<>(new GenericResponse(message), headers, HttpStatus.PERMANENT_REDIRECT);
+				//model.addAttribute("message", message);
+				//return "redirect:/badUser.html?lang=" + locale.getLanguage();
+			}
+	
+			//get the user object associated with the received token
+			User user = userVerificationToken.getUser();
+			Calendar calendar = Calendar.getInstance();
+	
+			//Is received token expired
+			if((userVerificationToken.getExpiryDate().getTime() - calendar.getTime().getTime()) <= 0){
+				String messageValue = messages.getMessage("auth.message.expired", null, locale);
+				headers.setLocation(new URI(request.getServletPath() + "/user/failedRegistration"));
+				return new ResponseEntity<>(new GenericResponse(messageValue), headers, HttpStatus.PERMANENT_REDIRECT);
+			}
+			//model.addAttribute("message", messageValue);
+			//return "redirect:/badUser.html?lang=" + locale.getLanguage();
+	
+			//set the enable property and update the user in the db
+			user.setEnabled(true);
+			userAccountService.activateProvisionedUser(user);
 
-		UserVerificationToken userVerificationToken = userAccountService.getUserVerificationToken(token);
-
-		//Make sure user agenst hitting this controller are sending tokens
-		if(userVerificationToken == null){
-			String message = messages.getMessage("aut.message.invalidToken", null, locale);
-			model.addAttribute("message", message);
-			return "redirect:/badUser.html?lang=" + locale.getLanguage();
+			headers.setLocation(new URI(request.getServletPath() + "/user/login"));
+			headers.set("WWW-Authenticate", SecurityConfiguration.TOKEN_PREFIX);
+			return new ResponseEntity<>(null, headers, HttpStatus.PERMANENT_REDIRECT);
+			//return "redirect:/login.html?lang=" + request.getLocale().getLanguage();
+		}catch(Exception e){
+			logger.error(e);
+			return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-
-		//get the user object associated with the received token
-		User user = userVerificationToken.getUser();
-		Calendar calendar = Calendar.getInstance();
-
-		//Is received token expired
-		if((userVerificationToken.getExpiryDate().getTime() - calendar.getTime().getTime()) <= 0){
-			String messageValue = messages.getMessage("auth.message.expired", null, locale);
-			model.addAttribute("message", messageValue);
-			return "redirect:/badUser.html?lang=" + locale.getLanguage();
-		}
-
-		//set the enable property and update the user in the db
-		user.setEnabled(true);
-		userAccountService.updatedProvisionedUser(user);
-		return "redirect:/login.html?lang=" + request.getLocale().getLanguage();
 	}
 }

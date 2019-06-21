@@ -58,7 +58,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
 	}
 	
 	/**
-	Customized portion of of Class
+	*Customized portion of of Class
 	**/
 	
 	public boolean isOwner(long id){

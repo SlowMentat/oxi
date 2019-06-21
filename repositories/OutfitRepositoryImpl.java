@@ -132,119 +132,120 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 		logger.debug("outfitTuples Size = ");
 		logger.debug(outfitTuples.size());
 
-
-		//Populates hastable with id columns as key and outfitDto object as value.
-		//Assumes rows with unique id's to be returned from query
-		for(Outfit o : outfitTuples){
-			//Outfit o = (Outfit)tuple[0];
-			logger.debug("outfit id_text:");
-			logger.debug(o.getIdText());
-			idToOutfitDtoMap.put(o.getId(), new OutfitDto(o.getIdText(), o.getLikes(), o.getComments(), new ArrayList<ContentDto>(5), o.getCoverpicuri()));
-		}
-		logger.debug("idToOutfitDtoMap keyset = ");
-		logger.debug(idToOutfitDtoMap.keySet());
-		
-
-		List<Object[]> contentItemTuples = session.createSQLQuery(contentItemQ)
-			.addEntity("c", Content.class)
-			.addEntity("i", Item.class)
-			.addEntity("ic", ItemContent.class)
-			.addEntity("p", Picture.class)
-			//.addEntity("sg", SizeGroup.class) TODO:  uncoment once sg table is filled
-			//.setParameterList("outfitIdList", Arrays.asList(UUID.fromString("3a5f73ae-a986-11e8-8336-f23c9150975d"), UUID.fromString("078e417f-a986-11e8-8336-f23c9150975d")), UUIDBinaryType.INSTANCE)
-			.setParameterList("outfitIdList", idToOutfitDtoMap.keySet(), UUIDBinaryType.INSTANCE)
-			.list();		
-		logger.debug("OutfitRepositoryImpl#findByProfileId: size of contentItemTuples = " + contentItemTuples.size());
-		// Build the set on which to queiry size_charts
-		for(Object[] tuple : contentItemTuples){
-			//put <key, value> into HasMap
-			content = (Content)tuple[0];
-			item = (Item)tuple[1];
-			if(item != null){
-				//add the item id as key to the idToSizeChartMap HashMap
-				idToSizeChartMap.put(item.getSizeChartId(),null);
+		if(outfitTuples.size() == 0){
+			idToOutfitDtoMap.put(null, new OutfitDto());
+		}else{
+			//Populates hastable with id columns as key and outfitDto object as value.
+			//Assumes rows with unique id's to be returned from query
+			for(Outfit o : outfitTuples){
+				//Outfit o = (Outfit)tuple[0];
+				logger.debug("outfit id_text:");
+				logger.debug(o.getIdText());
+				idToOutfitDtoMap.put(o.getId(), new OutfitDto(o.getIdText(), o.getLikes(), o.getComments(), new ArrayList<ContentDto>(5), o.getCoverpicuri()));
+			}
+			logger.debug("idToOutfitDtoMap keyset = ");
+			logger.debug(idToOutfitDtoMap.keySet());
+			
+	
+			List<Object[]> contentItemTuples = session.createSQLQuery(contentItemQ)
+				.addEntity("c", Content.class)
+				.addEntity("i", Item.class)
+				.addEntity("ic", ItemContent.class)
+				.addEntity("p", Picture.class)
+				//.addEntity("sg", SizeGroup.class) TODO:  uncoment once sg table is filled
+				//.setParameterList("outfitIdList", Arrays.asList(UUID.fromString("3a5f73ae-a986-11e8-8336-f23c9150975d"), UUID.fromString("078e417f-a986-11e8-8336-f23c9150975d")), UUIDBinaryType.INSTANCE)
+				.setParameterList("outfitIdList", idToOutfitDtoMap.keySet(), UUIDBinaryType.INSTANCE)
+				.list();		
+			logger.debug("OutfitRepositoryImpl#findByProfileId: size of contentItemTuples = " + contentItemTuples.size());
+			// Build the set on which to queiry size_charts
+			for(Object[] tuple : contentItemTuples){
+				//put <key, value> into HasMap
+				content = (Content)tuple[0];
+				item = (Item)tuple[1];
+				if(item != null){
+					//add the item id as key to the idToSizeChartMap HashMap
+					idToSizeChartMap.put(item.getSizeChartId(),null);
+				}
+			}	
+	
+			// Query size charts on sizeChartIdList
+			List<Object[]> sizeChartSizeGroupTuples = session.createSQLQuery(sizeChartSizeGroupQ)
+				.addEntity("sc", SizeChart.class)
+				.addEntity("sg", SizeGroup.class)
+				.addEntity("scsg", SizeChartSizeGroup.class)
+				.setParameterList("sizeChartIdList", idToSizeChartMap.keySet(), UUIDBinaryType.INSTANCE)
+				.list();
+			// build sizechart to List<SizeGroup> HashMap
+			for(Object[] tuple :  sizeChartSizeGroupTuples){
+				sizeChart = (SizeChart)tuple[0];
+				sizeGroup = (SizeGroup)tuple[1];
+				sizeChartSizeGroup = (SizeChartSizeGroup)tuple[2]; //data may be available from this object in the future
+	
+				if(!sizeChartIdToSizeGroupsMap.containsKey(sizeChart.getId())){
+					sizeGroups = new ArrayList<SizeGroupDto>(5);
+				}else{
+					sizeGroups = sizeChartIdToSizeGroupsMap.get(sizeChart.getId());
+				}
+	
+				if(sizeGroup != null){
+					sizeGroups.add(new SizeGroupDto(sizeGroup));
+				}
+				sizeChartIdToSizeGroupsMap.put(sizeChart.getId(), sizeGroups);
+				//update idToSizeChartMap with the queried SizeChart object associated with sizeChartId key
+				idToSizeChartMap.put(sizeChart.getId(), sizeChart);
+			}	
+	
+			//construct Content to List<Item> HashMap.  Set the fully constructed SizeChart Object to each Item object before adding to ArrayList<Item>
+			for(Object[] tuple : contentItemTuples){
+				content = (Content)tuple[0];
+				item = (Item)tuple[1];
+				itemContent = (ItemContent)tuple[2];
+				picture = (Picture)tuple[3];
+	
+				if(!contentToItemMap.containsKey(content)){
+					items = new ArrayList<ItemDto>(9);
+				}else{
+					picture.setContent(content);
+					items = contentToItemMap.get(content);
+				}			
+				if(item != null){
+					ItemDto itemDto = new ItemDto(
+						item.getIdText(), 
+						itemContent.getPositionx(), 
+						itemContent.getPositiony(), 
+						item.getApparelType(), 
+						item.getSizeGroupIdText(),
+						new SizeChartDto(
+							(item.getSizeChartId() != null ? item.getSizeChartId().toString() : null), 
+							null,//idToSizeChartMap.get(item.getSizeChartId()).getChartName(), 
+							sizeChartIdToSizeGroupsMap.get(item.getSizeChartId()) 		//retreive ArrayList<SizeGroupDto> associated with the sizeChart id
+						),
+						null,
+						item.getProduct(),
+						item.getPlatform()
+					);
+					items.add(itemDto);
+				}
+				contentToItemMap.put(content, items);
+			}	
+	
+			for(Content c : contentToItemMap.keySet()){
+				if(c.getOutfit() != null){
+					logger.debug("content.outfit = " + c.getOutfit());
+					logger.debug("content.outfit.id = " + c.getOutfit().getId());
+					//Picture picture = c.getPicture();
+					PictureDto pictureDto = c.getPicture() == null ? 
+						null : 
+						new PictureDto(c.getPicture().getIdText(), c.getPicture().getThumbnailuri(), c.getPicture().getSmalluri(), c.getPicture().getLargeuri());
+	
+					idToOutfitDtoMap.get(c.getOutfit().getId()).getContents().add(new ContentDto(c.getIdText(), c.getCoverpicuri(), pictureDto, contentToItemMap.get(c), null));
+					//contentDtos.add(new ContentDto(c.getId(), c.getCoverpicuri(), contentToItemMap.get(c)));
+					logger.debug("content.outfit = " + c.getOutfit());
+					//outfitDtos.add				
+				}
 			}
 		}
 
-
-		// Query size charts on sizeChartIdList
-		List<Object[]> sizeChartSizeGroupTuples = session.createSQLQuery(sizeChartSizeGroupQ)
-			.addEntity("sc", SizeChart.class)
-			.addEntity("sg", SizeGroup.class)
-			.addEntity("scsg", SizeChartSizeGroup.class)
-			.setParameterList("sizeChartIdList", idToSizeChartMap.keySet(), UUIDBinaryType.INSTANCE)
-			.list();
-		// build sizechart to List<SizeGroup> HashMap
-		for(Object[] tuple :  sizeChartSizeGroupTuples){
-			sizeChart = (SizeChart)tuple[0];
-			sizeGroup = (SizeGroup)tuple[1];
-			sizeChartSizeGroup = (SizeChartSizeGroup)tuple[2]; //data may be available from this object in the future
-
-			if(!sizeChartIdToSizeGroupsMap.containsKey(sizeChart.getId())){
-				sizeGroups = new ArrayList<SizeGroupDto>(5);
-			}else{
-				sizeGroups = sizeChartIdToSizeGroupsMap.get(sizeChart.getId());
-			}
-
-			if(sizeGroup != null){
-				sizeGroups.add(new SizeGroupDto(sizeGroup));
-			}
-			sizeChartIdToSizeGroupsMap.put(sizeChart.getId(), sizeGroups);
-			//update idToSizeChartMap with the queried SizeChart object associated with sizeChartId key
-			idToSizeChartMap.put(sizeChart.getId(), sizeChart);
-		}
-
-
-		//construct Content to List<Item> HashMap.  Set the fully constructed SizeChart Object to each Item object before adding to ArrayList<Item>
-		for(Object[] tuple : contentItemTuples){
-			content = (Content)tuple[0];
-			item = (Item)tuple[1];
-			itemContent = (ItemContent)tuple[2];
-			picture = (Picture)tuple[3];
-
-			if(!contentToItemMap.containsKey(content)){
-				items = new ArrayList<ItemDto>(9);
-			}else{
-				picture.setContent(content);
-				items = contentToItemMap.get(content);
-			}			
-			if(item != null){
-				ItemDto itemDto = new ItemDto(
-					item.getIdText(), 
-					itemContent.getPositionx(), 
-					itemContent.getPositiony(), 
-					item.getApparelType(), 
-					item.getSizeGroupIdText(),
-					new SizeChartDto(
-						(item.getSizeChartId() != null ? item.getSizeChartId().toString() : null), 
-						null,//idToSizeChartMap.get(item.getSizeChartId()).getChartName(), 
-						sizeChartIdToSizeGroupsMap.get(item.getSizeChartId()) 		//retreive ArrayList<SizeGroupDto> associated with the sizeChart id
-					),
-					null,
-					item.getProduct(),
-					item.getPlatform()
-				);
-				items.add(itemDto);
-			}
-			contentToItemMap.put(content, items);
-		}
-
-
-		for(Content c : contentToItemMap.keySet()){
-			if(c.getOutfit() != null){
-				logger.debug("content.outfit = " + c.getOutfit());
-				logger.debug("content.outfit.id = " + c.getOutfit().getId());
-				//Picture picture = c.getPicture();
-				PictureDto pictureDto = c.getPicture() == null ? 
-					null : 
-					new PictureDto(c.getPicture().getIdText(), c.getPicture().getThumbnailuri(), c.getPicture().getSmalluri(), c.getPicture().getLargeuri());
-
-				idToOutfitDtoMap.get(c.getOutfit().getId()).getContents().add(new ContentDto(c.getIdText(), c.getCoverpicuri(), pictureDto, contentToItemMap.get(c), null));
-				//contentDtos.add(new ContentDto(c.getId(), c.getCoverpicuri(), contentToItemMap.get(c)));
-				logger.debug("content.outfit = " + c.getOutfit());
-				//outfitDtos.add				
-			}
-		}
 		Page<OutfitDto> pagedOutfitDtos = new PageImpl<OutfitDto>(new ArrayList<OutfitDto>(idToOutfitDtoMap.values()), pageable, outfitCount);
 		return pagedOutfitDtos;
 	}

@@ -1,5 +1,6 @@
-package oxi.models;
+package oxi.models.dto;
 
+import oxi.models.UserMetrics;
 import javax.persistence.*;
 import javax.persistence.CascadeType;
 //import org.apache.log4j.Logger;
@@ -97,9 +98,9 @@ public class UserMetricsDto implements Serializable, Identifiable<String>
 	
 	public void setSleeve(float sleeve){this.sleeve = sleeve;}
 
-	public void setFrontLength(float FrontLength){this.frontLength = frontLength;}
+	public void setFrontLength(float frontLength){this.frontLength = frontLength;}
 
-	public void setBackLength(float BackLength){this.backLength = backLength;}
+	public void setBackLength(float backLength){this.backLength = backLength;}
 
 	public void setPantOutseam(float pantOutseam){this.pantOutseam = pantOutseam;}
 

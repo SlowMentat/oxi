@@ -8,6 +8,8 @@ import javax.persistence.*;
 import javax.persistence.CascadeType;
 import java.util.Objects;
 import java.util.List;
+import java.time.Instant;
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.io.Serializable;
@@ -62,7 +64,19 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	@Column(name = "is_active", nullable=false, columnDefinition="BOOLEAN default true")
 	private boolean isActive;
 
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval= true, mappedBy = "item")
+	@Column(name = "created_on", nullable=false)
+	private Date createdOn = new Date();
+
+	@Column(name = "updated_on", nullable=true)
+	private Instant updatedOn = null;
+
+	//@Column(name = "udr",  columnDefinition="VARCHAR(36)")
+	//private String userDefinedRetailer;
+//
+	//@Column(name = "uds",  columnDefinition="VARCHAR(12)")
+	//private String userDefinedSize;
+
+	@OneToMany(/*cascade = CascadeType.ALL,*/ orphanRemoval= true, mappedBy = "item")
 	@RestResource(rel="client_0")	
 	@JsonIdentityReference(alwaysAsId=true)
 	private List<ItemContent> contents = new ArrayList<>();
@@ -142,18 +156,16 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 			this.id = UUID.fromString(itemDto.getId());
 		}
 
+
+
 		//this.productId = itemDto.getProductId();
-		/*this.positionx = itemDto.getpositionx;
-		this.positiony = itemDto.getpositiony;*/
-		//this.apparelType = itemDto.getApparelType();
-
-		//NOTE:  the consumer should never be able to overwrite sizeGroup property
-
-		/*this.sizeGroup = ( itemDto.getSizeGroupDto() == null || itemDto.getSizeGroupDto().getId().isEmpty() ) ? 
-			UUID.fromString(itemDto.getSizeGroupDto().getId()) : 
-			null;*/
-		//this.link = itemDto.getLink();
-		//this.picture = itemDto.getPicture();
+		//this.positionx = itemDto.getPositionx();
+		//this.positiony = itemDto.getPositiony();
+		this.apparelType = itemDto.getApparelType();
+		//this.userDefinedSize = itemDto.getUserDefinedSize();
+		//this.userDefinedRetailer = itemDto.getUserDefinedRetailer();
+		this.product = itemDto.getProduct();
+		this.platform = itemDto.getPlatform();
 	}
 
 	public Item(ProductDto productDto){		
@@ -177,26 +189,16 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	public void setId(UUID id){this.id = id;}
 	public void setPlatform(String platform){this.platform = platform;}
 	public void setProduct(String product){this.product = product;}
-	//public void setProductId(String productId){this.productId = productId;}
-	//public void setProductOwner(String productOwner){this.productOwner = productOwner;}
-	//public void setIdText(String idText){this.idText = idText;}
-	/*public void setPositionx(Float posx){this.positionx = posx;}
-	public void setPositiony(Float posy){this.positiony = posy;}*/
-	//public void setLink(String link){this.link = link;}	
 	public void setApparelType(Integer apparelType){this.apparelType = apparelType;}
 	public void setSizeGroupId(UUID sizeGroupId){this.sizeGroupId = sizeGroupId;}
-	//public void setBrand(UUID brand){this.brand = brand;}
-	//public void setRetailer(UUID retailer){this.retailer = retailer;}	
-	//public void setProfile(Profile profile){this.profile = profile;}
-
 	public void setPicture(Picture picture){this.picture = (Picture)this.setManyToOneParent(picture, this.picture, this);}	
-	//public void setSizeChart(UUID sizeChartId){this.sizeChartId = (UUID)this.setManyToOneParent(sizeChartId, this.sizeChartId, this);}
 	public void setSizeChart(SizeChart sizeChart){this.sizeChart = sizeChart;}
 	public void setSizeChartId(UUID sizeChartId){this.sizeChartId = sizeChartId;}
 	public void setRetailerAccount(RetailerAccount retailerAccount){this.retailerAccount = (RetailerAccount)this.setManyToOneParent(retailerAccount, this.retailerAccount, this);}
-
-	//public void setIsRetailPicture(boolean isRetailPicture){this.isRetailPicture = isRetailPicture;}
 	public void setIsActive(boolean isActive){this.isActive = isActive;}
+	public void setUpdatedOn(){this.updatedOn = Instant.now();}
+	//public void setUserDefinedSize(String uds){this.userDefinedSize = uds;}
+	//public void setUserDefinedRetailer(String udr){this.userDefinedRetailer = udr;}
 	/*public void setContents(List<Content> contents){
 		//this.contents = (List<Content>)(Object)this.setManyToManyParents(contents, this.contents, this);
 		this.contents = this.<Content, Item>setManyToManyParents(contents, this.contents, this);
@@ -214,28 +216,21 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	public UUID getId(){return this.id;}
 	public String getPlatform(){return this.platform;}
 	public String getProduct(){return this.product;}
-	//public String getProductId(){return this.productId;}
-	//public String getProductOwner(){return this.productOwner;}
 	public String getIdText(){return this.idText;}
-	//public String getSize(){return this.size;}
 	public UUID getSizeGroupId(){return this.sizeGroupId;}
 	public String getSizeGroupIdText(){return this.sizeGroupIdText;}
-	//public String getLink(){return this.link;}
 	public SizeChart getSizeChart(){return this.sizeChart;}
 	public UUID getSizeChartId(){return this.sizeChartId;}
 	public String getSizeChartIdText(){return this.sizeChartIdText;}
 	public RetailerAccount getRetailerAccount(){return this.retailerAccount;}
-
-	//public UUID getBrand(){return this.brand;}
-	//public String getBrandText(){return this.brandText;}
-	//public UUID getRetailer(){return this.retailer;}
-	//public String getRetailerText(){return this.retailerText;}
 	public Integer getApparelType(){return this.apparelType;}
 	public List<ItemContent> getContents(){return this.contents;}
 	public Picture getPicture(){return this.picture;}
-	//public boolean getIsRetailPicture(){return this.isRetailPicture;}
 	public boolean getIsActive(){return this.isActive;}
-	//public Profile getProfile(){return this.profile;}
+	public Instant getUpdatedOn(){return this.updatedOn;}
+	public Date getCreatedOn(){return this.createdOn;}
+	//public String getUserDefinedSize(){return this.userDefinedSize;}
+	//public String getUserDefinedRetailer(){return this.userDefinedRetailer;}
 	
 	@Override 
 	public <T extends Relational> void internalAddChild(T targetChild){

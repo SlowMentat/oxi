@@ -29,7 +29,9 @@ public class ApparelType extends RelatedEntity implements Serializable, Identifi
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
-	private String name;	
+	private String name;
+	@Column(name="icon_name")
+	private String iconName;	
 
 	//@OneToMany(cascade=CascadeType.ALL, mappedBy="apparelType")
 	//@RestResource(rel="items")
@@ -40,13 +42,20 @@ public class ApparelType extends RelatedEntity implements Serializable, Identifi
 	public ApparelType(){
 	}
 
-	public ApparelType(Integer id, String name){
+	public ApparelType(Integer id){
+		this.id = id;
+	}
+
+	public ApparelType(Integer id, String name, String iconName){
+		this.id = id;
 		this.name = name;
+		this.iconName = iconName;
 	}
 	
 	//Setters==========================================================================	
 	public void setId(Integer id){this.id = id;}
 	public void setName(String name){this.name = name;}
+	public void setIconName(String iconName){this.iconName = iconName;}
 	//public void setItems(List<Item> items){
 	//	logger.debug("Setting items list in Outfit entity");
 	//	this.items = items;
@@ -61,6 +70,7 @@ public class ApparelType extends RelatedEntity implements Serializable, Identifi
 	//Getters==========================================================================	
 	public Integer getId(){return this.id;}
 	public String getName(){return this.name;}
+	public String getIconName(){return this.iconName;}
 	//public List<Item> getItems(){return this.items;}
 
 
@@ -85,7 +95,8 @@ public class ApparelType extends RelatedEntity implements Serializable, Identifi
 		}
 		logger.debug("building ApparelType string");
         StringBuilder sb = new StringBuilder(indent).append("id: ").append((this.id == null ? "null" : this.id))
-			.append(indent).append("name: ").append(this.name);
+			.append(indent).append("name: ").append(this.name)
+			.append(indent).append("iconName: ").append(this.iconName);
         return sb.toString();
 	}
 

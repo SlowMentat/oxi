@@ -1,5 +1,9 @@
 package oxi.services;
 
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -19,7 +23,7 @@ import org.apache.logging.log4j.LogManager;
 
 @Service
 public class EmailService{
-	private static final Logger logger = LogManager.getLogger(CustomUserDetailsService.class);
+	private static final Logger logger = LogManager.getLogger(EmailService.class);
 
 	@Autowired
 	private JavaMailSender mailSender;
@@ -27,22 +31,25 @@ public class EmailService{
 	@Autowired
 	private SpringTemplateEngine templateEngine;
 
-	public void sendSimpleMessage(SimpleMailMessage mail) throws MessagingException, IOException{
-		MimeMessage message = mailSender.createMimeMessage();
-		MimeMessageHelper helper = new MimeMessageHelper(message, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());
+	public void sendSimpleMessage(SimpleMailMessage mail, Map<String,Object> templateVariables) throws MessagingException, IOException{
+		MimeMessage mimMessage = mailSender.createMimeMessage();
+		MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimMessage, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());
 		
-		//helper.addAttachment("logo.png", new ClassPathResource("memorynotfound-logo.png"));
+		//mimeMessageHelper.addAttachment("logo.png", new ClassPathResource("logo.png"));
 
 		Context context = new Context();
-		//context.setVariables(mail.getModel());
+		context.setVariables(templateVariables);
+
+		//Create the HTML body usring Thymeleaf
 		String html = templateEngine.process("account-verification.html", context);
 
-		helper.setTo(mail.getTo());
-		helper.setText(html, true);
-		helper.setSubject(mail.getSubject());
-		helper.setFrom(mail.getFrom());
+		mimeMessageHelper.setTo(mail.getTo());
+		mimeMessageHelper.setText(html, true);
+		mimeMessageHelper.setSubject(mail.getSubject());
+		mimeMessageHelper.setFrom(mail.getFrom());
 
-		mailSender.send(message);
+		// Send mail
+		mailSender.send(mimMessage);
 	}
 }
 

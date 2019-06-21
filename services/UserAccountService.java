@@ -27,9 +27,13 @@ import oxi.repositories.UserVerificationTokenRepository;
 //import org.baeldung.web.error.UserAlreadyExistException;
 
 import oxi.models.User;
+import oxi.models.Profile;
 import oxi.models.UserVerificationToken;
 import oxi.models.dto.UserDto;
 import oxi.models.User;
+import oxi.models.UserMetrics;
+import oxi.models.Tolerance;
+import oxi.models.ProfileStats;
 import oxi.errors.UserAlreadyExistException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,7 +112,7 @@ public class UserAccountService /*implements IAccountService<IVerificationToken>
 			user.setEmail(userDto.getEmail());
 			user.setUsername(userDto.getUsername());
 			user.setRoles(Arrays.asList(roleRep.findByName("ROLE_USER")));
-			user.setEnabled(true);
+			user.setEnabled(false);
 			return userRep.save(user);
 
 			//logger.debug("User object persisted.  user.id: " + user.getId().toString());
@@ -131,8 +135,26 @@ public class UserAccountService /*implements IAccountService<IVerificationToken>
 	}
 
 	//@Override
-	public void updatedProvisionedUser(User user){
+	@Transactional
+	public void activateProvisionedUser(User user){
+
 		entityManager.merge(user);
+
+		//Profivision profile entities if User is being activated for the first time
+		if(user.getProfile() == null){
+			Profile profile = new Profile();
+			UserMetrics userMetrics = new UserMetrics();
+			Tolerance tolerance = new Tolerance();
+			ProfileStats profileStats = new ProfileStats();	
+	
+			profile.setUsername(user.getUsername());
+			profile.setUser(user);
+			profile.setUserMetrics(userMetrics);
+			profile.setTolerance(tolerance);
+			profile.setProfileStats(profileStats);
+
+			entityManager.persist(profile);
+		}
 	}
 
 	//@Override

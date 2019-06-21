@@ -30,12 +30,12 @@ public class SizeLabel extends RelatedEntity implements Serializable, Identifiab
 	//@Column(columnDefinition = "BINARY(16)")
 	//private UUID id;
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	//@Column(columnDefinition = "INT")
 	private Integer id;
 	//@Column(name = "id_text", updatable = false, insertable = false)
 	//private String idText;
-	@Column(name = "name", columnDefinition = "VARCHAR(8)")
+	@Column(name = "name", columnDefinition = "VARCHAR(12)")
 	private String name;
 
 	

@@ -52,7 +52,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	public static final String CSRF_HEADER = "X-CSRF-TOKEN";
 
 	static final long TOKEN_LIFETIME = 604_800_000;
-	static final String TOKEN_PREFIX = "Bearer ";
+	static public final String TOKEN_PREFIX = "Bearer ";
 	static final String TOKEN_SECRET = Base64.getEncoder().encodeToString("ThisIsOurSecretKeyToSignOurTokens".getBytes());
 
 	@Resource
@@ -147,6 +147,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				.antMatchers("/login").permitAll()
 				.antMatchers("/account/user/register").permitAll()
 				.antMatchers("/account/retailer/register").permitAll()
+				.antMatchers("/account/user/confirm").permitAll() // TODO:  eventually change this to HasRole
 				//.antMatchers(HttpMethod.GET "/**").permitAll()
 				.antMatchers("/**").authenticated();
 				//.anyReqyest().hasRole("USER");

@@ -27,6 +27,9 @@ public class ItemDto implements Serializable, Identifiable<String>
 	private SizeChartDto sizeChartDto;
 	private String coverpicuri;
 
+	//private String userDefinedRetailer;
+	//private String userDefinedSize;
+
 	@JsonRawValue
 	private String product;
 	private String platform;
@@ -68,12 +71,14 @@ public class ItemDto implements Serializable, Identifiable<String>
 	}
 
 	public ItemDto(Item item){
-		this.id = item.getIdText();
+		this.id = item.getId().toString();
 		this.sizeGroupId = item.getSizeGroupIdText();
-		this.sizeChartDto = new SizeChartDto(item.getSizeChart());
+		this.sizeChartDto = item.getSizeChart() != null ? new SizeChartDto(item.getSizeChart()) : null;
 		this.apparelType = item.getApparelType();
 		this.product = item.getProduct();
 		this.platform = item.getPlatform();
+		//this.userDefinedSize = item.getUserDefinedSize();
+		//this.userDefinedRetailer = item.getUserDefinedRetailer();
 	}
 
 	//Setters
@@ -85,6 +90,9 @@ public class ItemDto implements Serializable, Identifiable<String>
 	public void setSizeChartDto(SizeChartDto sizeChartDto){this.sizeChartDto = sizeChartDto;}
 	public void setcoverpicuri(String coverpicuri){this.coverpicuri = coverpicuri;}
 	public void setProduct(String product){this.product = product;}
+	public void setPlatform(String platform){this.platform = platform;}
+	//public void setUserDefinedSize(String uds){this.userDefinedSize = uds;}
+	//public void setUserDefinedRetailer(String udr){this.userDefinedRetailer = udr;}
 	
 	//Getters
 	@Override
@@ -96,6 +104,9 @@ public class ItemDto implements Serializable, Identifiable<String>
 	public SizeChartDto getSizeChartDto(){return this.sizeChartDto;}
 	public String getcoverpicuri(){return this.coverpicuri;}
 	public String getProduct(){return this.product;}
+	public String getPlatform(){return this.platform;}
+	//public String getUserDefinedSize(){return this.userDefinedSize;}
+	//public String getUserDefinedRetailer(){return this.userDefinedRetailer;}
 
 	//@Override
 	public String toString(int indents){
@@ -110,6 +121,8 @@ public class ItemDto implements Serializable, Identifiable<String>
 			.append(indent).append("sizeGroupId:").append(((this.sizeGroupId == null) ? "null" : this.sizeGroupId))
 			.append(indent).append("sizeChartDto:").append(((this.sizeChartDto == null) ? "null" : this.sizeChartDto.toString(indents + 1)))
 			.append(indent).append("coverpicuri:").append(((this.coverpicuri == null) ? "null" : this.coverpicuri))
+			//.append(indent).append("udr : ").append(this.userDefinedRetailer == null ? "null" : this.userDefinedRetailer)
+			//.append(indent).append("uds : ").append(this.userDefinedSize == null ? "null" : this.userDefinedSize)
 			.append(indent).append("product : ").append(this.product == null ? "null" : this.product);
         return sb.toString();		
 	}

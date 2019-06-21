@@ -141,7 +141,7 @@ public class Tolerance extends RelatedEntity implements Serializable, Identifiab
 	}
 
 	public Tolerance(ToleranceDto toleranceDto){
-		this.id = toleranceDto.getId() == null ? null : UUID.fromString(toleranceDto.getId());
+		this.id = toleranceDto.getId() == null || toleranceDto.getId().isEmpty() ? null : UUID.fromString(toleranceDto.getId());
 		this.height = toleranceDto.getHeight();
 		this.minNeck = toleranceDto.getMinNeck();
 		this.minFullShoulder = toleranceDto.getMinFullShoulder();

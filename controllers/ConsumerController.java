@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
+
 import javax.servlet.http.*;
 import javax.servlet.*;
 import javax.persistence.*;
@@ -56,6 +57,7 @@ import oxi.repositories.*;
 import oxi.models.dto.*;
 import oxi.models.projection.*;
 import oxi.services.ConsumerService;
+import oxi.services.SearchService;
 import oxi.services.ValueService;
 import oxi.services.UserAccountService;
 import oxi.events.OnRegistrationCompleteEvent;
@@ -83,6 +85,7 @@ import org.springframework.data.web.*;
 import org.springframework.http.*;
 
 
+
 //@RestController
 //@Controller
 @RequestMapping("/consumer")
@@ -97,6 +100,9 @@ public class ConsumerController{
 	private UserAccountService userAccountService;
 	@Autowired
 	private ValueService valueService;
+	@Autowired
+	private SearchService searchService;
+
 	private static final Logger logger = LogManager.getLogger(ConsumerController.class);
 
 
@@ -183,20 +189,37 @@ public class ConsumerController{
 
 	/*
 	******************************************************************
-	HTTP Request handling methods (GET and POST) for RETAILER resource
+	HTTP Request handling methodss for APPARELTYPE resource
 	******************************************************************
 	*/
 	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
-	@RequestMapping(value="/retailers", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getRetailers(@PageableDefault Pageable pageable){
+	@RequestMapping(value="/apparelTypes", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getApparelTypes(@PageableDefault Pageable pageable){
 		try{
-			return new ResponseEntity<PagedResources<?>>(consumerService.readRetailers(pageable), HttpStatus.OK);
+			return new ResponseEntity<PagedResources<?>>(consumerService.getApparelTypes(pageable), HttpStatus.OK);
 		}catch(Exception e){
-			logger.debug(e.toString());
 			return new ResponseEntity<String>(defaultExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+
+
+	/*
+	******************************************************************
+	HTTP Request handling methods (GET and POST) for RETAILER resource
+	******************************************************************
+	*/
+	//@Secured({"ROLE_USER"})
+	//@RestResource(exported = true)
+	//@RequestMapping(value="/retailers", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	//public ResponseEntity<?> getRetailers(@PageableDefault Pageable pageable){
+	//	try{
+	//		return new ResponseEntity<PagedResources<?>>(consumerService.readRetailers(pageable), HttpStatus.OK);
+	//	}catch(Exception e){
+	//		logger.debug(e.toString());
+	//		return new ResponseEntity<String>(defaultExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+	//	}
+	//}
 
 	/*
 	******************************************************************
@@ -591,5 +614,96 @@ public class ConsumerController{
 	}
 
 
+
+	/*
+	******************************************************************
+	* HTTP Controller for consumer search
+	******************************************************************
+	*/
+
+	@Secured({"ROLE_USER"})
+	@RequestMapping(value="/searchUdr", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> searchUserDefinedRetailers(@RequestParam(value="retailer", required=true) String retailer){
+		try{			
+			return new ResponseEntity(searchService.suggestUserDefinedRetailerNames(retailer), HttpStatus.OK);
+		}catch(Exception e){
+			logger.error(e);
+			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Secured({"ROLE_USER"})
+	@RequestMapping(value="/searchUds", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> searchUserDefinedSizes(@RequestParam(value="size", required=true) String size){
+		try{			
+			return new ResponseEntity(searchService.suggestUserDefinedSizeLabels(size), HttpStatus.OK);
+		}catch(Exception e){
+			logger.error(e);
+			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Secured({"ROLE_USER"})
+	@RequestMapping(value="/allApparelTypes", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> searchApparelTypes(final Principal principal){
+		try{			
+			return new ResponseEntity(consumerService.getAllApparelTypes(), HttpStatus.OK);
+		}catch(Exception e){
+			logger.error(e);
+			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Secured({"ROLE_USER"})
+	@RequestMapping(value="/sizeLabels", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getSizeLabels(final Principal principal, @PageableDefault Pageable pageable, @RequestParam(value="name", required=true) String name){
+		try{			
+			return new ResponseEntity(searchService.getSizeLabels(name, pageable), HttpStatus.OK);
+		}catch(Exception e){
+			logger.error(e);
+			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Secured({"ROLE_USER"})
+	@RequestMapping(value="/searchItems", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> searchItems(final Principal principal, @RequestParam(value="term", required=true) String term, @RequestParam(value="retailer", required=true) String retailer){
+		try{
+			return new ResponseEntity(searchService.suggestItems(term, retailer), HttpStatus.OK);
+		}catch(Exception e){
+			logger.error("Exception occured when invoking suggestItems: ", e);
+			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Secured({"ROLE_USER"})
+	@RequestMapping(value="/searchRetailerNames", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> searchRetailerNames(final Principal principal, @RequestParam(value="term", required=true) String term){
+		try{
+			return new ResponseEntity(searchService.suggestRetialerNames(term), HttpStatus.OK);
+		}catch(Exception e){
+			logger.error("Exception occured when invoking suggestItems: ", e);
+			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	/*
+	* Deprecated 	
+	*/
+	@Secured({"ROLE_USER"})
+	@RequestMapping(value="/searchApparelTypes", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> searchRetailerNames(final Principal principal, @RequestParam(value="type", required=true) String type, @PageableDefault Pageable pageable){
+		try{
+			if(type.isEmpty()){
+				return new ResponseEntity(searchService.getApparelTypes(type, pageable), HttpStatus.OK);
+			}else{
+				return new ResponseEntity(searchService.suggestApparelType(type), HttpStatus.OK);
+			}
+		}catch(Exception e){
+			logger.error("Exception occured when invoking suggestItems: ", e);
+			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
 
 }

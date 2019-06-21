@@ -44,15 +44,19 @@ public class ProductDto implements Serializable, Identifiable<String>
 	}
 
 	public ProductDto(Item item){
-		this.id = item.getIdText() != null ? item.getIdText() : null;
-		//this.productId = item.getProductId();
-		this.sizeGroupId = item.getSizeGroupIdText();
-		//this.link = item.getLink();
-		this.sizeChartDto = item.getSizeChart() != null ? new SizeChartDto(item.getSizeChart()) : null;
-		this.apparelType = item.getApparelType();
-		this.pictureDto = item.getPicture() != null ? new PictureDto(item.getPicture()) : null;
-		//this.isRetailPicture = item.getIsRetailPicture();
-		this.isActive = item.getIsActive();
+		if(item != null){
+			this.id = item.getIdText() != null ? item.getIdText() : null;
+			//this.productId = item.getProductId();
+			this.sizeGroupId = item.getSizeGroupIdText();
+			//this.link = item.getLink();
+			this.sizeChartDto = item.getSizeChart() != null ? new SizeChartDto(item.getSizeChart()) : null;
+			this.apparelType = item.getApparelType();
+			this.pictureDto = item.getPicture() != null ? new PictureDto(item.getPicture()) : null;
+			//this.isRetailPicture = item.getIsRetailPicture();
+			this.isActive = item.getIsActive();
+		}/*else{
+			logger.warn("ProductDto constructor received null Item parameter");
+		}*/
 	}
 
 	//Setters

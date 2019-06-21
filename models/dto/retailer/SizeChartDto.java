@@ -35,11 +35,13 @@ public class SizeChartDto implements Serializable, Identifiable<String>
 
 	//ugh
 	public SizeChartDto(SizeChart sizeChart){
-		id = sizeChart.getIdText() != null ? sizeChart.getIdText() : null;
-		name = sizeChart.getChartName();
-		sizeGroupDtos = new ArrayList<SizeGroupDto>(sizeChart.getSizeGroups().size());
-		for(SizeChartSizeGroup sizeChartSizeGroup : sizeChart.getSizeGroups()){
-			sizeGroupDtos.add(new SizeGroupDto(sizeChartSizeGroup.getSizeGroup()));
+		if (sizeChart != null){
+			id = sizeChart.getIdText() != null ? sizeChart.getIdText() : null;
+			name = sizeChart.getChartName();
+			sizeGroupDtos = new ArrayList<SizeGroupDto>(sizeChart.getSizeGroups().size());
+			for(SizeChartSizeGroup sizeChartSizeGroup : sizeChart.getSizeGroups()){
+				sizeGroupDtos.add(new SizeGroupDto(sizeChartSizeGroup.getSizeGroup()));
+			}
 		}
 	}
 

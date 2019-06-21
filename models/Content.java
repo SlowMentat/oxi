@@ -55,7 +55,7 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 	@JsonProperty("items")
 	@JsonIdentityReference(alwaysAsId=true)
 	//private Map<String, Item> items;*
-	private List<ItemContent> items = new ArrayList<>();
+	private List<ItemContent> items = new ArrayList<>(); //TODO:  see if this clears all item assoications on a given 
 	
 	@OneToOne(cascade=CascadeType.MERGE, mappedBy="content")
 	@RestResource(rel="vendor_1")
