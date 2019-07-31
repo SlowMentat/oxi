@@ -16,30 +16,36 @@ import org.apache.logging.log4j.LogManager;
 import org.hibernate.annotations.GenericGenerator;
 
 
-@Entity
-@Table(name="privilege")
-public class Privilege extends BasePrivilege{//} implements Serializable, Identifiable<Long>{
+//@Entity
+//@Table(name="privilege")
+@MappedSuperclass
+public class BasePrivilege implements Serializable, Identifiable<Long>{
+  
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id; 
+    private String name;
  
-    @ManyToMany(mappedBy = "privileges")
-    private Collection<Role> roles;
+    //@ManyToMany(mappedBy = "privileges")
+    //private Collection<Role> roles;
 
-    public Privilege(){
-    	super();
+    public BasePrivilege(){
+
     }
 
-    public Privilege(String name){
-    	super(name);
+    public BasePrivilege(String name){
+    	this.name = name;
     }
     //Getter
-	//public Long getId(){return this.id;}
-    //public String getName(){return this.name;}
-	public Collection<Role> getRoles(){return this.roles;}
+	public Long getId(){return this.id;}
+    public String getName(){return this.name;}
+	//public Collection<Role> getRoles(){return this.roles;}
 
     //Setter
-	//public void setId(Long id){this.id = id;}
-    //public void setName(String name){this.name = name;}
+	public void setId(Long id){this.id = id;}
+    public void setName(String name){this.name = name;}
     /*public void setRoles(List<Role> roles){
-		this.roles = this.<Role, Privilege>setManyToManyParents(roles, this.roles, this);
+		this.roles = this.<Role, BasePrivilege>setManyToManyParents(roles, this.roles, this);
 	}
 
 

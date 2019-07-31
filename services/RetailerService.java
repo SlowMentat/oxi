@@ -122,7 +122,7 @@ public class RetailerService{
 	SessionFactory sessionFactory;*/
 
 	@Autowired
-	private BCryptPasswordEncoder passwordEncoder;
+	private BCryptPasswordEncoder companyPasswordEncoder;
 
 
 	public RetailerService(){

@@ -16,45 +16,45 @@ import org.apache.logging.log4j.LogManager;
 import org.hibernate.annotations.GenericGenerator;
 
 @Entity
-@Table(name="role")
-public class Role extends RelatedEntity implements Serializable, Identifiable<Long>{  
+@Table(name="company_role")
+public class CompanyRole extends RelatedEntity implements Serializable, Identifiable<Long>{  
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
  
     private String name;
 
-    public Role(){
+    public CompanyRole(){
 
     }
-    public Role(String name){
+    public CompanyRole(String name){
     	this.name = name;
     }
 
     @ManyToMany(mappedBy = "roles")
-    private Collection</*BaseAccount*/User> users;
+    private Collection</*BaseAccount*/Company> user;
 	    
 	@ManyToMany
 	@JoinTable(
-		name = "roles_privileges", 
+		name = "company_roles_privileges", 
 		joinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"), 
 		inverseJoinColumns = @JoinColumn(name = "privilege_id", referencedColumnName = "id"))
-	private Collection<Privilege> privileges;   
+	private Collection<CompanyPrivilege> privileges;   
 
 	//Getter
 	public Long getId(){return this.id;}
 	public String getName(){return this.name;}
-	public Collection<Privilege> getPrivileges(){return this.privileges;}
+	public Collection<CompanyPrivilege> getPrivileges(){return this.privileges;}
 
 	//Setter
 	public void setId(Long id){this.id = id;}
 	public void setName(String name){this.name = name;}
-	public void setPrivileges(Collection<Privilege> privileges){this.privileges = privileges;}
-	/*public void setContents(List<Privilege> privileges){
-		this.privileges = this.<Privilege, Role>setManyToManyParents(privileges, this.privileges, this);
+	public void setPrivileges(Collection<CompanyPrivilege> privileges){this.privileges = privileges;}
+	/*public void setContents(List<CompanyPrivilege> privileges){
+		this.privileges = this.<CompanyPrivilege, CompanyRole>setManyToManyParents(privileges, this.privileges, this);
 	}
 	public void setUsers(List<User> users){
-		this.users = this.<User, Role>setManyToManyParents(users, this.users, this);
+		this.users = this.<User, CompanyRole>setManyToManyParents(users, this.users, this);
 	}
 
 	//

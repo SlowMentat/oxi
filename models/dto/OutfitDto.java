@@ -52,7 +52,7 @@ public class OutfitDto implements Serializable, Identifiable<String>
 		this.id = outfit.getIdText();
 		this.likes = outfit.getLikes();
 		this.comments = outfit.getComments();
-		
+		this.coverpicuri = outfit.getCoverpicuri();
 	}
 
 	public OutfitDto(String id, int likes, String comments, List<ContentDto> contents, String coverpicuri){

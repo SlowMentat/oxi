@@ -24,7 +24,7 @@ import com.google.gson.GsonBuilder;
 public class SizeGroupDto implements Serializable, Identifiable<String>
 {
 	private String id;
-	private Integer sizeLabelId;
+	private String sizeLabel;
 	@JsonRawValue
 	private String metric;
 
@@ -51,7 +51,7 @@ public class SizeGroupDto implements Serializable, Identifiable<String>
 
 	public SizeGroupDto(
 		String id, 
-		Integer sizeLabelId,
+		String sizeLabel,
 		float neck,
 		float fullShoulder,
 		float halfShoulder,
@@ -68,7 +68,7 @@ public class SizeGroupDto implements Serializable, Identifiable<String>
 	{
 		//super();
 		this.id = id;
-		this.sizeLabelId = sizeLabelId;
+		this.sizeLabel = sizeLabel;
 
 		//this.neck = neck;
 		//this.fullShoulder = fullShoulder;
@@ -87,7 +87,7 @@ public class SizeGroupDto implements Serializable, Identifiable<String>
 
 	public SizeGroupDto(SizeGroup sizeGroup){
 		this.id = sizeGroup.getIdText();
-		this.sizeLabelId = sizeGroup.getSizeLabelId();
+		//this.sizeLabel = sizeGroup.getSizeLabel();
 		this.metric = sizeGroup.getMetric();
 		//this.neck = sizeGroup.getNeck();
 		//this.fullShoulder = sizeGroup.getFullShoulder();
@@ -106,7 +106,7 @@ public class SizeGroupDto implements Serializable, Identifiable<String>
 
 	//Setters
 	public void setId(String id){this.id = id;}
-	public void setSizeLabelId(Integer sizeLabelId){this.sizeLabelId = sizeLabelId;}	
+	public void setSizeLabel(String sizeLabel){this.sizeLabel = sizeLabel;}	
 	public void setMetric(String metric){this.metric = metric;}
 	//public void setNeck(float neck){this.neck = neck;}
 	//public void setFullShoulder(float fullShoulder){this.fullShoulder = fullShoulder;}
@@ -125,7 +125,7 @@ public class SizeGroupDto implements Serializable, Identifiable<String>
 	//Getters
 	@Override
 	public String getId(){return this.id;}
-	public Integer getSizeLabelId(){return this.sizeLabelId;}	
+	public String getSizeLabel(){return this.sizeLabel;}	
 	public String getMetric(){return this.metric;}
 	//public float getNeck(){return this.neck;}
 	//public float getFullShoulder(){return this.fullShoulder;}
@@ -148,7 +148,7 @@ public class SizeGroupDto implements Serializable, Identifiable<String>
 			indent += "    ";
 		}
         StringBuilder sb = new StringBuilder(indent).append("id: ").append(((this.id == null) ? "null" : this.id))
-			.append(indent).append("sizeLabelId : ").append(((this.sizeLabelId == null) ? "null" : this.sizeLabelId))
+			.append(indent).append("sizeLabel : ").append(((this.sizeLabel == null) ? "null" : this.sizeLabel))
 			.append(indent).append("metric : ").append(new GsonBuilder().setPrettyPrinting().create().toJson(new JsonParser().parse(this.metric)));
 			//.append(indent).append("neck:").append(this.neck)
 			//.append(indent).append("fullShoulder:").append(this.fullShoulder)

@@ -49,10 +49,10 @@ public class RetailerAccount extends RelatedEntity implements Serializable, Iden
 	private String state;
 	private String country;
 
-	@Column(name = "work_email", columnDefinition="VARCHAR(36)")
-	private String workEmail;
-	@Column(name = "work_phone_number", columnDefinition="VARCHAR(36)")
-	private String workPhoneNumber;
+	//@Column(name = "work_email", columnDefinition="VARCHAR(36)")
+	//private String workEmail;
+	//@Column(name = "work_phone_number", columnDefinition="VARCHAR(36)")
+	//private String workPhoneNumber;
 
 
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval= true, mappedBy = "retailerAccount")
@@ -67,10 +67,20 @@ public class RetailerAccount extends RelatedEntity implements Serializable, Iden
 
 	@OneToOne(cascade=CascadeType.ALL)
 	@RestResource(rel="vendor_3")
-	private User user;
+	private Company company;
 	
 	//Constructor
 	public RetailerAccount(){
+		
+	}
+
+	public RetailerAccount(String companyName, String country, String state, String city, String streetAddress1, String streetAddress2){
+		this.companyName = companyName;
+		this.country = country;
+		this.state = state;
+		this.city = city;
+		this.streetAddress1 = streetAddress1;
+		this.streetAddress2 = streetAddress2;
 	}
 	
 	//Setters
@@ -82,8 +92,8 @@ public class RetailerAccount extends RelatedEntity implements Serializable, Iden
 	public void setCity(String city){this.city = city;}
 	public void setState(String state){this.state = state;}
 	public void setCountry(String country){this.country = country;}
-	public void setWorkEmail(String workEmail){this.workEmail = workEmail;}
-	public void setWorkPhoneNumber(String workPhoneNumber){this.workPhoneNumber = workPhoneNumber;}
+	//public void setWorkEmail(String workEmail){this.workEmail = workEmail;}
+	//public void setWorkPhoneNumber(String workPhoneNumber){this.workPhoneNumber = workPhoneNumber;}
 
 	public void setItems(List<Item> items){this.items = items;}
 	public void addItem(Item item){
@@ -106,9 +116,9 @@ public class RetailerAccount extends RelatedEntity implements Serializable, Iden
 	public String getCity (){return this.city;}
 	public String getState(){return this.state;}
 	public String getCountry(){return this.country;}
-	public String getWorkPhoneNumber(){return this.workPhoneNumber;}
-	public String getWorkEmail(){return this.workEmail;}	
-	public User getUser(){return this.user;}
+	//public String getWorkPhoneNumber(){return this.workPhoneNumber;}
+	//public String getWorkEmail(){return this.workEmail;}	
+	public Company getCompany(){return this.company;}
 	public List<Item> getItems(){return this.items;}
 	public List<SizeChart> getSizeCharts(){return this.sizeCharts;}
 	

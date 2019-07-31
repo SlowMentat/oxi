@@ -83,6 +83,7 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 		HashMap<Outfit, ArrayList<Content>> outfitToContentMap = new HashMap<Outfit, ArrayList<Content>>();
 		HashMap<Content, ArrayList<ItemDto>> contentToItemMap = new HashMap<Content, ArrayList<ItemDto>>();
 		HashMap<UUID, ArrayList<SizeGroupDto>> sizeChartIdToSizeGroupsMap = new HashMap<UUID, ArrayList<SizeGroupDto>>();
+		//HashMap<UUID, SizeGroupDto> idToSizeGroupDtoMap = new HashMap<UUID, SizeGroupDto>();
 		HashMap<UUID, OutfitDto> idToOutfitDtoMap = new HashMap<UUID, OutfitDto>();
 		HashMap<UUID, SizeChart> idToSizeChartMap = new HashMap<UUID, SizeChart>();
 		//Example 553. Hibernate native query selecting entities with joined one-to-many association
@@ -191,6 +192,7 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 					sizeGroups.add(new SizeGroupDto(sizeGroup));
 				}
 				sizeChartIdToSizeGroupsMap.put(sizeChart.getId(), sizeGroups);
+				//idToSizeGroupDtoMap.put(sizeGroup.getId(), new SizeGroupDto(sizeGroup));
 				//update idToSizeChartMap with the queried SizeChart object associated with sizeChartId key
 				idToSizeChartMap.put(sizeChart.getId(), sizeChart);
 			}	
@@ -214,6 +216,7 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 						itemContent.getPositionx(), 
 						itemContent.getPositiony(), 
 						item.getApparelType(), 
+						//idToSizeGroupDtoMap.get(item.getSizeGroupIdText()),
 						item.getSizeGroupIdText(),
 						new SizeChartDto(
 							(item.getSizeChartId() != null ? item.getSizeChartId().toString() : null), 

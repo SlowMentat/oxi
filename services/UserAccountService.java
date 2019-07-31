@@ -64,9 +64,9 @@ public class UserAccountService /*implements IAccountService<IVerificationToken>
 	@Autowired UserVerificationTokenRepository userVerificationTokenRep;
 	@Autowired RoleRepository roleRep;
 	//@Autowired PasswordResetTokenRepository passwordResetTokenRep;
-	//@Autowired PasswordEncoder passwordEncoder;
+	//@Autowired PasswordEncoder userPasswordEncoder;
 	@Autowired
-	private BCryptPasswordEncoder passwordEncoder;
+	private BCryptPasswordEncoder userPasswordEncoder;
 	//@Autowired SessionRegistry sessionRegistry;
 	@Autowired EntityManager entityManager;
 
@@ -108,7 +108,7 @@ public class UserAccountService /*implements IAccountService<IVerificationToken>
 			//}
 
 			User user = new User();
-			user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+			user.setPassword(userPasswordEncoder.encode(userDto.getPassword()));
 			user.setEmail(userDto.getEmail());
 			user.setUsername(userDto.getUsername());
 			user.setRoles(Arrays.asList(roleRep.findByName("ROLE_USER")));

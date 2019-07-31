@@ -89,7 +89,7 @@ public class ValueService{
 	SessionFactory sessionFactory;*/
 
 	@Autowired
-	private BCryptPasswordEncoder passwordEncoder;
+	private BCryptPasswordEncoder userPasswordEncoder;
 
 
 	public ValueService(){

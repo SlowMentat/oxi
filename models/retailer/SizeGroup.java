@@ -114,7 +114,7 @@ public class SizeGroup extends RelatedEntity implements Serializable, Identifiab
 	public SizeGroup(SizeGroupDto sizeGroupDto){
 		//super();
 		this.id = sizeGroupDto.getId() != null ? UUID.fromString(sizeGroupDto.getId()) : null;
-		this.sizeLabelId = sizeGroupDto.getSizeLabelId();
+		//this.sizeLabelId = sizeGroupDto.getSizeLabelId();
 		//this.neck = sizeGroupDto.getNeck();
 		//this.fullShoulder = sizeGroupDto.getFullShoulder();
 		//this.hal//fShoulder = sizeGroupDto.getHalfShoulder();

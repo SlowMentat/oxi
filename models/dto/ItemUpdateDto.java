@@ -18,7 +18,7 @@ public class ItemUpdateDto extends ItemDto
 	private String contentId;
 
 	public ItemUpdateDto(String id, Float positionx, Float positiony, Integer apparelType, String SizeGroupId, String retailer, String brand){
-		super(id, positionx, positiony, apparelType, SizeGroupId, retailer, brand, null); //TODO:  change null parameter to String userDefined
+		super(id, positionx, positiony, apparelType, null, retailer, brand, null); //TODO:  change null parameter to String userDefined
 	}
 
 	//Setters

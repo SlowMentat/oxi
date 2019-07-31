@@ -17,23 +17,23 @@ import org.hibernate.annotations.GenericGenerator;
 
 
 @Entity
-@Table(name="privilege")
-public class Privilege extends BasePrivilege{//} implements Serializable, Identifiable<Long>{
+@Table(name="company_privilege")
+public class CompanyPrivilege extends BasePrivilege{//} implements Serializable, Identifiable<Long>{
  
     @ManyToMany(mappedBy = "privileges")
-    private Collection<Role> roles;
+    private Collection<CompanyRole> companyRoles;
 
-    public Privilege(){
+    public CompanyPrivilege(){
     	super();
     }
 
-    public Privilege(String name){
+    public CompanyPrivilege(String name){
     	super(name);
     }
     //Getter
 	//public Long getId(){return this.id;}
     //public String getName(){return this.name;}
-	public Collection<Role> getRoles(){return this.roles;}
+	public Collection<CompanyRole> getCompanyRoles(){return this.companyRoles;}
 
     //Setter
 	//public void setId(Long id){this.id = id;}

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Date;
 
 import javax.servlet.http.*;
 import javax.servlet.*;
@@ -473,8 +474,13 @@ public class ConsumerController{
 		String username = principal.getName();
 		//try{	
 			//ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.bookmarkItem(username, itemId), HttpStatus.CREATED);
-			consumerService.bookmarkItem(username, itemId);
-			return new ResponseEntity<>(HttpStatus.CREATED);
+			Date createdOn = consumerService.bookmarkItem(username, itemId);
+
+			if(createdOn != null){
+				return new ResponseEntity<>(createdOn, HttpStatus.CREATED);
+			}else{
+				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+			}
 		/*}catch(Exception e){
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}*/
@@ -483,15 +489,50 @@ public class ConsumerController{
 	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
 	@RequestMapping(value="/bookmarks", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> bookmark(final Principal principal, @RequestBody ArrayList<String> itemIds){
+	public ResponseEntity<?> bookmarks(final Principal principal, @RequestBody ArrayList<String> itemIds){
+
 		String username = principal.getName();
-		//try{	
+
+		try{	
 			//ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.bookmarkItem(username, itemId), HttpStatus.CREATED);
 			consumerService.bookmarkItems(username, itemIds);
 			return new ResponseEntity<>(HttpStatus.CREATED);
-		/*}catch(Exception e){
+		}catch(Exception e){
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}*/
+		}
+	}
+	
+	@Secured({"ROLE_USER"})
+	@RestResource(exported = true)
+	@RequestMapping(value="/bookmarks", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getBookmarks(final Principal principal){
+
+		String username = principal.getName();
+
+		try{	
+			//ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.bookmarkItem(username, itemId), HttpStatus.CREATED);
+			HashMap<String, Date> bookmarks = consumerService.getBookmarkedItemsByUsername(username);
+			return new ResponseEntity<>(bookmarks, HttpStatus.OK);
+		}catch(Exception e){
+			logger.error("",e);
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Secured({"ROLE_USER"})
+	@RestResource(exported = true)
+	@RequestMapping(value="/bookmark/{itemId}", method=RequestMethod.DELETE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> deleteBookmark(final Principal principal, @PathVariable String itemId){
+
+		String username = principal.getName();
+
+		try{
+			consumerService.removeBookmarkItem(username, itemId);
+			return new ResponseEntity<>(HttpStatus.OK);
+		}catch(Exception e){
+			logger.error("",e);
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 
 	//@Secured({"ROLE_USER"})
@@ -613,6 +654,18 @@ public class ConsumerController{
 		}
 	}
 
+
+	@Secured({"ROLE_USER"})
+	@RestResource(exported = true)
+	@RequestMapping(value="/sizeChart", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getSizeChartByItemId(final Principal principal, @RequestParam(value="itemId", required=true) String itemId){
+		try{
+			return new ResponseEntity(consumerService.getSizeChartByItemId(itemId), HttpStatus.OK);
+		}catch(Exception e){
+			logger.error(e);
+			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
 
 	/*

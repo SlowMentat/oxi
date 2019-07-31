@@ -46,7 +46,7 @@ public class SizeChart extends RelatedEntity implements Serializable, Identifiab
 	private String name;
 	//private List<SizeChartSizeGroupId> sizeChartSizeGroupId;
 
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval= true, mappedBy = "sizeChart")
+	@OneToMany(cascade = CascadeType.ALL,  orphanRemoval= true, mappedBy = "sizeChart")
 	@RestResource(rel="client_0")	
 	@JsonIdentityReference(alwaysAsId=true)
 	private List<SizeChartSizeGroup> sizeGroups = new ArrayList<SizeChartSizeGroup>();

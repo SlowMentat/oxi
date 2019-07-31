@@ -68,7 +68,8 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	private Date createdOn = new Date();
 
 	@Column(name = "updated_on", nullable=true)
-	private Instant updatedOn = null;
+	//private Instant updatedOn = createdOn;
+	private Date updatedOn = null;
 
 	//@Column(name = "udr",  columnDefinition="VARCHAR(36)")
 	//private String userDefinedRetailer;
@@ -196,7 +197,8 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	public void setSizeChartId(UUID sizeChartId){this.sizeChartId = sizeChartId;}
 	public void setRetailerAccount(RetailerAccount retailerAccount){this.retailerAccount = (RetailerAccount)this.setManyToOneParent(retailerAccount, this.retailerAccount, this);}
 	public void setIsActive(boolean isActive){this.isActive = isActive;}
-	public void setUpdatedOn(){this.updatedOn = Instant.now();}
+	//public void setUpdatedOn(){this.updatedOn = Instant.now();}
+	public void setUpdatedOn(Date updatedOn){this.updatedOn = updatedOn;}
 	//public void setUserDefinedSize(String uds){this.userDefinedSize = uds;}
 	//public void setUserDefinedRetailer(String udr){this.userDefinedRetailer = udr;}
 	/*public void setContents(List<Content> contents){
@@ -227,7 +229,8 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	public List<ItemContent> getContents(){return this.contents;}
 	public Picture getPicture(){return this.picture;}
 	public boolean getIsActive(){return this.isActive;}
-	public Instant getUpdatedOn(){return this.updatedOn;}
+	//public Instant getUpdatedOn(){return this.updatedOn;}
+	public Date getUpdatedOn(){return this.updatedOn;}
 	public Date getCreatedOn(){return this.createdOn;}
 	//public String getUserDefinedSize(){return this.userDefinedSize;}
 	//public String getUserDefinedRetailer(){return this.userDefinedRetailer;}

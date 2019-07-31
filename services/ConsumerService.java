@@ -4,12 +4,15 @@ import java.lang.*;
 import java.util.Iterator;
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Collection;
 import java.util.Arrays;
+import java.util.Optional;
 import java.io.*;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -21,6 +24,7 @@ import org.apache.commons.io.FilenameUtils;
 import oxi.models.*;
 import oxi.models.retailer.*;
 import oxi.repositories.*;
+import oxi.repositories.retailer.*;
 //import oxi.util.assemblers.*;
 import oxi.models.dto.*;
 import oxi.models.projection.*;
@@ -77,6 +81,10 @@ public class ConsumerService implements ClientService{
 
 	@Autowired private ApparelTypeRepository apparelTypeRep;
 
+	@Autowired private SizeChartRepository sizeChartRep;
+
+	@Autowired private SizeGroupRepository sizeGroupRep;
+
 	//Resource Assemblers
 	//@Autowired 
 	//private OutfitResourceAssembler outfitRA;
@@ -125,7 +133,7 @@ public class ConsumerService implements ClientService{
 	SessionFactory sessionFactory;*/
 
 	@Autowired
-	private BCryptPasswordEncoder passwordEncoder;
+	private BCryptPasswordEncoder userPasswordEncoder;
 
 
 	public ConsumerService(){
@@ -300,7 +308,8 @@ public class ConsumerService implements ClientService{
 				outfitDto.getLikes(), 
 				outfitDto.getComments(), 
 				new ArrayList<Content>(outfitDto.getContents().size()), 
-				outfitDto.getCoverpicuri());
+				outfitDto.getCoverpicuri(),
+				outfitDto.getUsername());
 		}
 		return null;		
 	}
@@ -471,7 +480,8 @@ public class ConsumerService implements ClientService{
 				* are taken here as an extra layer of protection from overriding existing item entities during a merge operation.
 				*/
 				if(itemDto.getId() != null){
-					item = new Item(UUID.fromString(itemDto.getId()));
+					item = new Item();
+					item.setId(UUID.fromString(itemDto.getId()));
 					entityManager.merge(item);
 				}else{
 					item = copyToItem(itemDto);
@@ -523,12 +533,17 @@ public class ConsumerService implements ClientService{
 
 	//=====================================================================================
 	//Item
-
+	//TODO:  this needs some serious optimizing
 	@Transactional
 	public OutfitDto updateItems(HashMap<String, ArrayList<ItemDto>> contentIdToItemMap, String username, String outfitId){
 		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId)).get();
 		Profile profile = outfit.getProfile();
-		List<ContentDto> contentDtos;
+		OutfitDto outfitDto;
+		List<ContentDto> contentDtos = new ArrayList<ContentDto>();
+		List<ItemDto> itemDtos;
+		List<SizeGroupDto> sizeGroupDtos = new ArrayList<SizeGroupDto>();
+
+		//HashSet<UUID> itemIds = new HashSet<UUID>();
 
 		if(profile.getUsername().equals(username)){
 			//logger.debug("content Ids:");
@@ -538,12 +553,18 @@ public class ConsumerService implements ClientService{
 				Content content = contentRep.findById(UUID.fromString(contentId)).get();				
 				//List<ItemContent> itemContents = content.getItems();
 				//entityManager.persist(content);
-
 				List<ItemContent> itemContents = content.getItems();
+				//itemDtos = new ArrayList<ItemDto>();
 
+				//
 				for(ItemDto itemDto : contentIdToItemMap.get(contentId)){
-					//logger.debug(itemDto.getId() + "\n");
 					int ind = -1;
+					boolean isAssociated = false;
+
+					//itemIds.add(UUID.fromString(itemDto.getId()));
+
+					// Check each content/item combination exists in the item_content join table. 
+					// If so, then merge changes to existing record
 					for(ItemContent itemContent : itemContents){
 						ind++;
 						if(content.getId().equals(itemContent.getContent().getId()) && itemDto.getId().equals(itemContent.getItem().getId().toString())){
@@ -551,27 +572,61 @@ public class ConsumerService implements ClientService{
 							itemContent.setPositionx(itemDto.getPositionx()); 
 							itemContent.setPositiony(itemDto.getPositiony());
 							//itemContent.getItem().setApparelType(itemDto.getApparelType()); 
-							itemContent.getItem().setSizeGroupId(UUID.fromString(itemDto.getSizeGroupId()));
+
+							//TODO: make sure this isn't needed
+							//itemContent.getItem().setSizeGroupId(UUID.fromString(itemDto.getSizeGroupId()));
+							
 							//itemContent.getItem().setRetailer(UUID.fromString(itemDto.getRetailer()));
 							//itemContent.getItem().setBrand(UUID.fromString(itemDto.getBrand()));
 							entityManager.merge(itemContent);
 							itemContents.set(ind, itemContent);
 							logger.debug("ConsumerService#updateItems: updated itemContent = \n" + itemContent.toString());
+							isAssociated = true;
+
 							break;
 						}
 					}
 
+					// This handles newly added retailer items.  It creates a new content/item record in the item_content database
+					if(!isAssociated){
+						Item item = itemRep.findById(UUID.fromString(itemDto.getId())).get();
+						ItemContent ic = new ItemContent(item, content);
+						ic.setPositiony(itemDto.getPositiony());
+						ic.setPositionx(itemDto.getPositionx());
+						content.addItem(ic);
+					}
 
+					//itemDtos.add(itemDto);
 				}
 
 				content = entityManager.merge(content);
+				
+				//ContentDto contentDto = new ContentDto(content);
+				//contentDto.setItems(itemDtos);
+				//contentDtos.add(contentDto);
+				
+				//Note: more than one content entity may have been updated
 				outfit.getContents().set(outfit.getContents().indexOf(content), content);
 			}
+
+			////batch select sizeGroups associated with each itemDto id
+			//HashMap<UUID, SizeGroupDto> itemIdToSizeGroupDto = sizeGroupRep.customFindByIds(itemIds);
+
+			////loop through all constructed ItemDtos adding the corresponding sizeGroupDto
+			//for(ContentDto contentDto : contentDtos){
+			//	for(ItemDto itemDto : contentDto.getItems()){
+			//		itemDto.setSizeGroupDto(itemIdToSizeGroupDto.get(UUID.fromString(itemDto.getId())));
+			//	}
+			//}
 		}else{
 			logger.warn("User, " + username + " does not have permissions to edit item");
 		}
+
+		//outfitDto = new OutfitDto(outfit);
+		//outfitDto.setContents(contentDtos);
+
+		//return outfitDto;
 		return copyToOutfitDto(outfit);
-		//return copyToContentDto(content)
 	}
 
 	//TODO  modify to reuse exisitng items
@@ -967,16 +1022,41 @@ public class ConsumerService implements ClientService{
 		}		
 	}
 
+
+	//=====================================================================================
+	//  SizeChart
+
+	@Transactional
+	public SizeChartDto getSizeChartByItemId(String itemId){
+		//TODO: fix getSizeChartByItemId
+		return sizeChartRep.customGetSizeChartWithItemId(UUID.fromString(itemId));
+
+		//Item item = (Item)itemRep.findById(UUID.fromString(itemId)).get();
+		//return (SizeChart)sizeChartRep.findById(item.getSizeChartId()).get();
+	}
+
+
 	//=====================================================================================
 	//  Bookmark
+
+
+	public HashMap<String, Date> getBookmarkedItemsByUsername(String username){
+		//return bookmarkRep.findIdsByUsername(username);
+		return bookmarkRep.customfindIdsByUsername(username);
+	}
 	
 	@Transactional
-	public void bookmarkItem(String username, String itemId){
+	public Date bookmarkItem(String username, String itemId){
 		UUID uuidItemId = UUID.fromString(itemId);
 		Bookmark bookmark = bookmarkRep.findByUsernameAndItemId(username, uuidItemId);
+
 		if(bookmark == null){
-			entityManager.persist(new Bookmark(null, username, uuidItemId));
+			bookmark = new Bookmark(null, username, uuidItemId);
+			entityManager.persist(bookmark);
+			return bookmark.getCreatedOn();
 		}
+
+		return null;
 	}
 
 	@Transactional
@@ -1004,7 +1084,7 @@ public class ConsumerService implements ClientService{
 		}
 	}
 
-	@Transactional
+	//@Transactional
 	public void removeBookmarkItem(String username, String itemId){
 		bookmarkRep.deleteByUsernameAndItemId(username, UUID.fromString(itemId));
 	}

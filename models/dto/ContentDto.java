@@ -47,6 +47,12 @@ public class ContentDto implements Serializable, Identifiable<String>
 		this.outfitId = outfitId;
 	}
 
+	public ContentDto(Content content){
+		this.id = content.getIdText();
+		this.coverpicuri = content.getCoverpicuri();
+		this.outfitId = content.getOutfit().getId().toString();
+	}
+
 	//@JsonCreator
 	/*public ContentDto(
 		@JsonProperty("id")

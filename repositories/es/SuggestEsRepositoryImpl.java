@@ -83,7 +83,7 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 		//prepare search on size_label index
 		SearchRequestBuilder searchReqBuilder = client.prepareSearch("item")
 			.setTypes("doc")
-			.setFetchSource(new String[]{"product.featuredImage.originalSrc", "product.handle", "product.description"}, null)
+			.setFetchSource(new String[]{"product.featuredImage.originalSrc", "product.handle", "product.description", "product.variants"}, null)
 			.suggest(suggestionBuilder);
 
 		//extends ActionResponse 

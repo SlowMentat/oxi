@@ -14,6 +14,6 @@ import java.util.*;
 import oxi.models.projection.OutfitProjection;
 import oxi.models.dto.*;*/
 
-@RepositoryRestResource(collectionResourceRel="SizeChart", path="sizeChart")
-public interface SizeChartRepository extends JpaRepository<SizeChart, UUID>, SizeChartRepositoryCustom{
+@RepositoryRestResource(collectionResourceRel="SizeGroup", path="sizeGroup")
+public interface SizeGroupRepository extends JpaRepository<SizeGroup, UUID>, SizeGroupRepositoryCustom{
 } 

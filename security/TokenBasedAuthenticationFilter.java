@@ -1,6 +1,7 @@
 package oxi.security;
 
 import oxi.models.User;
+import oxi.models.Company;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -35,6 +36,7 @@ import static oxi.security.SecurityConfiguration.*;
 public class TokenBasedAuthenticationFilter extends UsernamePasswordAuthenticationFilter{
 
 	private static final Logger logger = LogManager.getLogger(TokenBasedAuthenticationFilter.class);
+	private boolean isCompany = false;
 	//private final TokenAuthenticationService tokenAuthenticationService;
 	//private final UserDetailsService userDetailsService;
 
@@ -42,10 +44,11 @@ public class TokenBasedAuthenticationFilter extends UsernamePasswordAuthenticati
 		/*String urlMapping, 
 		TokenAuthenticationService tokenAuthenticationService, 
 		UserDetailsService userDetailsService, */
-		AuthenticationManager authenticationManager){
+		AuthenticationManager authenticationManager, boolean isCompany){
 
 		//this.userDetailsService = userDetailsService;		
 		//this.tokenAuthenticationService = tokenAuthenticationService;
+		this.isCompany = isCompany;
 		setAuthenticationManager(authenticationManager);
 	}
 
@@ -53,12 +56,22 @@ public class TokenBasedAuthenticationFilter extends UsernamePasswordAuthenticati
 	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException{
 		logger.debug("attempting Authentication");
 		try{
-			final User user = new ObjectMapper().readValue(request.getInputStream(), User.class);
-			final UsernamePasswordAuthenticationToken loginToken = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
+			final User user;// = new ObjectMapper().readValue(request.getInputStream(), User.class);
+			final Company company;
+			final UsernamePasswordAuthenticationToken loginToken;// = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
 			
-			logger.debug("username = " + user.getUsername());
-			logger.debug("password = "+ user.getPassword());
-			logger.debug("loginToken = " + loginToken.toString());
+			if(isCompany){
+				company = new ObjectMapper().readValue(request.getInputStream(), Company.class);
+				loginToken = new UsernamePasswordAuthenticationToken(company.getCompanyName(), company.getPassword());
+			}else{
+				user = new ObjectMapper().readValue(request.getInputStream(), User.class);
+				loginToken = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());				
+			}
+
+
+			//logger.debug("username = " + user.getUsername());
+			//logger.debug("password = "+ user.getPassword());
+			//logger.debug("loginToken = " + loginToken.toString());
 
 			Authentication authentication = getAuthenticationManager().authenticate(loginToken);
 

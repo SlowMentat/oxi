@@ -89,7 +89,7 @@ public class ItemManagementService{
 	SessionFactory sessionFactory;*/
 
 	@Autowired
-	private BCryptPasswordEncoder passwordEncoder;
+	private BCryptPasswordEncoder companyPasswordEncoder;
 
 
 	public ItemManagementService(){

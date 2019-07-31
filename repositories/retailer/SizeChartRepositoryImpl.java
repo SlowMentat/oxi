@@ -2,6 +2,7 @@ package oxi.repositories.retailer;
 
 import oxi.models.retailer.*;
 import oxi.models.Item;
+import oxi.models.SizeLabel;
 import oxi.models.dto.retailer.*;
 import oxi.models.dto.ItemDto;
 /*import oxi.models.dto.OutfitDto;
@@ -17,6 +18,7 @@ import org.hibernate.transform.*;
 import org.hibernate.SQLQuery;
 import org.hibernate.*;
 import org.hibernate.type.UUIDBinaryType;
+import org.hibernate.type.IntegerType;
 
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.data.domain.Page;
@@ -125,7 +127,7 @@ public class SizeChartRepositoryImpl implements SizeChartRepositoryCustom {
 			if(sizeGroup != null){
 				sizeGroupDtos.add(new SizeGroupDto(
 					sizeGroup.getIdText(), 
-					sizeGroup.getSizeLabelId(), 
+					null,//sizeGroup.getSizeLabelId(), TODO:  replace SizeGroupDto with SizeGroupRetailerDto
 					0,//sizeGroup.getNeck(),
 					0,//sizeGroup.getFullShoulder(),
 					0,//sizeGroup.getHalfShoulder(),
@@ -157,6 +159,82 @@ public class SizeChartRepositoryImpl implements SizeChartRepositoryCustom {
 		return pagedSizeChartDtos;
 	}
 
+	@Override
+	public SizeChartDto customGetSizeChartWithItemId(UUID itemId){
+		Session session = entityManager.unwrap(Session.class);	
+		SizeChart sizeChart;
+		SizeGroup sizeGroup;
+		SizeLabel sizeLabel;
+		SizeChartSizeGroup sizeChartSizeGroup;
+		ArrayList<SizeChartDto> sizeChartDtos = new ArrayList<SizeChartDto>();
+		ArrayList<SizeGroupDto> sizeGroupDtos = new ArrayList<SizeGroupDto>();
+		ArrayList<SizeGroup> sizeGroups = new ArrayList<SizeGroup>();
+		HashMap<SizeChart, ArrayList<SizeGroupDto>> sizeChartToSizeGroupDtosMap = new HashMap<SizeChart, ArrayList<SizeGroupDto>>();
+		HashMap<Integer, SizeLabel> idToSizeLabel = new HashMap<Integer, SizeLabel>();
+		ArrayList<Integer> sizeLabelIds = new ArrayList<Integer>();
+
+		//Example 553. Hibernate native query selecting entities with joined one-to-many association
+		String sizeChartQ = "select {sg.*} from size_label sc join item i on i.size_chart_id = sc.id where i.id = :id";
+		String sizeChartSizeGroupQ = "select {sc.*}, {sg.*}, {scsg.*} "+
+			"from size_group sg, size_chart sc " +
+			"join size_chart_size_group scsg on scsg.size_chart_id=sc.id " +
+			//"join size_label sl on sl.id = sg.size_label_id " +
+			"join item i on i.size_chart_id = sc.id " +
+			"where i.id = :id and sg.id = scsg.size_group_id";
+
+		String SizeLabelQ = "select {sl.*} from size_label sl where sl.id in (:sizeLabelIds)";
+
+		List<Object[]> sizeChartSizeGroupTuples = session.createSQLQuery(sizeChartSizeGroupQ)
+			.addEntity("sc", SizeChart.class)
+			.addEntity("sg", SizeGroup.class)
+			//.addEntity("sl", SizeLabel.class)
+			.addEntity("scsg", SizeChartSizeGroup.class)
+			//.setParameter("sizeChartId", Arrays.asList(UUID.fromString("3a5f73ae-a986-11e8-8336-f23c9150975d"), UUID.fromString("078e417f-a986-11e8-8336-f23c9150975d")), UUIDBinaryType.INSTANCE)
+			.setParameter("id", itemId, UUIDBinaryType.INSTANCE)
+			.list();
+
+		logger.debug("SizeChartRepositoryImpl#findByRetailerAccount: size of sizeChartSizeGroupTuples = " + sizeChartSizeGroupTuples.size());
+
+		sizeChart = (SizeChart)(sizeChartSizeGroupTuples.get(0)[0]);
+		SizeChartDto sizeChartDto = new SizeChartDto(sizeChart);
+
+		//add the results to ArrayList of type SizeGroup and build the sizeLabelIds List for querying size_label
+		for(Object[] tuple : sizeChartSizeGroupTuples){			
+			sizeGroup = (SizeGroup)tuple[1];
+			//sizeLabel = (SizeLabel)tuple[2];
+
+			if(sizeGroup != null){
+				sizeLabelIds.add(sizeGroup.getSizeLabelId());
+				sizeGroups.add(sizeGroup);
+			}
+		}
+
+		//query size_label table with id list derived from the sizeChartSizeGroupQ query
+		List<SizeLabel> sizeLabelTuples = session.createSQLQuery(SizeLabelQ)
+			.addEntity("sl", SizeLabel.class)
+			.setParameterList("sizeLabelIds", sizeLabelIds, IntegerType.INSTANCE)
+			.list();
+
+		//build the results into a hash map of SizeLabel ids to SizeLabel objects
+		for(SizeLabel sl : sizeLabelTuples){
+			//sizeLabel = (SizeLabel)tuple[0];
+			if(sl != null){
+				idToSizeLabel.put(sl.getId(), sl);
+			}
+		}
+
+		//use the idToSizeLabel hashmap to build the SizeGroupDto ArrayList initializing each SizeGroupDto's sizeLabel property
+		for(SizeGroup sg : sizeGroups){
+			SizeGroupDto sgDto = new SizeGroupDto();
+			sgDto.setId(sg.getIdText());
+			sgDto.setSizeLabel(idToSizeLabel.get(sg.getSizeLabelId()).getName());
+			sgDto.setMetric(sg.getMetric());
+			sizeGroupDtos.add(sgDto);
+		}
+
+		sizeChartDto.setSizeGroupDtos(sizeGroupDtos);
+		return sizeChartDto;
+	}
 
 	@Override
 	public Page<SizeChart> findAll(Pageable pageable){

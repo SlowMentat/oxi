@@ -21,4 +21,7 @@ public interface SizeChartRepositoryCustom /*extends PagingAndSortingRepository<
 	//Outfit persist(Outfit outfit);
 	@Query(value="SELECT sc FROM SizeChart sc")
 	Page<SizeChart> getAllSizeChartsWithCompanyName(Pageable pageable);
+
+	//@Query(value="")  //This query is overriden in the implementation
+	SizeChartDto customGetSizeChartWithItemId(UUID itemId);
 }
