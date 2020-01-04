@@ -55,15 +55,16 @@ public class ValueService{
 	//Repositories
 	@Autowired private ItemRepository itemRep;
 	@Autowired private BookmarkRepository bookmarkRep;
-	@Autowired private LikeRepository likeRep;
+	@Autowired private LikeCountRepository likeCountRep;
 	@Autowired private FollowingRepository followingRep;
 	@Autowired private ProfileRepository profileRep;
+	@Autowired private OutfitRepository outfitRep;
 
 	//Paged Resource Assemblers 
 	@Autowired private PagedResourcesAssembler<Bookmark> bookmarPRA;
 	//@Autowired private PagedResourcesAssembler<BookmarkDto> bookmarkPRAP; //TODO:  create this class
 
-	@Autowired private PagedResourcesAssembler<Like> likePRA;
+	@Autowired private PagedResourcesAssembler<LikeCountProfile> likeCountProfilePRA;
 	//@Autowired private PagedResourcesAssembler<LikeDto> likePRAP; //TODO:  create this class
 
 	@Autowired private PagedResourcesAssembler<Following> followPRA;
@@ -145,22 +146,51 @@ public class ValueService{
 		return followingRep.findAll(followingExample);
 	}
 
-	/*@Transactional
-	public void like(){
+	@Transactional
+	public LikeCountDto like(String outfitId, String principle){
 
+		Profile profile = profileRep.findByUsername(principle);
+		LikeCount likeCount = null;
+
+		try{
+			likeCount = likeCountRep.customFindByOutfitId(UUID.fromString(outfitId));
+		}catch(Exception e){
+			logger.error(e.toString());
+			return null;
+		}
+		
+		likeCount.addProfile(profile);
+		entityManager.persist(likeCount);
+
+		return new LikeCountDto(likeCount);
 	}
 
 	@Transactional
-	public void unlike(){
+	public LikeCountDto unlike(String outfitId, String principle){
 
+		Profile profile = profileRep.findByUsername(principle);
+		LikeCount likeCount = null;
+
+		try{
+			likeCount = likeCountRep.customFindByOutfitId(UUID.fromString(outfitId));
+		}catch(Exception e){
+			logger.error(e.toString());
+		}
+		
+		likeCount.removeProfile(profile);
+		entityManager.merge(likeCount);
+
+		return new LikeCountDto(likeCount);
 	}
 
-	@Transactional
-	public long getLikes(){
+	//@Transactional
+	//public LikeCountDto getLikes(String targetUserName){
+//
+	//	return new LikeCountDto(outfitRep.findByUsername(targetUserName).getLikeCount())//;
+	//}
 
-	}*/
+	private <T extends Identifiable<String>> ResourceSupport toResource(T dto){	
 
-	private <T extends Identifiable<String>> ResourceSupport toResource(T dto){		
 		//Link outfitLink = null;// links.linkForSingleResource(dto).withRel("outfit");
 		//SLink selfLink = links.linkForSingleResource(dto).withSelfRel();
 		return new Resource<T>(dto/*, null, selfLink*/);

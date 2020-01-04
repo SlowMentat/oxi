@@ -41,6 +41,12 @@ public abstract class BaseAccount extends RelatedEntity /*implements Identifiabl
 
 	}
 
+	public BaseAccount(String email, String password){
+		this.email = email;
+		this.password = password;
+		this.enabled = enabled;
+	}
+
 
 	//Setters
 	//@Override

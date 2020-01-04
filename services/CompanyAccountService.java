@@ -21,6 +21,7 @@ import java.io.Serializable;
 import oxi.repositories.CompanyRoleRepository;
 import oxi.repositories.CompanyRepository;
 import oxi.repositories.CompanyVerificationTokenRepository;
+import oxi.repositories.retailer.RetailerAccountRepository;
 
 //import org.baeldung.persistence.dao.PasswordResetTokenRepository;
 //import org.baeldung.persistence.model.PasswordResetToken;
@@ -51,6 +52,7 @@ import org.apache.logging.log4j.LogManager;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.xml.bind.DatatypeConverter;
+import org.springframework.http.HttpStatus;
 
 
 @Service
@@ -62,6 +64,7 @@ public class CompanyAccountService /*implements IAccountService<IVerificationTok
 	@Autowired CompanyRepository companyRep;
 	@Autowired CompanyVerificationTokenRepository companyVerificationTokenRep;
 	@Autowired CompanyRoleRepository companyRoleRep;
+	@Autowired RetailerAccountRepository retailerAccountRep;
 	//@Autowired PasswordResetTokenRepository passwordResetTokenRep;
 	//@Autowired PasswordEncoder companyPasswordEncoder;
 	@Autowired
@@ -90,60 +93,63 @@ public class CompanyAccountService /*implements IAccountService<IVerificationTok
 	}
 
 	//@Override
-	public /*ResponseEntity<?>*/ Company registerAccount(final CompanyDto companyDto) throws UserAlreadyExistException{
-		//try{
-			String conflicts = "";
-			//check if data exists
-			if(emailExist(companyDto.getEmail())){
-				throw new UserAlreadyExistException("Theres is an account with that email address: " + companyDto.getEmail());
-			}
-			if(companyNameExist(companyDto.getCompanyName())){
-				throw new UserAlreadyExistException("Company name is already in use: " + companyDto.getCompanyName());
-			}
-			//conflicts += (companyRep.findByEmail(companyDto.getEmail()) != null) ? "email " : "";
-			//conflicts += (companyRep.findByCompanyName(companyDto.getCompanyName()) != null) ? "companyName " : "";
-			//if(conflicts.compareTo("") != 0){
-			//	return new ResponseEntity("Fields: " + conflicts, HttpStatus.CONFLICT);
-			//}
+	public Company registerAccount(final CompanyDto companyDto) throws UserAlreadyExistException{
+		
+		String conflicts = "";
+		//check if data exists
+		if(emailExist(companyDto.getEmail())){
+			throw new UserAlreadyExistException("Theres is an account with that email address: " + companyDto.getEmail());
+		}
+		if(companyNameExist(companyDto.getCompanyName())){
+			throw new UserAlreadyExistException("Company name is already in use: " + companyDto.getCompanyName());
+		}
 
-			Company company = new Company();
-			RetailerAccount ra = new RetailerAccount(
-				companyDto.getCompanyName(),
-				companyDto.getCountry(),
-				companyDto.getState(),
-				companyDto.getCity(),
-				companyDto.getAddress1(),
-				companyDto.getAddress2()
-			);
+		Company company = new Company();
+		RetailerAccount ra = new RetailerAccount(
+			companyDto.getCompanyName(),
+			companyDto.getCountry(),
+			companyDto.getState(),
+			companyDto.getCity(),
+			companyDto.getAddress1(),
+			companyDto.getAddress2()
+		);
 
-			entityManager.persist(ra);
+		entityManager.persist(ra);
 
-			company.setPassword(companyPasswordEncoder.encode(companyDto.getPassword()));
-			company.setEmail(companyDto.getEmail());
-			company.setCompanyName(companyDto.getCompanyName());
-			company.setRoles(Arrays.asList(companyRoleRep.findByName("ROLE_RETAILER_ADMIN")));
-			company.setEnabled(false);
-			company.setRetailerAccount(ra);
+		company.setPassword(companyPasswordEncoder.encode(companyDto.getPassword()));
+		company.setEmail(companyDto.getEmail());
+		company.setCompanyName(companyDto.getCompanyName());
+		company.setRoles(Arrays.asList(companyRoleRep.findByName("ROLE_RETAILER_ADMIN")));
+		company.setEnabled(false);
+		company.setRetailerAccount(ra);
 
-			return companyRep.save(company);
+		return companyRep.save(company);
+	}
 
-			//logger.debug("Company object persisted.  company.id: " + company.getId().toString());
-			
-			////Create an empty RetailerAccount linked to this company
-			//RetailerAccount retailerAccount = new RetailerAccount();
-			//retailerAccount.setUser(company);
-			//retailerAccount.setCompanyName(company.getCompanyName());
-			//entityManager.persist(retailerAccount);
-//
-			//logger.debug("RetailerAccount object persisted.  retailerAccount.company.id: " + retailerAccount.getCompany().getId().toString());
-			////companyRep.saveAndFlush(company);	
-//
-			////Set Company roles
-			//
-			//return new ResponseEntity(company.getCompanyName(), HttpStatus.OK);
-		//}catch(Exception e){
-		//	return new ResponseEntity("Our servers seem to have freyed a bit.\nPlease wait a moment and try your request agian.", HttpStatus.INTERNAL_SERVER_ERROR);
-		//}
+	@Transactional
+	public void updateAccount(final CompanyDto companyDto, String callerCompanyName) throws Exception{
+		String companyName = companyDto.getCompanyName();
+		
+		if(companyName == null || companyName.isEmpty()) throw new Exception("username not provided in request body");
+		if(companyName != callerCompanyName) throw new Exception("Unauthorized");
+
+		Company existingCompany = companyRep.findByCompanyName(companyName);
+		
+		if(existingCompany == null) throw new Exception("Company does not exist");
+		
+		RetailerAccount ra = retailerAccountRep.findById(existingCompany.getRetailerAccount().getId()).get();
+		Company updatedCompany = new Company(companyDto);
+
+		updatedCompany.setId(existingCompany.getId());
+		updatedCompany.getRetailerAccount().setId(ra.getId());
+		updatedCompany.getRetailerAccount().setItems(ra.getItems());
+		updatedCompany.getRetailerAccount().setSizeCharts(ra.getSizeCharts());
+
+		updatedCompany.setPassword(companyPasswordEncoder.encode(companyDto.getPassword()));
+
+		entityManager.merge(updatedCompany);
+
+		return;
 	}
 
 	//@Override
@@ -175,5 +181,46 @@ public class CompanyAccountService /*implements IAccountService<IVerificationTok
 	public void createCompanyVerificationToken(Company company, String token){
 		CompanyVerificationToken myToken = new CompanyVerificationToken(token, company);
 		entityManager.persist(myToken);
+	}
+
+	/*
+	* Updates company with new password.
+	* IMPORTANT:  Caller is expected to have already been authenticated with a validation Token received during initial account provisioning from 3rd party platform.
+	*/
+	@Transactional
+	public void finishRegistration(CompanyDto companyDto, UUID companyId) throws UserAlreadyExistException, Exception{
+
+		//check again if data exists
+		if(emailExist(companyDto.getEmail())){
+			throw new UserAlreadyExistException("Theres is an account with that email address: " + companyDto.getEmail());
+		}
+		if(companyNameExist(companyDto.getCompanyName())){
+			throw new UserAlreadyExistException("Company name is already in use: " + companyDto.getCompanyName());
+		}
+		if(companyDto.getPassword() == null || companyDto.getPassword().isEmpty()){
+			throw new Exception("Invalid password");
+		}
+
+		Company company = companyRep.findById(companyId).get();
+
+		RetailerAccount ra = new RetailerAccount(
+			companyDto.getCompanyName(),
+			companyDto.getCountry(),
+			companyDto.getState(),
+			companyDto.getCity(),
+			companyDto.getAddress1(),
+			companyDto.getAddress2()
+		);
+
+		entityManager.persist(ra);
+
+		company.setPassword(companyPasswordEncoder.encode(companyDto.getPassword()));
+		company.setEmail(companyDto.getEmail());
+		company.setCompanyName(companyDto.getCompanyName());
+		company.setRoles(Arrays.asList(companyRoleRep.findByName("ROLE_RETAILER_ADMIN")));
+		company.setEnabled(true);
+		company.setRetailerAccount(ra);
+
+		entityManager.merge(company);
 	}
 }

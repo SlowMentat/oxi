@@ -35,10 +35,11 @@ public class ProfileStats extends RelatedEntity implements Serializable, Identif
 	@GeneratedValue(generator = "uuid2")
 	@GenericGenerator(name = "uuid2", strategy = "uuid2")
 	@Column(columnDefinition = "BINARY(16)")
-	//@JsonProperty("id")
 	private UUID id;
+
 	@Column(name = "id_text", updatable = false, insertable = false)
 	private String idText;	
+	
 	private long following = 0;
 	private long likes = 0;
 	private int points = 0;

@@ -22,7 +22,10 @@ public class SizeChartDto implements Serializable, Identifiable<String>
 	private String id;
 	private String name;
 	private String apparelType;
+	@JsonProperty("sizeGroups")
 	private List<SizeGroupDto> sizeGroupDtos;
+	// referenced during POST requests to determin all products that will reference this new SizeChartDto.
+	private List<String> affectedProductIds;
 
 	public SizeChartDto(){}
 
@@ -49,12 +52,14 @@ public class SizeChartDto implements Serializable, Identifiable<String>
 	public void setId(String id){this.id = id;}
 	public void setName(String name){this.name = name;}
 	public void setSizeGroupDtos(List<SizeGroupDto> sizeGroupDtos){this.sizeGroupDtos = sizeGroupDtos;}
+	public void setAffectedProductIds(List<String> affectedProductIds){this.affectedProductIds = affectedProductIds;}
 	
 	//Getters
 	@Override
 	public String getId(){return this.id;}
 	public String getChartName(){return this.name;}
 	public List<SizeGroupDto> getSizeGroupDtos(){return this.sizeGroupDtos;}
+	public List<String> getAffectedProductIds(){return this.affectedProductIds;}
 
 	//@Override
 	public String toString(int indents){

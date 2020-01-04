@@ -39,12 +39,14 @@ public class OutfitDto implements Serializable, Identifiable<String>
 	@JsonProperty("id")
 	private String id;
 	private int likes;
+	private boolean isLiked = false;
 	private String comments;
 
 	//@JsonIdentityReference(alwaysAsId=true)
 	private List<ContentDto> contents;
 	private String coverpicuri;
 	private String username;
+	private LikeCountDto likeCountDto;
 
 	public OutfitDto(){}
 
@@ -53,6 +55,20 @@ public class OutfitDto implements Serializable, Identifiable<String>
 		this.likes = outfit.getLikes();
 		this.comments = outfit.getComments();
 		this.coverpicuri = outfit.getCoverpicuri();
+		this.contents = new ArrayList<ContentDto>(outfit.getContents().size());
+		this.username = outfit.getUsername();
+		this.likeCountDto = new LikeCountDto(outfit.getLikeCount());
+	}
+
+	public OutfitDto(Outfit outfit, boolean isLiked){
+		this.id = outfit.getIdText();
+		this.likes = outfit.getLikes();
+		this.comments = outfit.getComments();
+		this.coverpicuri = outfit.getCoverpicuri();
+		this.contents = new ArrayList<ContentDto>(outfit.getContents().size());
+		this.username = outfit.getUsername();
+		this.likeCountDto = new LikeCountDto(outfit.getLikeCount());
+		this.isLiked = isLiked;
 	}
 
 	public OutfitDto(String id, int likes, String comments, List<ContentDto> contents, String coverpicuri){
@@ -123,6 +139,8 @@ public class OutfitDto implements Serializable, Identifiable<String>
 	public List<ContentDto> getContents(){return this.contents;}
 	public String getCoverpicuri(){return this.coverpicuri;}
 	public String getUsername(){return this.username;}
+	public LikeCountDto getLikeCount(){return this.likeCountDto;}
+	public boolean getIsLiked(){return this.isLiked;}
 
 	//Setters
 	public void setId(String id){this.id = id;}
@@ -131,6 +149,8 @@ public class OutfitDto implements Serializable, Identifiable<String>
 	public void setContents(List<ContentDto> contents){logger.debug("contents[] = " + contents); this.contents = contents;}
 	public void setCoverpicuri(String coverpicuri){this.coverpicuri = coverpicuri;}
 	public void setUsername(String username){this.username = username;}
+	public void setLikeCountDto(LikeCountDto likeCountDto){this.likeCountDto = likeCountDto;}
+	public void setIsLiked(boolean isLiked){this.isLiked = isLiked;}
 
 	public String toString(int indents) {
 		String indent = "\n";
@@ -141,6 +161,7 @@ public class OutfitDto implements Serializable, Identifiable<String>
 			.append(indent).append("likes: ").append(this.likes)
 			.append(indent).append("comments:").append(this.comments)
 			.append(indent).append("coverpic:").append(this.coverpicuri)
+			//.append(indent).append("likeCountDto:").append(Integer.toString(this.likeCountDto))
 			.append(indent).append("contents:")
 			.append(indent).append("[");
 			for (ContentDto content: this.contents) {

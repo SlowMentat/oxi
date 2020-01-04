@@ -41,25 +41,6 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	private String country;
 	@Column(name = "date_of_birth")
 	private String dateOfBirth;
-	/*private String bodyShape;
-	@Column(nullable=false, columnDefinition="BOOLEAN default false")
-	private boolean mens;
-	@Column(nullable=false, columnDefinition="BOOLEAN default false")
-	private boolean womens;
-	private float height;
-	private float neck;
-	private float fullShoulder;
-	private float halfShoulder;
-	private float chest;
-	private float waist;
-	private float hip;
-	private float sleeve;
-	private float frontLength;
-	private float backLength;
-	private float pantOutseam;
-	private float pantInseam;
-	private float thigh;
-	private float calf;*/
 
 	@OneToOne(cascade=CascadeType.ALL, mappedBy="profile")
 	@RestResource(rel="tolerance")
@@ -94,6 +75,11 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	@RestResource(rel="vendor_3")
 	private User user;
 
+	@OneToMany(orphanRemoval= true, mappedBy = "profile")
+	@RestResource(rel="client_0")	
+	@JsonIdentityReference(alwaysAsId=true)
+	private List<LikeCountProfile> likeCounts = new ArrayList<>();
+
 	//Constructor
 	public Profile(){
 	}
@@ -107,44 +93,6 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	public void setCountry(String country){this.country = country;}
 	
 	public void setDateOfBirth(String dateOfBirth){this.dateOfBirth = dateOfBirth;}
-	
-	/*public void setBodyShape(String bodyShape){this.bodyShape = bodyShape;}
-
-	public void setMens(boolean mens){this.mens = mens;}
-	
-	public void setWomens(boolean womens){this.womens = womens;}
-
-	public void setHeight(float height){this.height = height;}
-	
-	public void setNeck(float neck){this.neck = neck;}
-
-	public void setFullShoulder(float fullShoulder){this.fullShoulder = fullShoulder;}
-
-	public void setHalfShoulder(float halfShoulder){this.halfShoulder = halfShoulder;}
-
-	public void setChest(float chest){this.chest = chest;}
-	
-	public void setWaist(float waist){this.waist = waist;}
-	
-	public void setHip(float hip){this.hip = hip;}
-	
-	public void setSleeve(float sleeve){this.sleeve = sleeve;}
-
-	public void setFrontLength(float FrontLength){this.frontLength = frontLength;}
-
-	public void setBackLength(float BackLength){this.backLength = backLength;}
-
-	public void setPantOutseam(float pantOutseam){this.pantOutseam = pantOutseam;}
-
-	public void setPantInseam(float pantInseam){this.pantInseam = pantInseam;}
-
-	public void setThigh(float thigh){this.thigh = thigh;}
-
-	public void setCalf(float calf){this.calf = calf;}
-
-	public void setFollowers(long followers){this.followers = followers;}
-
-	public void setPoints(long points){this.points = points;}*/
 
 	//Try to consolidate these methods
 	public void setOutfits(List<Outfit> outfits){
@@ -200,44 +148,6 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	public String getCountry(){return this.country;}
 	
 	public String getDateOfBirth(){return this.dateOfBirth;}
-	
-	/*public String getBodyShape(){return this.bodyShape;}
-
-	public boolean getMens(){return this.mens;}
-	
-	public boolean getWomens(){return this.womens;}
-
-	public float getHeight(){return this.height;}
-	
-	public float getNeck(){return this.neck;}
-
-	public float getFullShoulder(){return this.fullShoulder;}
-
-	public float getHalfShoulder(){return this.halfShoulder;}
-
-	public float getChest(){return this.chest;}
-	
-	public float getWaist(){return this.waist;}
-	
-	public float getHip(){return this.hip;}
-	
-	public float getSleeve(){return this.sleeve;}
-
-	public float getFrontLength(){return this.frontLength;}
-
-	public float getBackLength(){return this.backLength;}
-
-	public float getPantOutseam(){return this.pantOutseam;}
-
-	public float getPantInseam(){return this.pantInseam;}
-
-	public float getThigh(){return this.thigh;}
-
-	public float getCalf(){return this.calf;}
-
-	public long getFollowers(){return this.followers;}
-
-	public long getPoints(){return this.points;}*/
 
 	public Tolerance getTolerance(){return this.tolerance;}
 
@@ -262,24 +172,13 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 			logger.warn("outfit is null");
 		}
 	}
+
 	public void removeOutfit(Outfit outfit){
 		outfit.setProfile(null);
 	}
-	/*@Override
-	public void internalAddChild(Relational outfit){
-		if(this.outfits == null){
-			logger.debug("instantiating new List<Outfit> outfits");
-			this.outfits = new ArrayList<Outfit>();
-		}
-		logger.debug("adding outfit to Profile.outfits[]");
-		if(outfit != null) logger.debug("Relational parameter in Profile.internalAddChild is not null");
-		else logger.debug("outfit passed to Profile.internalAddChild() is null");
-		this.outfits.add((Outfit)outfit);
-	}
-	@Override
-	public void internalRemoveChild(Relational outfit){
-		this.outfits.remove(outfit);
-	}*/	
+
+	public List<LikeCountProfile> getLikeCounts(){return this.likeCounts;}
+	
 	@Override 
 	public <T extends Relational> void internalAddChild(T targetChild){
 		if(this.outfits == null){
@@ -292,22 +191,6 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	public <T extends Relational> void internalRemoveChild(T targetChild){
 		this.outfits.remove((Outfit)targetChild);
 	}
-	/*
-	public void internalAddChild(Outfit outfit){
-		if(this.outfits == null){
-			logger.debug("instantiating new List<Outfit> outfits");
-			this.outfits = new ArrayList<Outfit>();
-		}
-		this.outfits.add(outfit);
-	}
-	
-	public void internalRemoveChild(Outfit outfit){
-		this.outfits.remove(outfit);
-	}
-	*/
-	/*public void setItems(List<Item> items){
-		this.items = items;
-	}*/
 	
 	public void setUser(User user){
 		logger.debug("adding user to Profile entity");

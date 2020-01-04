@@ -35,6 +35,7 @@ import javax.persistence.Transient;
 import java.lang.Long;
 import static java.lang.Math.toIntExact;
 
+import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,6 +46,7 @@ import java.util.UUID;
 
 import org.hibernate.Session;
 import org.hibernate.type.LongType;
+import org.hibernate.type.StringType;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -52,7 +54,10 @@ import org.apache.logging.log4j.LogManager;
 
 //import org.springframework.data.domain.Page;
 
-public class OutfitRepositoryImpl implements OutfitRepositoryCustom {	
+public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
+
+	private int MAX_PAGE_SIZE = 50;
+
 	@Transient
 	private static final Logger logger = LogManager.getLogger(OutfitRepositoryImpl.class);
 	
@@ -85,6 +90,7 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 		HashMap<UUID, ArrayList<SizeGroupDto>> sizeChartIdToSizeGroupsMap = new HashMap<UUID, ArrayList<SizeGroupDto>>();
 		//HashMap<UUID, SizeGroupDto> idToSizeGroupDtoMap = new HashMap<UUID, SizeGroupDto>();
 		HashMap<UUID, OutfitDto> idToOutfitDtoMap = new HashMap<UUID, OutfitDto>();
+		HashMap<UUID, Outfit> idToOutfitMap = new HashMap<UUID, Outfit>();
 		HashMap<UUID, SizeChart> idToSizeChartMap = new HashMap<UUID, SizeChart>();
 		//Example 553. Hibernate native query selecting entities with joined one-to-many association
 		String outfitQ = "select {o.*} from outfit o where o.profile_id = :id";
@@ -116,7 +122,7 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 			"from size_chart sc, size_group sg " +
 			"join size_chart_size_group scsg on scsg.size_group_id = sg.id " +
 			"where sc.id = scsg.size_chart_id " +
-			"and sc.id in (:sizeChartIdList) ";
+			"and sc.id in (:sizeChartIdList)";
  
 		Long outfitCount = (Long)session.createSQLQuery(countQ)
 			.addScalar("cnt", LongType.INSTANCE)
@@ -130,20 +136,26 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 			.setMaxResults(pageable.getPageSize())
 			.setParameter("id", id, UUIDBinaryType.INSTANCE)
 			.list();
+
 		logger.debug("outfitTuples Size = ");
 		logger.debug(outfitTuples.size());
 
 		if(outfitTuples.size() == 0){
 			idToOutfitDtoMap.put(null, new OutfitDto());
-		}else{
-			//Populates hastable with id columns as key and outfitDto object as value.
+			idToOutfitMap.put(null, new Outfit());
+		}
+
+		else{			
+			//Populates HashMap with id columns as key and outfitDto object as value.
 			//Assumes rows with unique id's to be returned from query
 			for(Outfit o : outfitTuples){
 				//Outfit o = (Outfit)tuple[0];
 				logger.debug("outfit id_text:");
 				logger.debug(o.getIdText());
-				idToOutfitDtoMap.put(o.getId(), new OutfitDto(o.getIdText(), o.getLikes(), o.getComments(), new ArrayList<ContentDto>(5), o.getCoverpicuri()));
+				idToOutfitDtoMap.put(o.getId(), new OutfitDto(o));//new OutfitDto(o.getIdText(), o.getLikes(), o.getComments(), new ArrayList<ContentDto>(5), o.getCoverpicuri()));
+				idToOutfitMap.put(o.getId(), o);
 			}
+
 			logger.debug("idToOutfitDtoMap keyset = ");
 			logger.debug(idToOutfitDtoMap.keySet());
 			
@@ -156,54 +168,80 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 				//.addEntity("sg", SizeGroup.class) TODO:  uncoment once sg table is filled
 				//.setParameterList("outfitIdList", Arrays.asList(UUID.fromString("3a5f73ae-a986-11e8-8336-f23c9150975d"), UUID.fromString("078e417f-a986-11e8-8336-f23c9150975d")), UUIDBinaryType.INSTANCE)
 				.setParameterList("outfitIdList", idToOutfitDtoMap.keySet(), UUIDBinaryType.INSTANCE)
-				.list();		
-			logger.debug("OutfitRepositoryImpl#findByProfileId: size of contentItemTuples = " + contentItemTuples.size());
-			// Build the set on which to queiry size_charts
-			for(Object[] tuple : contentItemTuples){
-				//put <key, value> into HasMap
-				content = (Content)tuple[0];
-				item = (Item)tuple[1];
-				if(item != null){
-					//add the item id as key to the idToSizeChartMap HashMap
-					idToSizeChartMap.put(item.getSizeChartId(),null);
-				}
-			}	
-	
-			// Query size charts on sizeChartIdList
-			List<Object[]> sizeChartSizeGroupTuples = session.createSQLQuery(sizeChartSizeGroupQ)
-				.addEntity("sc", SizeChart.class)
-				.addEntity("sg", SizeGroup.class)
-				.addEntity("scsg", SizeChartSizeGroup.class)
-				.setParameterList("sizeChartIdList", idToSizeChartMap.keySet(), UUIDBinaryType.INSTANCE)
 				.list();
-			// build sizechart to List<SizeGroup> HashMap
-			for(Object[] tuple :  sizeChartSizeGroupTuples){
-				sizeChart = (SizeChart)tuple[0];
-				sizeGroup = (SizeGroup)tuple[1];
-				sizeChartSizeGroup = (SizeChartSizeGroup)tuple[2]; //data may be available from this object in the future
-	
-				if(!sizeChartIdToSizeGroupsMap.containsKey(sizeChart.getId())){
-					sizeGroups = new ArrayList<SizeGroupDto>(5);
-				}else{
-					sizeGroups = sizeChartIdToSizeGroupsMap.get(sizeChart.getId());
+						
+			logger.debug("OutfitRepositoryImpl#findByProfileId: size of contentItemTuples = " + contentItemTuples.size());
+			
+			// Handles the case where there are no item entities associated with existing content entities.
+			// Builds the contentToItemMap from idToOutfitMap instead
+			if(contentItemTuples.size() == 0 && idToOutfitMap.size() > 0){
+				for(Outfit o : idToOutfitMap.values()){
+					for(Content c : o.getContents()){
+						contentToItemMap.put(c, null);
+					}
 				}
-	
-				if(sizeGroup != null){
-					sizeGroups.add(new SizeGroupDto(sizeGroup));
+			}
+			else{
+				for(Object[] tuple : contentItemTuples){
+					//put <key, value> into HasMap
+					content = (Content)tuple[0];
+					item = (Item)tuple[1];
+		
+					if(item != null){
+						//add the item id as key to the idToSizeChartMap HashMap
+						idToSizeChartMap.put(item.getSizeChartId(), null);
+					}
 				}
-				sizeChartIdToSizeGroupsMap.put(sizeChart.getId(), sizeGroups);
-				//idToSizeGroupDtoMap.put(sizeGroup.getId(), new SizeGroupDto(sizeGroup));
-				//update idToSizeChartMap with the queried SizeChart object associated with sizeChartId key
-				idToSizeChartMap.put(sizeChart.getId(), sizeChart);
 			}	
+
+			logger.debug("idToSizeChartMap keyset = ");
+			logger.debug(idToSizeChartMap.keySet());
+
+			if(idToSizeChartMap.size() == 0){
+				idToSizeChartMap.put(null, new SizeChart());
+			}
+
+			else{
 	
-			//construct Content to List<Item> HashMap.  Set the fully constructed SizeChart Object to each Item object before adding to ArrayList<Item>
+				// Query size charts on sizeChartIdList
+				List<Object[]> sizeChartSizeGroupTuples = session.createSQLQuery(sizeChartSizeGroupQ)
+					.addEntity("sc", SizeChart.class)
+					.addEntity("sg", SizeGroup.class)
+					.addEntity("scsg", SizeChartSizeGroup.class)
+					.setParameterList("sizeChartIdList", idToSizeChartMap.keySet(), UUIDBinaryType.INSTANCE)
+					.list();
+	
+				// build sizechart to List<SizeGroup> HashMap
+				for(Object[] tuple :  sizeChartSizeGroupTuples){
+					sizeChart = (SizeChart)tuple[0];
+					sizeGroup = (SizeGroup)tuple[1];
+					sizeChartSizeGroup = (SizeChartSizeGroup)tuple[2]; //data may be available from this object in the future
+		
+					if(!sizeChartIdToSizeGroupsMap.containsKey(sizeChart.getId())){
+						sizeGroups = new ArrayList<SizeGroupDto>(5);
+					}else{
+						sizeGroups = sizeChartIdToSizeGroupsMap.get(sizeChart.getId());
+					}
+		
+					if(sizeGroup != null){
+						sizeGroups.add(new SizeGroupDto(sizeGroup));
+					}
+					sizeChartIdToSizeGroupsMap.put(sizeChart.getId(), sizeGroups);
+					//idToSizeGroupDtoMap.put(sizeGroup.getId(), new SizeGroupDto(sizeGroup));
+					//update idToSizeChartMap with the queried SizeChart object associated with sizeChartId key
+					idToSizeChartMap.put(sizeChart.getId(), sizeChart);
+				}	
+			}
+
+
+			// Build <Content, List<Item>> HashMap.  
+			// Set the fully constructed SizeChart Object to each Item object before adding to ArrayList<Item>			
 			for(Object[] tuple : contentItemTuples){
 				content = (Content)tuple[0];
 				item = (Item)tuple[1];
 				itemContent = (ItemContent)tuple[2];
 				picture = (Picture)tuple[3];
-	
+		
 				if(!contentToItemMap.containsKey(content)){
 					items = new ArrayList<ItemDto>(9);
 				}else{
@@ -230,7 +268,8 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 					items.add(itemDto);
 				}
 				contentToItemMap.put(content, items);
-			}	
+			}
+			
 	
 			for(Content c : contentToItemMap.keySet()){
 				if(c.getOutfit() != null){
@@ -240,8 +279,9 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 					PictureDto pictureDto = c.getPicture() == null ? 
 						null : 
 						new PictureDto(c.getPicture().getIdText(), c.getPicture().getThumbnailuri(), c.getPicture().getSmalluri(), c.getPicture().getLargeuri());
-	
-					idToOutfitDtoMap.get(c.getOutfit().getId()).getContents().add(new ContentDto(c.getIdText(), c.getCoverpicuri(), pictureDto, contentToItemMap.get(c), null));
+					
+					items = contentToItemMap.get(c) == null ? new ArrayList<ItemDto>(0) : contentToItemMap.get(c);
+					idToOutfitDtoMap.get(c.getOutfit().getId()).getContents().add(new ContentDto(c.getIdText(), c.getCoverpicuri(), pictureDto, items, null));
 					//contentDtos.add(new ContentDto(c.getId(), c.getCoverpicuri(), contentToItemMap.get(c)));
 					logger.debug("content.outfit = " + c.getOutfit());
 					//outfitDtos.add				
@@ -254,25 +294,89 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 	}
 
 	@Override
-	public Page<Outfit> findAll(Pageable pageable){
+	public Page<OutfitDto> customFindAll(String callerName, Pageable pageable){
 		Session session = entityManager.unwrap(Session.class);	
-		String outfitQ = "select {o.*} from outfit o";
-		//values used as a Parameter List in the cotnentItemQ SQL query
-		//List<Long> outfitIds = new ArrayList(toIntExact(outfitCount));
+
+		String outfitQ = 
+			"select {o.*}, {lc.*} from outfit o " +
+			"join like_count lc on lc.outfit_id=o.id ";
+
+		String lcpQuery =
+			"select {lcp.*}, {p.*}, {lc.*} from like_count_profile lcp " +
+			"join profile p on p.id=lcp.profile_id " +
+			"join like_count lc on lc.id=lcp.likeCount_id " +
+			"where lcp.likeCount_id in (:likeCountIds)";
+
+		//String lcpQuery =
+		//	"select {p.*}, {lcp.*} from profile p " +
+		//	"join like_count_profile lcp on lcp.profile_id=p.id " +
+		//	"join like_count lc on lc.id=lcp.likeCount_id " +
+		//	"where lcp.likeCount_id in (:likeCountIds)";
+
 		String countQ = "select count(o.id) as cnt from outfit o";
- 
+ 		
 		Long outfitCount = (Long)session.createSQLQuery(countQ)
 			.addScalar("cnt", LongType.INSTANCE)
 			.uniqueResult();
 
-		List<Outfit> outfitTuples = session.createSQLQuery(outfitQ)
+		List<Object[]> outfitTuples = session.createSQLQuery(outfitQ)
 			.addEntity("o", Outfit.class)
+			.addEntity("lc", LikeCount.class)
 			.setFirstResult((int)pageable.getOffset())
 			.setMaxResults(pageable.getPageSize())
 			.list();
-		logger.debug("outfitTuples Size = ");
-		logger.debug(outfitTuples.size());
-		return new PageImpl<Outfit>(outfitTuples, pageable, outfitCount);
+
+		//build the likeCountId parameter list
+		int size = outfitTuples.size();
+		List<UUID> likeCountIds = new ArrayList<UUID>(size);
+		List<Outfit> outfits =  new ArrayList<Outfit>(size);
+
+		for(Object[] tuple : outfitTuples){
+			Outfit o = (Outfit)tuple[0];
+			LikeCount lc = (LikeCount)tuple[1];
+			o.setLikeCount(lc);
+			outfits.add(o);
+			likeCountIds.add(lc.getId());
+		}
+		
+		Map<LikeCount, Profile> likeCountProfiles = new HashMap<LikeCount, Profile>();
+
+		//Build the LikeCount/Profile Hashmap to use when setting outfitDto isLiked property
+		if(likeCountIds.size() > 0){
+			List<Object[]> lcpTuples = session.createSQLQuery(lcpQuery)
+				.addEntity("lcp", LikeCountProfile.class)
+				.addEntity("p", Profile.class)
+				.addEntity("lc", LikeCount.class)
+				.setParameterList("likeCountIds", likeCountIds, UUIDBinaryType.INSTANCE)
+				.list();
+	
+			for(Object[] tuple : lcpTuples){
+				LikeCountProfile lcp = (LikeCountProfile)tuple[0];
+				Profile p = (Profile)tuple[1];
+				LikeCount lc = (LikeCount)tuple[2];
+				lcp.setProfile(p);
+				lcp.setLikeCount(lc);
+	
+				likeCountProfiles.put(lc, p);
+			}
+		}
+
+		List<OutfitDto> outfitDtos = outfits.stream().map(outfit -> {
+
+			Profile profile = likeCountProfiles.get(outfit.getLikeCount());
+			if(profile == null ){
+				logger.debug("profile not found in likeCountProfiles");
+			}
+			//check if caller matches the profile.username found in outfits likeCount entity
+			if(profile != null && profile.getUsername().compareTo(callerName) == 0){
+				return new OutfitDto(outfit, true);
+			}
+
+			return new OutfitDto(outfit);
+
+		}).collect(Collectors.toList());
+
+		return new PageImpl<OutfitDto>(outfitDtos, pageable, outfitCount);
 	}
 
 	@Override
@@ -314,5 +418,27 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 		logger.debug("outfitProfileTuples Size = ");
 		logger.debug(outfitProfileTuples.size());
 		return new PageImpl<Outfit>(outfits, pageable, outfitCount);
+	}
+
+	@Override
+	public List<Outfit> getOutfitsByIds(List<String> ids) throws Exception{
+
+		Session session = entityManager.unwrap(Session.class);	
+		List<Outfit> outfits;
+
+		if(ids.size() <= this.MAX_PAGE_SIZE){
+			
+			Outfit outfit;	
+			String outfitQ = "select {o.*} from outfit o where o.id_text in (:ids)";
+	
+			outfits = session.createSQLQuery(outfitQ)
+				.addEntity("o", Outfit.class)
+				.setParameter("ids", ids, StringType.INSTANCE)
+				.list();
+		}else{
+			throw new Exception("parameter exceeds page size limit");
+		}
+
+		return outfits;
 	}
 }

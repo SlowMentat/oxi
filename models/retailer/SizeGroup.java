@@ -41,6 +41,8 @@ public class SizeGroup extends RelatedEntity implements Serializable, Identifiab
 	private Date createdOn = new Date();
 	@Column(name = "metric", columnDefinition="JSON")
 	private String metric;
+	@Column(name = "size_label", columnDefinition="VARCHAR(16)")
+	private String sizeLabel;
 
 	//private float neck;
 	//@Column(name = "full_shoulder", columnDefinition="float", nullable = true)
@@ -128,6 +130,8 @@ public class SizeGroup extends RelatedEntity implements Serializable, Identifiab
 		//this.pantInseam = sizeGroupDto.getPantInseam();
 		//this.thigh = sizeGroupDto.getThigh();
 		//this.calf = sizeGroupDto.getCalf();
+		this.sizeLabel = sizeGroupDto.getSizeLabel();
+		this.metric = sizeGroupDto.getMetric();
 		this.sizeCharts = null;
 	}
 
@@ -148,6 +152,7 @@ public class SizeGroup extends RelatedEntity implements Serializable, Identifiab
 	//public void setThigh(float thigh){this.thigh = thigh;}
 	//public void setCalf(float calf){this.calf = calf;}
 	public void setMetric(String metric){this.metric = metric;}
+	public void setSizeLabel(String sizeLabel){this.sizeLabel = sizeLabel;}
 	
 	//Getters
 	public UUID getId(){return this.id;}
@@ -169,6 +174,7 @@ public class SizeGroup extends RelatedEntity implements Serializable, Identifiab
 	//public float getCalf(){return this.calf;}
 	public Date getCreatedOn(){return this.createdOn;}
 	public String getMetric(){return this.metric;}
+	public String getSizeLabel(){return this.sizeLabel;}
 
 	//@Override
 	public String toString(int indents){
@@ -177,7 +183,8 @@ public class SizeGroup extends RelatedEntity implements Serializable, Identifiab
 			indent += "    ";
 		}
         StringBuilder sb = new StringBuilder(indent).append("id: ").append(((this.id == null) ? "null" : this.id))
-			.append(indent).append("sizeLabelId:").append(((this.sizeLabelId == null) ? "null" : this.sizeLabelId));
+			.append(indent).append("sizeLabelId:").append(((this.sizeLabelId == null) ? "null" : this.sizeLabelId))
+			.append(indent).append("sizeLabel:").append(((this.sizeLabel == null) ? "null" : this.sizeLabel));
 			//.append(indent).append("neck:").append(this.neck)
 			//.append(indent).append("fullShoulder:").append(this.fullShoulder)
 			//.append(indent).append("halfShoulder:").append(this.halfShoulder)

@@ -1,13 +1,13 @@
-/*package oxi.configs;
-
-import org.springframework.web.servlet.config.annotation.*;
-import org.springframework.http.*;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.ByteArrayHttpMessageConverter;
-import org.springframework.context.annotation.*;
-import java.util.List;
-import java.util.ArrayList;
-
+//package oxi.configs;
+//
+//import org.springframework.web.servlet.config.annotation.*;
+//import org.springframework.http.*;
+//import org.springframework.http.converter.HttpMessageConverter;
+//import org.springframework.http.converter.ByteArrayHttpMessageConverter;
+//import org.springframework.context.annotation.*;
+//import java.util.List;
+//import java.util.ArrayList;
+/*
 @Configuration
 @EnableWebMvc
 public class WebConfig extends WebMvcConfigurerAdapter {
@@ -50,3 +50,24 @@ public class WebConfig extends WebMvcConfigurerAdapter {
       return list;
   }
 }*/
+
+//import oxi.components.CursorHandlerMethodArgumentResolver;
+//import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+//import javax.persistence.Transient;
+//import org.apache.logging.log4j.Logger;
+//import org.apache.logging.log4j.LogManager;
+//
+//import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
+//
+//@Configuration
+//@EnableWebMvc
+//public class WebConfig extends WebMvcConfigurationSupport{ 
+//    @Transient
+//    private static final Logger logger = LogManager.getLogger(WebConfig.class);
+//
+//    @Override 
+//    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers){
+//        logger.debug("configuring CursorHandlerMethodArgumentResolver");
+//        argumentResolvers.add(new CursorHandlerMethodArgumentResolver());
+//    }
+//}

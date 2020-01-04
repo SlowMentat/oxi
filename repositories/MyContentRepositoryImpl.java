@@ -3,6 +3,7 @@ package oxi.repositories;
 import oxi.models.*;
 import oxi.models.dto.OutfitDto;
 import oxi.models.dto.ContentDto;
+import oxi.models.dto.ContentWithOutfitDto;
 import oxi.models.dto.ItemDto;
 import oxi.models.dto.PictureDto;
 import oxi.models.projection.OutfitProjection;
@@ -31,12 +32,15 @@ import static java.lang.Math.toIntExact;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.stream.Collectors;
 import java.util.UUID;
 
 import org.hibernate.Session;
 import org.hibernate.type.LongType;
+import org.hibernate.type.UUIDBinaryType;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -123,5 +127,46 @@ public class MyContentRepositoryImpl implements MyContentRepositoryCustom {
 		}
 
 		return contentDtos;//outfitDtos;
+	}
+
+	@Override
+	public Page<ContentWithOutfitDto> getContentWithOutfitByItemId(UUID itemId, Pageable pageable){
+	//public ContentWithOutfitDto getContentWithOutfitByItemId(UUID itemId, Pageable pageable){
+		Session session = entityManager.unwrap(Session.class);
+		Content content;
+		ItemContent itemContent;
+		List<ContentDto> contentDtos;
+		List<OutfitDto> outfitDtos;
+		List<ContentWithOutfitDto> contentWithOutfitDtos;
+		Set<UUID> outfitIds = new HashSet<UUID>();
+		//HashMap used to build OutfitDTO with nested List<Content>
+		HashMap<Content, ArrayList<ItemDto>> contentToItemMap = new HashMap<Content, ArrayList<ItemDto>>();
+
+		String contentQ = "select {c.*}, {ic.*} from content c, item_content ic where c.id = ic.content_id and ic.item_id = :itemId";
+		//String outfitQ = "select {o.*} from outfit o where o.id in (:outfitIds)";
+
+		List<Object[]> contentItemTuples = session.createSQLQuery(contentQ)
+			.addEntity("c", Content.class)
+			.addEntity("ic", ItemContent.class)
+			.setFirstResult((int)pageable.getOffset())
+			.setMaxResults(pageable.getPageSize())
+			.setParameter("itemId", itemId, UUIDBinaryType.INSTANCE)
+			.list();
+
+		int resultCount = contentItemTuples.size();
+
+		contentWithOutfitDtos = contentItemTuples.stream().map(tuple -> new ContentWithOutfitDto( 
+			(Content)tuple[0],
+			((Content)tuple[0]).getOutfit(),
+			((Content)tuple[0]).getOutfit().getLikeCount()
+		)).collect(Collectors.toList());
+		
+		Page<ContentWithOutfitDto> pagedResult = new PageImpl<ContentWithOutfitDto>(
+			contentWithOutfitDtos, 
+			pageable, 
+			resultCount 
+		);
+
+		return pagedResult;
 	}
 }

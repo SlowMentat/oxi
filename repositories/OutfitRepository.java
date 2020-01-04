@@ -17,6 +17,7 @@ import oxi.models.dto.*;
 @RepositoryRestResource(collectionResourceRel="Outfit", path="outfit")
 public interface OutfitRepository extends JpaRepository<Outfit, UUID>, OutfitRepositoryCustom{
 	
+	Outfit findByUsername(String username);
 
 	/*@Query(value = "SELECT * FROM outfit WHERE profile_id = ?1", nativeQuery = true)
 	List<Outfit> findByProfileId(Long profileid);*/

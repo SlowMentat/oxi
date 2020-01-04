@@ -25,7 +25,6 @@ public class ItemDto implements Serializable, Identifiable<String>
 	private Integer apparelType;
 	private String sizeGroupId;
 	private SizeChartDto sizeChartDto;
-	private String coverpicuri;
 
 	//private String userDefinedRetailer;
 	//private String userDefinedSize;
@@ -33,6 +32,8 @@ public class ItemDto implements Serializable, Identifiable<String>
 	@JsonRawValue
 	private String product;
 	private String platform;
+	private String outfitId;
+	private String coverpicuri;
 
 	public ItemDto(){}
 
@@ -41,7 +42,7 @@ public class ItemDto implements Serializable, Identifiable<String>
 		this.id = id;
 		this.positionx = positionx;
 		this.positiony = positiony;
-		this.apparelType = apparelType;
+		this.apparelType = apparelType == null ? new Integer(8) : apparelType;
 		this.sizeGroupId = sizeGroupId;
 		//this.retailer = retailer;
 		//this.brand = brand;
@@ -52,7 +53,8 @@ public class ItemDto implements Serializable, Identifiable<String>
 		//super();
 		this.id = id;
 		this.positionx = positionx;
-		this.positiony = positiony;;
+		this.positiony = positiony;
+		this.apparelType = apparelType == null ? new Integer(8) : apparelType;
 		this.sizeGroupId = sizeGroupId;
 		this.coverpicuri = coverpicuri;
 		this.product = product;
@@ -62,7 +64,7 @@ public class ItemDto implements Serializable, Identifiable<String>
 		this.id = id;
 		this.positionx = positionx;
 		this.positiony = positiony;
-		this.apparelType = apparelType;
+		this.apparelType = apparelType == null ? new Integer(8) : apparelType;
 		this.sizeGroupId = sizeGroupId;
 		this.sizeChartDto = sizeChartDto;
 		this.coverpicuri = coverpicuri;
@@ -74,12 +76,21 @@ public class ItemDto implements Serializable, Identifiable<String>
 		this.id = item.getId().toString();
 		this.sizeGroupId = item.getSizeGroupIdText();
 		this.sizeChartDto = item.getSizeChart() != null ? new SizeChartDto(item.getSizeChart()) : null;
-		this.apparelType = item.getApparelType();
+		this.apparelType = item.getApparelType() == null ? new Integer(8) : item.getApparelType();
 		this.product = item.getProduct();
 		this.platform = item.getPlatform();
-		//this.userDefinedSize = item.getUserDefinedSize();
-		//this.userDefinedRetailer = item.getUserDefinedRetailer();
 	}
+
+	public ItemDto(Item item, String coverpicuri){
+		this.id = item.getId().toString();
+		this.sizeGroupId = item.getSizeGroupIdText();
+		this.sizeChartDto = item.getSizeChart() != null ? new SizeChartDto(item.getSizeChart()) : null;
+		this.apparelType = item.getApparelType() == null ? new Integer(8) : item.getApparelType();
+		this.product = item.getProduct();
+		this.platform = item.getPlatform();
+		this.coverpicuri = coverpicuri;
+	}
+
 
 	//Setters
 	public void setId(String id){this.id = id;}
@@ -91,6 +102,7 @@ public class ItemDto implements Serializable, Identifiable<String>
 	public void setcoverpicuri(String coverpicuri){this.coverpicuri = coverpicuri;}
 	public void setProduct(String product){this.product = product;}
 	public void setPlatform(String platform){this.platform = platform;}
+	public void setOutfitId(String outfitId){this.outfitId = outfitId;}
 	//public void setUserDefinedSize(String uds){this.userDefinedSize = uds;}
 	//public void setUserDefinedRetailer(String udr){this.userDefinedRetailer = udr;}
 	
@@ -105,6 +117,8 @@ public class ItemDto implements Serializable, Identifiable<String>
 	public String getcoverpicuri(){return this.coverpicuri;}
 	public String getProduct(){return this.product;}
 	public String getPlatform(){return this.platform;}
+	public String getOutfitId(){return this.outfitId;}
+
 	//public String getUserDefinedSize(){return this.userDefinedSize;}
 	//public String getUserDefinedRetailer(){return this.userDefinedRetailer;}
 
@@ -123,7 +137,8 @@ public class ItemDto implements Serializable, Identifiable<String>
 			.append(indent).append("coverpicuri:").append(((this.coverpicuri == null) ? "null" : this.coverpicuri))
 			//.append(indent).append("udr : ").append(this.userDefinedRetailer == null ? "null" : this.userDefinedRetailer)
 			//.append(indent).append("uds : ").append(this.userDefinedSize == null ? "null" : this.userDefinedSize)
-			.append(indent).append("product : ").append(this.product == null ? "null" : this.product);
+			.append(indent).append("product : ").append(this.product == null ? "null" : this.product)
+			.append(indent).append("outfitId : ").append(this.outfitId == null ? "null" : this.outfitId);
         return sb.toString();		
 	}
 }

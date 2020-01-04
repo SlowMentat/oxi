@@ -13,7 +13,7 @@
     <body style="margin: 0;padding: 0;">
         <table style="border-spacing: 0px; width:100%;">
             <tbody >
-                <tr style="background-color: #f9f9f9; height: 180px">
+                <tr style="background-color: #263238; height: 180px">
                     <td style="padding-left: 20px;">
                         <span style="
                             width: 85px;
@@ -22,7 +22,7 @@
                             display: block;
                             padding-top: 25%;"
                         >
-                            <img src="https://oxisalechannel.com/Graphics/logo.png" style="width: 100%;">
+                            <img src="https://oxisalechannel.com/Graphics/logo-fitsee.png" style="width: 100%;">
                         </span>
                     </td>
                     <td style="
@@ -55,31 +55,41 @@
                 </tr>
                 <tr>
                     <td colspan="2" style="padding-left: 20px;position: relative;">
-                        <span th:text="#{label.verifyEmail}" style="
-                            margin-top: 40px;
-                            display: block;
-                            width: 80px;
-                            height: 35px;
-                            line-height: 35px;
-                            border-radius: 4px;
-                            border: solid 1px #7b7b7b;
-                            bottom: 0px;
-                            cursor: pointer;
-                            font-family: 'Roboto', sans-serif;
-                            background-color: #636363;
-                            color: #f9f9f9;
-                            letter-spacing: 1px;
-                            text-align: center;
-                            position:relative;"
-                        >   
-                        </span>
-                        <a th:href="@{${verifyLink}}" style="
-                            position: absolute;
-                            width: 82px;
-                            height: 37px;
-                            border-radius: 4px;
-                            bottom: 0px;"
-                        ></a> 
+                        <table>
+                            <tbody>
+                                <span th:te
+                                <a th:href="@{${verifyLink}}" style="
+                                    display:block;
+                                    position: absolute;
+                                    width: 82px;
+                                    height: 37px;
+                                    border-radius: 4px;
+                                    bottom: 0px;"
+                                ></a>
+                                <table>
+                                    <tbody>
+                                        <a th:text="#{label.verifyEmail}" th:href="@{${verifyLink}}" style="
+
+                                            margin-top: 40px;
+                                            display: block;
+                                            width: 80px;
+                                            height: 35px;
+                                            line-height: 35px;
+                                            border-radius: 4px;
+                                            border: solid 1px #7b7b7b;
+                                            bottom: 0px;
+                                            cursor: pointer;
+                                            font-family: 'Roboto', sans-serif;
+                                            background-color: #636363;
+                                            color: #f9f9f9;
+                                            letter-spacing: 1px;
+                                            text-align: center;
+                                            position:relative;"
+                                        ></a>
+                                    </tbody>
+                                </table> 
+                            </tbody>
+                        </table>
                     </td>
                 </tr>
                 <tr>

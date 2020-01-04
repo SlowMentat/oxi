@@ -55,6 +55,7 @@ import oxi.models.*;
 import oxi.repositories.*;
 import oxi.models.dto.*;
 import oxi.models.projection.*;
+import oxi.models.dto.retailer.*;
 import oxi.services.RetailerService;
 
 import org.apache.logging.log4j.Logger;
@@ -243,7 +244,7 @@ public class RetailerController{
 			logger.debug("Principal Name: " + principal.getName());
 			return new ResponseEntity<PagedResources<?>>(retailerService.readOutfits(username, pageable), HttpStatus.OK);
 		}else{
-			return new ResponseEntity<PagedResources<?>>(retailerService.readFilteredOutfits(filter, pageable), HttpStatus.OK);
+			return new ResponseEntity<PagedResources<?>>(retailerService.readPagedOutfits(filter, pageable), HttpStatus.OK);
 		}
 	}
 
@@ -341,17 +342,29 @@ public class RetailerController{
 	//******************************************************************
 	//
 
-	@Secured({"ROLE_USER"})
+	@Secured({"ROLE_RETAILER_USER"})
 	@RestResource(exported = true)
 	@RequestMapping(value="/items", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getFilteredItems(final Principal principal, @PageableDefault Pageable pageable, @RequestParam(value="filter", required=false) String filter){
-		//try{
+		try{
 			filter = filter == null ? "" : filter;
 			String username = principal.getName();		
 			return new ResponseEntity<PagedResources<?>>(retailerService.getProducts(username, filter, pageable), HttpStatus.OK);
-		//}catch(Exception e){
-		//	return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		//}
+		}catch(Exception e){
+			return new ResponseEntity<String>(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Secured({"ROLE_RETAILER_USER"})
+	@RestResource(exported = true)
+	@RequestMapping(value="/sizeCharts", method=RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getFilteredItems(final Principal principal, @RequestBody SizeChartDto sizeChartDto){
+		try{
+			String username = principal.getName();		
+			return new ResponseEntity<>(retailerService.setSizeChartsByProductId(username, sizeChartDto), HttpStatus.OK);
+		}catch(Exception e){
+			return new ResponseEntity<String>(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 
 	/*@Secured({"ROLE_USER"})

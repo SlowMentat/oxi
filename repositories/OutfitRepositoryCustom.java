@@ -17,10 +17,13 @@ public interface OutfitRepositoryCustom /*extends PagingAndSortingRepository<Out
 	//@Query(value="select new oxi.models.dto.OutfitDto(o) from Outfit o")
 	Page<OutfitDto> findByProfileId(UUID id, Pageable pageable);
 
-	@Query(value="")
-	Page<Outfit> findAll(Pageable pageable);
+	//@Query(value="")
+	Page<OutfitDto> customFindAll(String callerName, Pageable pageable);
 	//@Query(value="")
 	//Outfit persist(Outfit outfit);
 	@Query(value="SELECT o FROM Outfit o")
 	Page<Outfit> getAllOutfitsWithUsername(Pageable pageable);
+
+	//@Query(value="")
+	List<Outfit> getOutfitsByIds(List<String> ids) throws Exception;
 }

@@ -80,6 +80,7 @@ public class SizeChart extends RelatedEntity implements Serializable, Identifiab
 		this.id = sizeChartDto.getId() != null ? UUID.fromString(sizeChartDto.getId()) : null;
 		this.name = sizeChartDto.getChartName();
 		this.sizeGroups = new ArrayList<SizeChartSizeGroup>(sizeChartDto.getSizeGroupDtos().size());
+		
 		for(SizeGroupDto sizeGroupDto : sizeChartDto.getSizeGroupDtos()){
 			sizeGroups.add(new SizeChartSizeGroup(new SizeGroup(sizeGroupDto), this));
 		}

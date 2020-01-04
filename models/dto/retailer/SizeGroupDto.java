@@ -89,6 +89,7 @@ public class SizeGroupDto implements Serializable, Identifiable<String>
 		this.id = sizeGroup.getIdText();
 		//this.sizeLabel = sizeGroup.getSizeLabel();
 		this.metric = sizeGroup.getMetric();
+		this.sizeLabel = sizeGroup.getSizeLabel();
 		//this.neck = sizeGroup.getNeck();
 		//this.fullShoulder = sizeGroup.getFullShoulder();
 		//this.halfShoulder = sizeGroup.getHalfShoulder();

@@ -1,35 +1,23 @@
 package oxi.models;
 
-import oxi.models.dto.*;
-import oxi.models.dto.UserMetricsDto;
-
 import javax.persistence.*;
-import javax.persistence.CascadeType;
-//import org.apache.log4j.Logger;
-import java.util.Collections;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
 import java.util.UUID;
+import java.util.Collection;
 import java.io.Serializable;
 import java.lang.*;
-import org.springframework.data.rest.core.annotation.*;
 import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.databind.annotation.*;
-//import oxi.jackson.*;
+import org.springframework.data.rest.core.annotation.*;
+import org.springframework.hateoas.*;
 import org.apache.logging.log4j.Logger;
 import org.springframework.hateoas.*;
 import org.apache.logging.log4j.LogManager;
 
 import org.hibernate.annotations.GenericGenerator;
 
-@Entity
-@Table(name="user_metrics")
-@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=UserMetrics.class)
-public class UserMetrics implements Serializable, Identifiable<UUID>
+@MappedSuperclass
+public class BaseMetrics implements Serializable, Identifiable<UUID>
 {
-	@Transient
-	private static final Logger logger = LogManager.getLogger(UserMetrics.class);
 	
 	@Id
 	@GeneratedValue(generator = "uuid2")
@@ -40,7 +28,7 @@ public class UserMetrics implements Serializable, Identifiable<UUID>
 
 	@Column(name = "id_text", updatable = false, insertable = false)
 	private String idText;
-	private String bodyShape;
+
 	private float height;
 	private float neck;
 	private float fullShoulder;
@@ -55,48 +43,13 @@ public class UserMetrics implements Serializable, Identifiable<UUID>
 	private float pantInseam;
 	private float thigh;
 	private float calf;
-	@Column(nullable=false, columnDefinition="BOOLEAN default false")
-	private boolean mens;
-	@Column(nullable=false, columnDefinition="BOOLEAN default false")
-	private boolean womens;
-
-	@OneToOne(cascade=CascadeType.ALL)
-	@JsonIdentityReference(alwaysAsId=true)
-	private Profile profile;
 	
 	//Constructor
-	public UserMetrics(){
-	}
-
-	public UserMetrics(UserMetricsDto userMetricsDto){
-		this.id = userMetricsDto.getId() == null || userMetricsDto.getId().isEmpty() ? null : UUID.fromString(userMetricsDto.getId());
-		this.bodyShape = userMetricsDto.getBodyShape();
-		this.mens = userMetricsDto.getMens();
-		this.womens = userMetricsDto.getWomens();
-		this.height = userMetricsDto.getHeight();
-		this.neck = userMetricsDto.getNeck();
-		this.fullShoulder = userMetricsDto.getFullShoulder();
-		this.halfShoulder = userMetricsDto.getHalfShoulder();
-		this.chest = userMetricsDto.getChest();
-		this.waist = userMetricsDto.getWaist();
-		this.hip = userMetricsDto.getHip();
-		this.sleeve = userMetricsDto.getSleeve();
-		this.frontLength = userMetricsDto.getFrontLength();
-		this.backLength = userMetricsDto.getBackLength();
-		this.pantOutseam = userMetricsDto.getPantOutseam();
-		this.pantInseam = userMetricsDto.getPantInseam();
-		this.thigh = userMetricsDto.getThigh();
-		this.calf = userMetricsDto.getCalf();
+	public BaseMetrics(){
 	}
 	
 	//Setters
 	public void setId(UUID id){this.id = id;}
-	
-	public void setBodyShape(String bodyShape){this.bodyShape = bodyShape;}
-
-	public void setMens(boolean mens){this.mens = mens;}
-	
-	public void setWomens(boolean womens){this.womens = womens;}
 
 	public void setHeight(float height){this.height = height;}
 	
@@ -125,33 +78,12 @@ public class UserMetrics implements Serializable, Identifiable<UUID>
 	public void setThigh(float thigh){this.thigh = thigh;}
 
 	public void setCalf(float calf){this.calf = calf;}
-
-	public void setProfile(Profile profile){
-		logger.warn("SETTING PROFILE");
-		this.profile = profile;
-		if (this.profile != null){		
-			logger.warn("Profile POJO Not NULL");
-			if(this.profile.getUserMetrics() != this){
-				logger.warn("Linking Profile to UserMetrics");
-				profile.setUserMetrics(this);
-			}
-		}
-		else{
-			logger.warn("!!Profile IS NULL!!");
-		}
-	}
 	
 	//Getters
 	@Override
 	public UUID getId(){return this.id;}
 
 	public String getIdText(){return this.idText;}
-	
-	public String getBodyShape(){return this.bodyShape;}
-
-	public boolean getMens(){return this.mens;}
-	
-	public boolean getWomens(){return this.womens;}
 
 	public float getHeight(){return this.height;}
 	
@@ -181,19 +113,14 @@ public class UserMetrics implements Serializable, Identifiable<UUID>
 
 	public float getCalf(){return this.calf;}
 
-	public Profile getProfile(){return this.profile;}
 
 	public String toString(int indents){
 		String indent = "\n";
 		for(int i = 0; i < indents; i++){
 			indent += "    ";
 		}
-		logger.debug("building UserMetrics string");
         StringBuilder sb = new StringBuilder("\nid: ").append(((this.id == null) ? "null" : this.id.toString()))
 			.append(indent).append("\nidText:").append(this.idText)
-			.append(indent).append("\nbodyShape:").append(this.bodyShape)
-			.append(indent).append("\nmens:").append(this.mens)
-			.append(indent).append("\nwomens:").append(this.womens)
 			.append(indent).append("\nheight:").append(this.height)
 			.append(indent).append("\nneck:").append(this.neck)
 			.append(indent).append("\nfullShoulder:").append(this.fullShoulder)
@@ -207,11 +134,7 @@ public class UserMetrics implements Serializable, Identifiable<UUID>
 			.append(indent).append("\npantOutseam:").append(this.pantOutseam)
 			.append(indent).append("\npantInseam:").append(this.pantInseam)
 			.append(indent).append("\nthigh:").append(this.thigh)
-			.append(indent).append("\ncalf:").append(this.calf)
-			.append(indent).append("\nprofile: {\n")
-				.append(indent).append("    ").append("id: ")
-				.append( ((this.profile != null && this.profile.getId() != null) ?  profile.getId().toString() : "null") )
-				.append("\n").append(indent).append("}");
+			.append(indent).append("\ncalf:").append(this.calf);
         return sb.toString();		
 	}
 

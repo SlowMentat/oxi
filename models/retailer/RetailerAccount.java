@@ -58,6 +58,7 @@ public class RetailerAccount extends RelatedEntity implements Serializable, Iden
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval= true, mappedBy = "retailerAccount")
 	@RestResource(rel="client_0")	
 	@JsonIdentityReference(alwaysAsId=true)
+	@OrderBy("id ASC")
 	private List<Item> items;
 	
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval= true, mappedBy = "retailerAccount")

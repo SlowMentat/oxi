@@ -58,6 +58,12 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 	//@JsonManagedReference
 	private Profile profile;
 
+	@OneToOne(cascade=CascadeType.MERGE, mappedBy="outfit")
+	@RestResource(rel="vendor_1")
+	@JsonProperty("likeCount")
+	@JsonIdentityReference(alwaysAsId=true)	
+	private LikeCount likeCount;
+
 	private String username;
 
 	/*@Column(name = "profile_id_text", updatable = false)
@@ -74,6 +80,7 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 		this.comments = comments;
 		this.contents = contents;
 		this.coverpicuri = coverpicuri;
+		this.likeCount = new LikeCount(id, 0);
 	}
 
 	public Outfit(UUID id, int likes, String comments, List<Content> contents, String coverpicuri, String username){
@@ -84,6 +91,18 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 		this.contents = contents;
 		this.coverpicuri = coverpicuri;
 		this.username = username;
+		this.likeCount = new LikeCount(id, 0);
+	}
+
+	public Outfit(UUID id, int likes, String comments, List<Content> contents, String coverpicuri, String username, LikeCount likeCount){
+		//super();
+		this.id = id;
+		this.likes = likes;
+		this.comments = comments;
+		this.contents = contents;
+		this.coverpicuri = coverpicuri;
+		this.username = username;
+		this.likeCount = likeCount;
 	}
 	
 	//Setters
@@ -120,15 +139,33 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 		//if(this.profile == null) logger.debug("Outfit.profileText is null");
 		//else logger.debug("Outfit's profile variable:  " + this.toString());
 	}	
+
+	public void setLikeCount(LikeCount likeCount){
+		logger.warn("SETTING PICURE");
+		this.likeCount = likeCount;
+		if (this.likeCount != null){		
+			logger.warn("likeCount POJO Not NULL");
+			if(this.likeCount.getOutfit() != this){
+				logger.warn("LINKING LikeCount TO Outfit");
+				likeCount.setOutfit(this);
+			}
+		}
+		else{
+			logger.warn("!!PICTURE IS NULL!!");
+		}
+	}	
+
 	public void setContents(List<Content> contents){
 		logger.debug("Setting contents list in Outfit entity");
 		this.contents = contents;
 	}	
+
 	@JsonAnySetter
 	public void addContent(Content content){
 		this.contents.add(content);
 		if (content.getOutfit() != this) content.setOutfit(this);
 	}
+
 	
 	//Getters
 	//@Override
@@ -140,6 +177,7 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 	public List<Content> getContents(){return this.contents;}
 	public String getCoverpicuri(){return this.coverpicuri;}
 	public String getUsername(){return this.username;}
+	public LikeCount getLikeCount(){return this.likeCount;}
 	
 	//Auxillary methods
 	/*@Override

@@ -6,6 +6,7 @@ import oxi.models.Company;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
+import org.springframework.stereotype.Component;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -65,6 +66,8 @@ public class TokenBasedAuthenticationFilter extends UsernamePasswordAuthenticati
 				loginToken = new UsernamePasswordAuthenticationToken(company.getCompanyName(), company.getPassword());
 			}else{
 				user = new ObjectMapper().readValue(request.getInputStream(), User.class);
+				logger.debug("TokenBasedAuthenticationFilter#attemptAuthentication username = " + user.getUsername());
+				logger.debug("TokenBasedAuthenticationFilter#attemptAuthentication password = " + user.getPassword());
 				loginToken = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());				
 			}
 

@@ -29,11 +29,13 @@ public class ProfileStatsDto implements Serializable, Identifiable<String>
 	}
 
 	public ProfileStatsDto(ProfileStats profileStats){
-		this.id = profileStats.getIdText();
-		this.following = profileStats.getFollowing();
-		this.likes = profileStats.getLikes();
-		this.lastUpdate = profileStats.getLastUpdate();
-		this.points = profileStats.getPoints();
+		if(profileStats != null){
+			this.id = profileStats.getIdText();
+			this.following = profileStats.getFollowing();
+			this.likes = profileStats.getLikes();
+			this.lastUpdate = profileStats.getLastUpdate();
+			this.points = profileStats.getPoints();
+		}
 	}
 
 	public ProfileStatsDto(String id, long following, long likes, Date lastUpdate){

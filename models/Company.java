@@ -2,6 +2,7 @@ package oxi.models;
 
 
 import oxi.models.retailer.RetailerAccount;
+import oxi.models.dto.CompanyDto;
 
 import javax.persistence.*;
 import java.util.List;
@@ -48,10 +49,13 @@ public class Company extends BaseAccount/*RelatedEntity*/ /*implements Serializa
 	//private String password;
 	@Column(name = "company_name")
 	private String companyName;
+
+	@Column(name = "shop_name")
+	private String shopName;
 	//private boolean enabled;
     //private boolean tokenExpired;
 	
-	@OneToOne(mappedBy="company")
+	@OneToOne(cascade=CascadeType.MERGE, mappedBy="company")
 	@RestResource(rel="client_0")
 	private RetailerAccount retailerAccount;
 	
@@ -67,6 +71,21 @@ public class Company extends BaseAccount/*RelatedEntity*/ /*implements Serializa
 		super();
 		//this.enabled = false;
 	}
+
+	public Company(CompanyDto companyDto){
+		super(companyDto.getEmail(), companyDto.getPassword());
+
+		this.companyName = companyDto.getCompanyName();
+		//this.shopName = companyDto.getShopName();
+		this.retailerAccount = new RetailerAccount(
+			companyDto.getCompanyName(),
+			companyDto.getCountry(),
+			companyDto.getState(),
+			companyDto.getCity(),
+			companyDto.getAddress1(),
+			companyDto.getAddress2()
+		);
+	}
 	
 	//Setters
 	//public void setId(UUID id){this.id = id;}
@@ -76,6 +95,7 @@ public class Company extends BaseAccount/*RelatedEntity*/ /*implements Serializa
 	//public void setEnabled(boolean enabled){this.enabled = enabled;}
 	public void setRetailerAccount(RetailerAccount retailerAccount){this.retailerAccount = retailerAccount;}
 	public void setRoles(Collection<CompanyRole> roles){this.roles = roles;}
+	public void setShopName(String shopName){this.shopName = shopName;}
 
 	
 	//Getters
@@ -87,4 +107,5 @@ public class Company extends BaseAccount/*RelatedEntity*/ /*implements Serializa
 	//public boolean getEnabled(){return this.enabled;}	
 	public RetailerAccount getRetailerAccount(){return this.retailerAccount;}
 	public Collection<CompanyRole> getRoles(){return this.roles;}
+	public String getShopName(){return this.shopName;}
 }

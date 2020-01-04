@@ -26,7 +26,7 @@ import org.springframework.context.MessageSource;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-@Service("customeRetailerDetailsService")
+@Service("customRetailerDetailsService")
 @Transactional
 public class CustomCompanyDetailsService implements UserDetailsService{
 	private static final Logger logger = LogManager.getLogger(CustomCompanyDetailsService.class);

@@ -72,8 +72,8 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 		Map<String, String> inclusionProps;
 		//BoolQueryBuilder boolQuery = QueryBuilders.boolQuery().must(QueryBuilders.matchQuery(field, ter));
 		//termSuggestionBuilder = new TermSuggestionBuilder(FIELD).text(prefix);
-		Map<String, List<? extends ToXContent>> contexts = 
-			Collections.singletonMap(CONTEXT_CAT, Collections.singletonList(CategoryQueryContext.builder().setCategory(context).build()));
+		Map<String, List<? extends ToXContent>> contexts = Collections.singletonMap(CONTEXT_CAT, Collections.singletonList(CategoryQueryContext.builder().setCategory(context).build()));
+		
 		completionSuggestionBuilder = new CompletionSuggestionBuilder(FIELD)
 			.prefix(prefix)
 			.contexts(contexts);
@@ -83,7 +83,7 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 		//prepare search on size_label index
 		SearchRequestBuilder searchReqBuilder = client.prepareSearch("item")
 			.setTypes("doc")
-			.setFetchSource(new String[]{"product.featuredImage.originalSrc", "product.handle", "product.description", "product.variants"}, null)
+			.setFetchSource(new String[]{"product.featuredImage.originalSrc", "product.handle", "product.description", "product.variants", "product.vendor"}, null)
 			.suggest(suggestionBuilder);
 
 		//extends ActionResponse 
@@ -111,66 +111,84 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 				//log the suggested text from provided prefix
 				logger.debug("suggestion text: " + entry.getText().toString());
 				//logger.debug("suggestion options: " + entry.getOption())
+
 				for(CompletionSuggestion.Entry.Option option : entry.getOptions()){
 					//Map<String, Object> wtf = option.getPayloadAsMap();
 					SearchHit hit = option.getHit();
+
 					if(hit != null){
 						//Map<String, SearchHits> innerHits = hit.getInnerHits();
 						suggestedItems.add(new SuggestItemEsDto(hit.getId(), hit.getSourceAsMap()));
 						Map<String, Object> source = hit.getSourceAsMap();
 						logger.debug("source = " + source.toString());
 						SearchHit sourceHit = SearchHit.createFromMap(source);
+
 						if(sourceHit != null){
 							logger.debug("sourceHit = " + sourceHit.toString());
 							Map<String, SearchHits> innerHits = sourceHit.getInnerHits();
 							DocumentField product = sourceHit.field("product");
+
 							if(product != null){
 								logger.debug("product = " + product.toString());
 								Iterator<Object> itr = product.iterator();
 								int index = 0;
+
 								while(itr.hasNext()){
 									Object value = itr.next();
 									logger.debug("product[" + index + "]" + (value != null ? value.toString() : "null"));
 									index++;
 								}
-							}else{
+							}
+							else{
 								logger.debug("product is null");
 							}
+
 							logger.debug("sourceHit = ", sourceHit.toString());
+
 							if(innerHits != null){
 								SearchHits products = innerHits.get("products");
+
 								if(products != null){
+
 									if(products.iterator().hasNext()){
+
 										SearchHit prod = products.iterator().next();
+
 										if(prod != null){
 											DocumentField picUrl = prod.field("onlineStorePreviewUrl");
+
 											if(picUrl != null){
 												logger.debug("picUrl = " + picUrl.getValue());
-											}else{
+											}
+											else{
 												logger.debug("picUrl is null");
 											}
-										}else{
+										}
+										else{
 											logger.debug("prod is null");
 										}
-									}else{
+									}
+									else{
 										logger.debug("product.iterator().hasNext() is false");
 									}
-								}else{
+								}
+								else{
 									logger.debug("product is null");
 								}
-							}else{
+							}
+							else{
 								logger.debug("innerHits is null");
 							}
 							//logger.debug("preview picture: " + sourceHit.getInnerHits().get("product").iterator().next().field("onlineStorePreviewUrl").getValue());
-						}else{
+						}
+						else{
 							logger.debug("sourceHit = " + sourceHit.toString());
 						}
-
 					}
 				}
-			}
-			
-		}catch(InterruptedException | ExecutionException e ){
+			}			
+		}
+		catch(InterruptedException | ExecutionException e ){
 			logger.error("Exception while executing query {}", e);
 		}
 		return suggestedItems;

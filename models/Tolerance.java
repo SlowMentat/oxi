@@ -39,7 +39,7 @@ public class Tolerance extends RelatedEntity implements Serializable, Identifiab
 
 	@Column(name = "id_text", updatable = false, insertable = false)
 	private String idText;
-
+	
 	private float height;
 	private float minNeck;
 	private float minFullShoulder;

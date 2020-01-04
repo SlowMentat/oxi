@@ -21,27 +21,27 @@ import org.hibernate.annotations.GenericGenerator;
 @Entity
 @Table(name="user_verification_token")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=UserVerificationToken.class)
-public class UserVerificationToken implements Serializable, Identifiable<Long>{
+public class UserVerificationToken extends BaseVerificationToken{//implements Serializable, Identifiable<Long>{
 	private static final int EXPIRATION = 60 * 24;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long id;
-	private String token;
+	//@Id
+	//@GeneratedValue(strategy = GenerationType.AUTO)
+	//private Long id;
+	//private String token;
 
 
 	@OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
 	@JoinColumn(nullable = false, name = "user_id")
 	private User user;
-	@Column(name = "expiry_date")
-	private Date expiryDate;
-
-	private Date calculateExpiryDate(final int expiryTimeInMinutes){
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(new Timestamp(calendar.getTime().getTime()));
-		calendar.add(Calendar.MINUTE, expiryTimeInMinutes);
-		return new Date(calendar.getTime().getTime());
-	}
+	//@Column(name = "expiry_date")
+	//private Date expiryDate;
+//
+	//private Date calculateExpiryDate(final int expiryTimeInMinutes){
+	//	Calendar calendar = Calendar.getInstance();
+	//	calendar.setTime(new Timestamp(calendar.getTime().getTime()));
+	//	calendar.add(Calendar.MINUTE, expiryTimeInMinutes);
+	//	return new Date(calendar.getTime().getTime());
+	//}
 
 	//Constructor/s
 	public UserVerificationToken(){
@@ -49,24 +49,24 @@ public class UserVerificationToken implements Serializable, Identifiable<Long>{
 	}
 
 	public UserVerificationToken(final String token){
-		super();
-		this.token = token;
-		this.expiryDate = this.calculateExpiryDate(UserVerificationToken.EXPIRATION);
+		super(token);
+		//this.token = token;
+		//this.expiryDate = this.calculateExpiryDate(UserVerificationToken.EXPIRATION);
 	}
 
 	public UserVerificationToken(final String token, final User user){
-		super();
-		this.token=token;
+		super(token);
+		//this.token=token;
 		this.user=user;
-		this.expiryDate=calculateExpiryDate(UserVerificationToken.EXPIRATION);
+		//this.expiryDate=calculateExpiryDate(UserVerificationToken.EXPIRATION);
 	}
 
 	//Getters
-	public Long getId(){return this.id;}
+	//public Long getId(){return this.id;}
 	public User getUser(){return this.user;}
-	public Date getExpiryDate(){return this.expiryDate;}
+	//public Date getExpiryDate(){return this.expiryDate;}
 
 	//Setters
-	public void setId(Long id){this.id = id;}
+	//public void setId(Long id){this.id = id;}
 	public void setUser(User user){this.user = user;}
 }

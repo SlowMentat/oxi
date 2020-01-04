@@ -1,8 +1,10 @@
 package oxi.services;
 
 import java.lang.*;
+import java.util.Optional;
 import java.util.Iterator;
 import java.util.Enumeration;
+import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
@@ -247,22 +249,31 @@ public class RetailerService{
 	}
 
 	@Transactional
-	public PagedResources<?> getProducts(String username, String filter, Pageable pageable) /*throws Exception*/{
-		RetailerAccount retailerAccount = retailerAccountRep.findByCompanyName(username);
-		//RetailerAccount retailerAccount = retailerAccountRep.findByUsername(username);
-		//if(retailerAccount == null) throw new Exception("invalid argument");
-		switch(filter){
-			case "all":
-				/*Page<ProductDto> productDtos = itemRep.getAllItemsWithRetailerAccount(retailerAccount.getId(), pageable).map(new Converter<Item, ProductDto>(){
-					@Override
-					public ProductDto convert(Item item){
-						return new ProductDto(item);
-					}
-				});*/
-				Page<ProductDto> productDtos = itemRep.getAllItemsWithRetailerAccount(retailerAccount.getId(), pageable).map(this::convertToProductDto);
-				return productPRAP.toResource(productDtos, this::toResource);
-			default:
-				return null;
+	public PagedResources<?> getProducts(String username, String filter, Pageable pageable) throws Exception{
+		RetailerAccount retailerAccount = null;
+		
+		if(username != null){
+			retailerAccount = retailerAccountRep.findByCompanyName(username);
+		}else {
+			throw new Exception("invalid username");
+		}
+
+		if(retailerAccount != null){
+			switch(filter){
+				case "all":
+					/*Page<ProductDto> productDtos = itemRep.getAllItemsWithRetailerAccount(retailerAccount.getId(), pageable).map(new Converter<Item, ProductDto>(){
+						@Override
+						public ProductDto convert(Item item){
+							return new ProductDto(item);
+						}
+					});*/
+					Page<ProductDto> productDtos = itemRep.getAllItemsWithRetailerAccount(retailerAccount.getId(), pageable).map(this::convertToProductDto);
+					return productPRAP.toResource(productDtos, this::toResource);
+				default:
+					return null;
+			}
+		}else{
+			throw new Exception("User does not have a retailer account");
 		}
 	}
 
@@ -388,6 +399,47 @@ public class RetailerService{
 		}
 
 		return(productDtos);
+	}
+
+	@Transactional
+	public SizeChartDto setSizeChartsByProductId(String companyName, SizeChartDto sizeChartDto){
+
+		RetailerAccount ra = retailerAccountRep.findByCompanyName(companyName);
+
+		List<UUID> affectedItemIds = sizeChartDto.getAffectedProductIds().stream()
+			.map(id -> {
+				List<String> itemIds = ra.getItems().stream().map((Item item) -> item.getIdText()).collect(Collectors.toList());				
+				/*
+				* TODO: use an ORDER BY clause in the custom SQL statemnt to retrieve the entitites in the defined order.
+				* This is so that we can binary search on items in retailerAccount against id
+				*/
+				if(Collections.binarySearch(itemIds, id) >= 0){
+					return UUID.fromString(id);
+				}
+
+				// trying to access an item id that does not belong to this company, so return empty string
+				return null;
+			})
+			.collect(Collectors.toList());
+
+		/*
+		* TODO:  create custom function in itemRep to findByRetailerAccountAndIdIn
+		*/
+		List<Item> items = itemRep.findByIdIn( affectedItemIds );
+		List<String> result = new ArrayList<String>(items.size());
+
+
+		SizeChart sc = new SizeChart(sizeChartDto);
+		entityManager.persist(sc);
+		
+		for(Item item : items){
+			item.setSizeChart(sc);
+			entityManager.persist(item);
+		}
+
+		sizeChartDto.setId(sc.getIdText());
+
+		return sizeChartDto;
 	}
 
 	/*@Transactional

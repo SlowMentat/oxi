@@ -58,8 +58,14 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	@Column(name= "size_group_id", columnDefinition="BINARY(16)")
 	private UUID sizeGroupId;
 
-	@Column(name = "size_group_id_text",  columnDefinition="VARCHAR(36)",  updatable = false, insertable = false)
+	@Column(name = "size_group_id_text", columnDefinition="VARCHAR(36)",  updatable = false, insertable = false)
 	private String sizeGroupIdText;
+
+	@Column(columnDefinition = "BINARY(16)", name = "outfit_id", nullable=true)
+	private UUID outfitId;	
+
+	@Column(name = "outfit_id_text", columnDefinition="VARCHAR(36)",  updatable = false, insertable = false)
+	private String outfitIdText;
 
 	@Column(name = "is_active", nullable=false, columnDefinition="BOOLEAN default true")
 	private boolean isActive;
@@ -94,6 +100,7 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	@JoinColumn(name = "retailer_account_id")
 	private RetailerAccount retailerAccount;
 
+
 	//Constructor
 	public Item(){
 
@@ -103,7 +110,7 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 		this.id = id;
 		this.platform = platform;
 		this.product = product;
-		this.apparelType = apparelType;
+		this.apparelType = apparelType == null ? 8 : apparelType;
 		this.sizeChartId = sizeChartId;
 		this.sizeGroupId = sizeGroupId;
 		this.isActive = isActive;
@@ -139,7 +146,7 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 		//this.productId = productId;
 		/*this.positionx = positionx;
 		this.positiony = positiony;*/
-		this.apparelType = apparelType;
+		this.apparelType = apparelType == null ? 8 : apparelType;
 		this.sizeGroupId = sizeGroupId;
 		//this.link = link;
 		//this.isRetailPicture = isRetailPicture;
@@ -151,18 +158,18 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 
 	public Item(ItemDto itemDto){		
 		super();
-		if(itemDto.getId() == null || itemDto.getId().isEmpty()){
-			this.id = null;
-		}else{
-			this.id = UUID.fromString(itemDto.getId());
-		}
+
+
+		this.id = (itemDto.getId() == null || itemDto.getId().isEmpty()) ? null : UUID.fromString(itemDto.getId());
+		this.apparelType = (itemDto.getApparelType() == null) ? new Integer(8) : itemDto.getApparelType(); //unknown apparel_type
+
 
 
 
 		//this.productId = itemDto.getProductId();
 		//this.positionx = itemDto.getPositionx();
 		//this.positiony = itemDto.getPositiony();
-		this.apparelType = itemDto.getApparelType();
+		//this.apparelType = itemDto.getApparelType();
 		//this.userDefinedSize = itemDto.getUserDefinedSize();
 		//this.userDefinedRetailer = itemDto.getUserDefinedRetailer();
 		this.product = itemDto.getProduct();
@@ -199,6 +206,7 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	public void setIsActive(boolean isActive){this.isActive = isActive;}
 	//public void setUpdatedOn(){this.updatedOn = Instant.now();}
 	public void setUpdatedOn(Date updatedOn){this.updatedOn = updatedOn;}
+	public void setOutfitId(UUID outfitId){this.outfitId = outfitId;}
 	//public void setUserDefinedSize(String uds){this.userDefinedSize = uds;}
 	//public void setUserDefinedRetailer(String udr){this.userDefinedRetailer = udr;}
 	/*public void setContents(List<Content> contents){
@@ -232,6 +240,8 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	//public Instant getUpdatedOn(){return this.updatedOn;}
 	public Date getUpdatedOn(){return this.updatedOn;}
 	public Date getCreatedOn(){return this.createdOn;}
+	public UUID getOutfitId(){return this.outfitId;}
+	public String getOutfitIdText(){return this.outfitIdText;}
 	//public String getUserDefinedSize(){return this.userDefinedSize;}
 	//public String getUserDefinedRetailer(){return this.userDefinedRetailer;}
 	
@@ -252,7 +262,7 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	public String toString(){
 		logger.debug("building Item string");
         StringBuilder sb = new StringBuilder("\nid: ").append(this.id)
-			.append("\ntype:").append(this.apparelType);
+			.append("\napparelType:").append(this.apparelType);
 			//.append("\nsize:").append(this.size);
 		//sb.append("\nprofile: ").append(((profile.getId() == null) ? "null" : profile.getId().toString()));
         return sb.toString();		

@@ -20,6 +20,7 @@ public class ProductDto implements Serializable, Identifiable<String>
 {
 	@JsonProperty("id")
 	private String id;
+
 	private String productId;
 	private Integer apparelType;
 	private String link;
@@ -28,6 +29,9 @@ public class ProductDto implements Serializable, Identifiable<String>
 	private boolean isRetailPicture;
 	private boolean isActive;
 	private SizeChartDto sizeChartDto;
+
+	@JsonRawValue
+	private String productData;
 
 	public ProductDto(){}
 
@@ -46,6 +50,7 @@ public class ProductDto implements Serializable, Identifiable<String>
 	public ProductDto(Item item){
 		if(item != null){
 			this.id = item.getIdText() != null ? item.getIdText() : null;
+			this.productData = item.getProduct();
 			//this.productId = item.getProductId();
 			this.sizeGroupId = item.getSizeGroupIdText();
 			//this.link = item.getLink();
@@ -69,6 +74,7 @@ public class ProductDto implements Serializable, Identifiable<String>
 	public void setIsRetailPicture(boolean isRetailPicture){this.isRetailPicture = isRetailPicture;}
 	public void setIsActive(boolean isActive){this.isActive = isActive;}
 	public void setSizeChartDto(SizeChartDto sizeChartDto){this.sizeChartDto = sizeChartDto;}
+	public void setProductData(String productData){this.productData = productData;}
 
 	//Getters
 	@Override
@@ -81,6 +87,7 @@ public class ProductDto implements Serializable, Identifiable<String>
 	public boolean getIsRetailPicture(){return this.isRetailPicture;}
 	public boolean getIsActive(){return this.isActive;}
 	public SizeChartDto getSizeChartDto(){return this.sizeChartDto;}
+	public String getProductData(){return this.productData;}
 
 	//@Override
 	public String toString(int indents){
@@ -96,7 +103,8 @@ public class ProductDto implements Serializable, Identifiable<String>
 			.append(indent).append("isRetailPicture:").append(this.isRetailPicture)
 			.append(indent).append("isActive:").append(this.isActive)
 			.append(indent).append("pictureDto:").append(((this.pictureDto == null) ? "null" : this.pictureDto.toString(indents+1)))
-			.append(indent).append("sizeChartDto:").append(((this.sizeChartDto == null) ? "null" : this.sizeChartDto.toString(indents+1)));
+			.append(indent).append("sizeChartDto:").append(((this.sizeChartDto == null) ? "null" : this.sizeChartDto.toString(indents+1)))
+			.append(indent).append("productData:").append(this.productData == null ? "null" : this.productData);
         return sb.toString();		
 	}
 }

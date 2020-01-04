@@ -14,6 +14,8 @@ public interface ItemRepository extends JpaRepository<Item, UUID>, ItemRepositor
 	@Query(value = "SELECT * FROM item WHERE profile_id = ?1", nativeQuery = true)
 	List<Item> findByProfileId(long profileid/*, Pageable pageable*/);
 
+	List<Item> findByIdIn(List<UUID> ids);
+
 	//Item findById(UUID id); 
 
 	//List<Item> findByProductOwner(String productOwner);

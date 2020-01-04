@@ -57,6 +57,8 @@ import com.allanditzel.springframework.security.web.csrf.*;
 
 import oxi.controllers.*;
 import oxi.models.dto.*;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import oxi.components.CursorHandlerMethodArgumentResolver;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.*;
@@ -73,6 +75,7 @@ import com.mongodb.MongoClient;
 
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 
 //Standard annotions for any spring boot configuration class
@@ -89,17 +92,28 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 @EnableHypermediaSupport(type = HypermediaType.HAL)
 @EnableWebMvc
 @ImportResource("/WEB-INF/classes/applicationContext.xml")
-public class Application extends SpringBootServletInitializer{
+public class Application extends SpringBootServletInitializer/* implements WebMvcConfigurer*/{
 
     //@Autowired
     //private ObjectMapper _halObjectMapper;
 
-    public static void main(String[] args) {
+    public static void main(String[] args){
         SpringApplication.run(Application.class, args);
     }
 	
     @Override
-    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder application){
         return application.sources(Application.class);
     }
+
+    //@Override 
+    //public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers){
+    //    argumentResolvers.add(new CursorHandlerMethodArgumentResolver());
+    //}
+
+    //@Override 
+    //public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers){
+    //    logger.debug("configuring CursorHandlerMethodArgumentResolver");
+    //    argumentResolvers.add(new CursorHandlerMethodArgumentResolver());
+    //}
 }

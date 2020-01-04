@@ -62,7 +62,7 @@ public class ItemManagementService{
 	@Autowired private PagedResourcesAssembler<Bookmark> bookmarPRA;
 	//@Autowired private PagedResourcesAssembler<BookmarkDto> bookmarkPRAP;  //TODO:  create this class
 
-	@Autowired private PagedResourcesAssembler<Like> likePRA;
+	//@Autowired private PagedResourcesAssembler<Like> likePRA;
 	//@Autowired private PagedResourcesAssembler<LikeDto> likePRAP; //TODO:  create this class
 
 	@Autowired private PagedResourcesAssembler<Following> followPRA;
