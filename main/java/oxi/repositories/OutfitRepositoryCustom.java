@@ -26,4 +26,6 @@ public interface OutfitRepositoryCustom /*extends PagingAndSortingRepository<Out
 
 	//@Query(value="")
 	List<Outfit> getOutfitsByIds(List<String> ids) throws Exception;
+
+	OutfitDto getOutfitById(UUID id);
 }

@@ -27,6 +27,7 @@ public abstract class BaseAccount extends RelatedEntity /*implements Identifiabl
 	
 	@Column(name = "id_text", updatable = false, insertable = false)
 	private String idText;
+	//@Email(message = "Invalid email")
 	private String email;
 	private String password;
 	private boolean enabled;

@@ -46,6 +46,8 @@ public class OutfitDto implements Serializable, Identifiable<String>
 	private List<ContentDto> contents;
 	private String coverpicuri;
 	private String username;
+	@JsonProperty("profilePicUri")
+	private String profilePictureUri;
 	private LikeCountDto likeCountDto;
 
 	public OutfitDto(){}
@@ -141,6 +143,7 @@ public class OutfitDto implements Serializable, Identifiable<String>
 	public String getUsername(){return this.username;}
 	public LikeCountDto getLikeCount(){return this.likeCountDto;}
 	public boolean getIsLiked(){return this.isLiked;}
+	public String getProfilePictureUri(){return this.profilePictureUri;}
 
 	//Setters
 	public void setId(String id){this.id = id;}
@@ -151,6 +154,7 @@ public class OutfitDto implements Serializable, Identifiable<String>
 	public void setUsername(String username){this.username = username;}
 	public void setLikeCountDto(LikeCountDto likeCountDto){this.likeCountDto = likeCountDto;}
 	public void setIsLiked(boolean isLiked){this.isLiked = isLiked;}
+	public void setProfilePictureUri(String profilePictureUri){this.profilePictureUri = profilePictureUri;}
 
 	public String toString(int indents) {
 		String indent = "\n";

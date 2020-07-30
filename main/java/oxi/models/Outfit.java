@@ -46,7 +46,7 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 	private String coverpicuri;
 	
 	//@Cascade(CascadeType.SAVED_UPDATE)
-	@OneToMany(cascade=CascadeType.ALL, mappedBy="outfit")
+	@OneToMany(cascade=CascadeType.ALL, orphanRemoval=true, mappedBy="outfit")
 	@RestResource(rel="contents")
 	@JsonIdentityReference(alwaysAsId=true)
 	private List<Content> contents;
@@ -65,6 +65,8 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 	private LikeCount likeCount;
 
 	private String username;
+	@Column(columnDefinition = "BINARY(16)", name = "picture_profile_id", updatable = true, insertable = true)
+	private UUID pictureProfileId;
 
 	/*@Column(name = "profile_id_text", updatable = false)
 	private String profileText;*/
@@ -166,6 +168,8 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 		if (content.getOutfit() != this) content.setOutfit(this);
 	}
 
+	public void setPictureProfileId(UUID pictureProfileId){this.pictureProfileId = pictureProfileId;}
+
 	
 	//Getters
 	//@Override
@@ -178,6 +182,8 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 	public String getCoverpicuri(){return this.coverpicuri;}
 	public String getUsername(){return this.username;}
 	public LikeCount getLikeCount(){return this.likeCount;}
+	public UUID getPictureProfileId(){return this.pictureProfileId;}
+
 	
 	//Auxillary methods
 	/*@Override

@@ -31,7 +31,7 @@ public class EmailService{
 	@Autowired
 	private SpringTemplateEngine templateEngine;
 
-	public void sendSimpleMessage(SimpleMailMessage mail, Map<String,Object> templateVariables) throws MessagingException, IOException{
+	public void sendSimpleMessage(SimpleMailMessage mail, Map<String,Object> templateVariables, String template) throws MessagingException, IOException{
 		MimeMessage mimMessage = mailSender.createMimeMessage();
 		MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimMessage, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());
 		
@@ -41,7 +41,7 @@ public class EmailService{
 		context.setVariables(templateVariables);
 
 		//Create the HTML body usring Thymeleaf
-		String html = templateEngine.process("account-verification.html", context);
+		String html = templateEngine.process(template, context);
 
 		mimeMessageHelper.setTo(mail.getTo());
 		mimeMessageHelper.setText(html, true);

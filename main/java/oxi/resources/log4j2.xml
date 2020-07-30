@@ -23,6 +23,9 @@
         <Logger name="oxi.security.CsrfSecurityRequestMatcher" level="debug" additivity="false">
             <AppenderRef ref="ConsoleAppender" />
         </Logger>
+        <Logger name="oorg.springframework.security.config.annotation.web.builders.HttpSecurity" level="debug" additivity="false">
+            <AppenderRef ref="ConsoleAppender" />
+        </Logger>
 
         <!--=========================================-->
         <!--============    Services    ============-->

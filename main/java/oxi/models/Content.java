@@ -49,7 +49,7 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 	private Outfit outfit;	
 	
 	//@ManyToMany(cascade={CascadeType.PERSIST, CascadeType.MERGE}, mappedBy="contents")	//Item entity is the owner
-	@OneToMany(cascade=CascadeType.ALL, orphanRemoval = true, mappedBy = "content")
+	@OneToMany(cascade=CascadeType.ALL, orphanRemoval=true, mappedBy = "content")
 	//@MapKeyColumn(name="clothing_type")
 	@RestResource(rel="vendor_0")
 	@JsonProperty("items")
@@ -57,7 +57,7 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 	//private Map<String, Item> items;*
 	private List<ItemContent> items = new ArrayList<>(); //TODO:  see if this clears all item assoications on a given 
 	
-	@OneToOne(cascade=CascadeType.MERGE, mappedBy="content")
+	@OneToOne(cascade=CascadeType.MERGE, orphanRemoval=true, mappedBy="content")
 	@RestResource(rel="vendor_1")
 	@JsonProperty("picture")
 	@JsonIdentityReference(alwaysAsId=true)	

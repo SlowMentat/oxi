@@ -45,6 +45,7 @@ import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -54,6 +55,7 @@ import javax.persistence.PersistenceContext;
 import javax.xml.bind.DatatypeConverter;
 
 
+
 @Service
 @Transactional
 public class UserAccountService /*implements IAccountService<IVerificationToken>*/{
@@ -61,18 +63,20 @@ public class UserAccountService /*implements IAccountService<IVerificationToken>
 	private static final Logger logger = LogManager.getLogger(UserAccountService.class);
 
 	@Autowired UserRepository userRep;
-	@Autowired UserVerificationTokenRepository userVerificationTokenRep;
+	@Autowired UserVerificationTokenRepository uvtRep;
 	@Autowired RoleRepository roleRep;
 	//@Autowired PasswordResetTokenRepository passwordResetTokenRep;
 	//@Autowired PasswordEncoder userPasswordEncoder;
-	@Autowired
-	private BCryptPasswordEncoder userPasswordEncoder;
+	
+	//@Autowired
+	//private BCryptPasswordEncoder userPasswordEncoder;
+
+	@Autowired 
+	private PasswordEncoder userPasswordEncoder;
+
 	//@Autowired SessionRegistry sessionRegistry;
-	@Autowired EntityManager entityManager;
-
-
-	//public static String QR_PREFIX = "https://chart.googleapis.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=";
-	//public static String APP_NAME = "SpringRegistration";
+	@Autowired 
+	private EntityManager entityManager;
 
 	private boolean emailExist(String email){
 		User user = userRep.findByEmail(email);
@@ -89,55 +93,102 @@ public class UserAccountService /*implements IAccountService<IVerificationToken>
 		}
 		return false;
 	}
+	
+    /**
+    *Creates a new User Account
+    *<p>
+    *This service method will create a new User entity after verifying the new user's email and username is unique.
+    *</p>
+    *@param userDto - UserDto object containing the new user's credentials.
+    *@throws UserAlreadyExistException
+    */
+	public User registerAccount(final UserDto userDto) throws UserAlreadyExistException{
+		String conflicts = "";
+		//check if data exists
+		if(emailExist(userDto.getEmail())){
+			throw new UserAlreadyExistException("Theres is an account with that email address: " + userDto.getEmail());
+		}
+		if(usernameExist(userDto.getUsername())){
+			throw new UserAlreadyExistException("Username is already in use: " + userDto.getUsername());
+		}
 
-	//@Override
-	public /*ResponseEntity<?>*/ User registerAccount(final UserDto userDto) throws UserAlreadyExistException{
-		//try{
-			String conflicts = "";
-			//check if data exists
-			if(emailExist(userDto.getEmail())){
-				throw new UserAlreadyExistException("Theres is an account with that email address: " + userDto.getEmail());
-			}
-			if(usernameExist(userDto.getUsername())){
-				throw new UserAlreadyExistException("Username is already in use: " + userDto.getUsername());
-			}
-			//conflicts += (userRep.findByEmail(userDto.getEmail()) != null) ? "email " : "";
-			//conflicts += (userRep.findByUsername(userDto.getUsername()) != null) ? "username " : "";
-			//if(conflicts.compareTo("") != 0){
-			//	return new ResponseEntity("Fields: " + conflicts, HttpStatus.CONFLICT);
-			//}
-
-			User user = new User();
-			user.setPassword(userPasswordEncoder.encode(userDto.getPassword()));
-			user.setEmail(userDto.getEmail());
-			user.setUsername(userDto.getUsername());
-			user.setRoles(Arrays.asList(roleRep.findByName("ROLE_USER")));
-			user.setEnabled(false);
-			return userRep.save(user);
-
-			//logger.debug("User object persisted.  user.id: " + user.getId().toString());
-			
-			////Create an empty Profile linked to this user
-			//Profile profile = new Profile();
-			//profile.setUser(user);
-			//profile.setUsername(user.getUsername());
-			//entityManager.persist(profile);
-//
-			//logger.debug("Profile object persisted.  profile.user.id: " + profile.getUser().getId().toString());
-			////userRep.saveAndFlush(user);	
-//
-			////Set User roles
-			//
-			//return new ResponseEntity(user.getUsername(), HttpStatus.OK);
-		//}catch(Exception e){
-		//	return new ResponseEntity("Our servers seem to have freyed a bit.\nPlease wait a moment and try your request agian.", HttpStatus.INTERNAL_SERVER_ERROR);
-		//}
+		User user = new User();
+		user.setPassword(userPasswordEncoder.encode(userDto.getPassword()));
+		user.setEmail(userDto.getEmail());
+		user.setUsername(userDto.getUsername());
+		user.setRoles(Arrays.asList(roleRep.findByName("ROLE_USER")));
+		user.setEnabled(false);
+		return userRep.save(user);
 	}
 
-	//@Override
+    /**
+    *Changes account password for users that are not logged in.
+    *<p>
+    *This service method allows users who are coming from invite email links.
+    *It allows them to update the randomly generated password created during their account provisioning.
+    *This is only intended for securely onboarding users during alpha testing.
+    *</p>
+    *@param newPassword - the new password to which the user is changing.
+    *@param uvt - The user verification token sent in the invite email.
+    */
+	@Transactional
+	public void initializeAccountPassword(String newPassword, UserVerificationToken uvt){
+		User user =  userRep.findByUsername(uvt.getUser().getUsername());
+		logger.debug("Initializing new password for user " + user.getUsername());
+		logger.debug("Password = " + newPassword);
+		String newEncodedPassword = userPasswordEncoder.encode(newPassword);
+		logger.debug("Encoded Password = " + newEncodedPassword);
+		user.setPassword(userPasswordEncoder.encode(newPassword));
+
+		// Changes to user are merged in this call
+		activateProvisionedUser(user);
+		uvtRep.deleteById(uvt.getId());
+	}
+
+    /**
+    *Changes account passwords for logged in users.
+    *<p>
+    *This is the standard service method for updating users' passwords
+    *</p>
+    *@param newPassword - the new password to which the user is changing.
+    *@param oldPassword - the current password associated the user.
+    *@param username - the username associated with this user.
+    *@throws IllegalStateException
+    */
+	@Transactional
+	public void updateAccountPassword(String newPassword, String oldPassword, String username){
+		User user =  userRep.findByUsername(username);
+		
+		if(userPasswordEncoder.matches(oldPassword, user.getPassword())){
+			logger.debug("Old password verification succeeded for " + username);
+			user.setPassword(userPasswordEncoder.encode(newPassword));
+			entityManager.merge(user);
+		}
+		else{
+			logger.debug("Old password verification failed");
+			throw new IllegalStateException("Invalid existing password");
+		}
+	}
+
+
+    /**
+    *Activates users account
+    *<p>
+    *Activates users' account once they're emails hav been verified.  Once the user is Activated
+    *this method will provision profile, user metrics, and user tolerance entities.
+    *</p>
+    *@param User - User entity to activate.
+    *@throws IllegalStateException
+    */
 	@Transactional
 	public void activateProvisionedUser(User user){
 
+		if(user.getEnabled()){
+			entityManager.merge(user);
+			throw new IllegalStateException("User account already activated");
+		}
+
+		user.setEnabled(true);
 		entityManager.merge(user);
 
 		//Profivision profile entities if User is being activated for the first time
@@ -157,20 +208,34 @@ public class UserAccountService /*implements IAccountService<IVerificationToken>
 		}
 	}
 
-	//@Override
-	public User getUser(String verificationToken){
-		User user = userVerificationTokenRep.findByToken(verificationToken).getUser();
+	public User getUser(String token){
+		User user = uvtRep.findByToken(token).getUser();
 		return user;
 	}
 
-	//@Override
-	public UserVerificationToken getUserVerificationToken(String verificationToken){
-		return userVerificationTokenRep.findByToken(verificationToken);
+	public UserVerificationToken getUserVerificationToken(String token){
+		return uvtRep.findByToken(token);
 	}
 
-	//@Override
+	public UserVerificationToken getUvtByUsername(String username){
+		User user = userRep.findByUsername(username);
+		return uvtRep.findByUserId(user.getId());
+	}
+
 	public void createUserVerificationToken(User user, String token){
-		UserVerificationToken myToken = new UserVerificationToken(token, user);
-		entityManager.persist(myToken);
+		UserVerificationToken uvt = new UserVerificationToken(token, user);
+		entityManager.persist(uvt);
+	}
+
+	@Transactional
+	public UserVerificationToken updateUserVerificationToken(String token){
+		UserVerificationToken existingUVT = getUserVerificationToken(token);
+		existingUVT.setToken(UUID.randomUUID().toString());
+		existingUVT.resetExpiryDate();
+		return entityManager.merge(existingUVT);
+	}
+
+	public void deleteVerificationToken(String token){
+
 	}
 }

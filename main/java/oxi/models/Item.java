@@ -70,7 +70,7 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	@Column(name = "is_active", nullable=false, columnDefinition="BOOLEAN default true")
 	private boolean isActive;
 
-	@Column(name = "created_on", nullable=false)
+	@Column(name = "created_on", nullable=false, updatable = false)
 	private Date createdOn = new Date();
 
 	@Column(name = "updated_on", nullable=true)

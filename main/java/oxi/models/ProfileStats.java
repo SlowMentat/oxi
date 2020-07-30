@@ -55,10 +55,12 @@ public class ProfileStats extends RelatedEntity implements Serializable, Identif
 	}
 	
 	public ProfileStats(ProfileStatsDto profileStatsDto){
-		this.id = UUID.fromString(profileStatsDto.getId());
-		this.following = profileStatsDto.getFollowing();
-		this.points = profileStatsDto.getPoints();
-		this.likes = profileStatsDto.getLikes();
+		if(profileStatsDto != null){
+			this.id = profileStatsDto.getId() != null ? UUID.fromString(profileStatsDto.getId()) : null;
+			this.following = profileStatsDto.getFollowing();
+			this.points = profileStatsDto.getPoints();
+			this.likes = profileStatsDto.getLikes();
+		}
 	}
 
 	//Setters

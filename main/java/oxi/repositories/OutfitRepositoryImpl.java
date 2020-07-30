@@ -69,6 +69,240 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 
 	}*/
 
+	private HashMap<UUID, OutfitDto> getCompleteOutfit(List<Outfit> outfitTuples, long outfitCount){
+		Session session = entityManager.unwrap(Session.class);	
+		Outfit outfit;
+		Content content;
+		Item item;
+		ItemContent itemContent;
+		Picture picture;
+		SizeGroup sizeGroup;
+		SizeChart sizeChart;
+		SizeChartSizeGroup sizeChartSizeGroup;
+
+		List<OutfitDto> outfitDtos = new ArrayList<OutfitDto>();
+		List<ContentDto> contentDtos = new ArrayList<ContentDto>();
+		ArrayList<ItemDto> items;
+		ArrayList<SizeGroupDto> sizeGroups;
+		//HashMap used to build OutfitDTO with nested List<Content>
+		HashMap<Outfit, ArrayList<Content>> outfitToContentMap = new HashMap<Outfit, ArrayList<Content>>();
+		HashMap<Content, ArrayList<ItemDto>> contentToItemMap = new HashMap<Content, ArrayList<ItemDto>>();
+		HashMap<UUID, ArrayList<SizeGroupDto>> sizeChartIdToSizeGroupsMap = new HashMap<UUID, ArrayList<SizeGroupDto>>();
+		//HashMap<UUID, SizeGroupDto> idToSizeGroupDtoMap = new HashMap<UUID, SizeGroupDto>();
+		HashMap<UUID, OutfitDto> idToOutfitDtoMap = new HashMap<UUID, OutfitDto>();
+		HashMap<UUID, Outfit> idToOutfitMap = new HashMap<UUID, Outfit>();
+		HashMap<UUID, SizeChart> idToSizeChartMap = new HashMap<UUID, SizeChart>();
+		//Example 553. Hibernate native query selecting entities with joined one-to-many association
+		String outfitQ = "select {o.*} from outfit o where o.profile_id = :id";
+
+		//String contentItemQ = "select {c.*}, {i.*}, {ic.*}, {p.*}, {*.sg} "+
+		//	"from item i, picture p, content c size_group sg " +
+		//	"join item_content ic on ic.content_id=c.id " +
+		//	"where i.id = ic.item_id " +
+		//	"and i.size_group_id = sg.id " +
+		//	"and c.outfit_id in (:outfitIdList) " +
+		//	"and p.content_id=c.id";/* +
+		//	"union all select c.id, c.coverpicuri, c.outfit_id, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null " +
+		//	"from content c, item_content ic " +
+		//	"where c.outfit_id in (:outfitIdList) " +
+		//	"and not c.id=ic.content_id";*/
+
+		//String contentItemQ = 
+		//	"select {c.*}, {i.*}, {ic.*}, {p.*} "+
+		//	"from item i, picture p, content c " +
+		//	"join item_content ic on ic.content_id=c.id " +
+		//	"where i.id = ic.item_id " +
+		//	"and c.outfit_id in (:outfitIdList) " +
+		//	"and p.content_id=c.id";
+
+		String contentItemQ = 
+			"select {c.*}, {i.*}, {ic.*}, {p.*} "+
+			"from item i, picture p, content c " +
+			"join item_content ic on ic.content_id=c.id " +
+			"where i.id = ic.item_id " +
+			"and c.outfit_id in (:outfitIdList) " +
+			"and p.content_id=c.id " +
+
+			"union all select c.id, c.coverpicuri, c.outfit_id, " + 
+				"null, null, null, null, null, null, null, null, null, null, " + 
+				"null, null, null, null, null, null, null, null, null, null, " + 
+				"null, null, null, null, null, null, null, null, null, null, " + 
+				"null, null, null " + 
+			"from content c, item_content ic " +
+			"where c.outfit_id in (:outfitIdList) " +
+			"and not c.id=ic.content_id";
+
+		String sizeChartSizeGroupQ = 
+			"select {sc.*}, {sg.*}, {scsg.*} " +
+			"from size_chart sc, size_group sg " +
+			"join size_chart_size_group scsg on scsg.size_group_id = sg.id " +
+			"where sc.id = scsg.size_chart_id " +
+			"and sc.id in (:sizeChartIdList)";
+
+		if(outfitTuples.size() == 0){
+			idToOutfitDtoMap.put(null, new OutfitDto());
+			idToOutfitMap.put(null, new Outfit());
+		}
+
+		else{			
+			//Populates HashMap with id columns as key and outfitDto object as value.
+			//Assumes rows with unique id's to be returned from query
+			for(Outfit o : outfitTuples){
+				//Outfit o = (Outfit)tuple[0];
+				logger.debug("outfit id_text:");
+				logger.debug(o.getIdText());
+				idToOutfitDtoMap.put(o.getId(), new OutfitDto(o));//new OutfitDto(o.getIdText(), o.getLikes(), o.getComments(), new ArrayList<ContentDto>(5), o.getCoverpicuri()));
+				idToOutfitMap.put(o.getId(), o);
+			}
+
+			logger.debug("idToOutfitDtoMap keyset = ");
+			logger.debug(idToOutfitDtoMap.keySet());
+			
+	
+			List<Object[]> contentItemTuples = session.createSQLQuery(contentItemQ)
+				.addEntity("c", Content.class)
+				.addEntity("i", Item.class)
+				.addEntity("ic", ItemContent.class)
+				.addEntity("p", Picture.class)
+				//.addEntity("sg", SizeGroup.class) TODO:  uncoment once sg table is filled
+				//.setParameterList("outfitIdList", Arrays.asList(UUID.fromString("3a5f73ae-a986-11e8-8336-f23c9150975d"), UUID.fromString("078e417f-a986-11e8-8336-f23c9150975d")), UUIDBinaryType.INSTANCE)
+				.setParameterList("outfitIdList", idToOutfitDtoMap.keySet(), UUIDBinaryType.INSTANCE)
+				.list();
+						
+			logger.debug("OutfitRepositoryImpl#findByProfileId: size of contentItemTuples = " + contentItemTuples.size());
+			
+			// Handles the case for no item entities associated with existing content entities.
+			// Builds the contentToItemMap from idToOutfitMap instead
+			if(contentItemTuples.size() == 0 && idToOutfitMap.size() > 0){
+				for(Outfit o : idToOutfitMap.values()){
+					for(Content c : o.getContents()){
+						contentToItemMap.put(c, null);
+					}
+				}
+			}
+			else{
+				for(Object[] tuple : contentItemTuples){
+					//put <key, value> into HasMap
+					content = (Content)tuple[0];
+					item = (Item)tuple[1];
+		
+					if(item != null){
+						//add the item id as key to the idToSizeChartMap HashMap
+						idToSizeChartMap.put(item.getSizeChartId(), null);
+					}
+				}
+			}	
+
+			logger.debug("idToSizeChartMap keyset = ");
+			logger.debug(idToSizeChartMap.keySet());
+
+			if(idToSizeChartMap.size() == 0){
+				idToSizeChartMap.put(null, new SizeChart());
+			}
+
+			else{
+	
+				// Query size charts on sizeChartIdList
+				List<Object[]> sizeChartSizeGroupTuples = session.createSQLQuery(sizeChartSizeGroupQ)
+					.addEntity("sc", SizeChart.class)
+					.addEntity("sg", SizeGroup.class)
+					.addEntity("scsg", SizeChartSizeGroup.class)
+					.setParameterList("sizeChartIdList", idToSizeChartMap.keySet(), UUIDBinaryType.INSTANCE)
+					.list();
+	
+				// build sizechart to List<SizeGroup> HashMap
+				for(Object[] tuple :  sizeChartSizeGroupTuples){
+					sizeChart = (SizeChart)tuple[0];
+					sizeGroup = (SizeGroup)tuple[1];
+					sizeChartSizeGroup = (SizeChartSizeGroup)tuple[2]; //data may be available from this object in the future
+		
+					if(!sizeChartIdToSizeGroupsMap.containsKey(sizeChart.getId())){
+						sizeGroups = new ArrayList<SizeGroupDto>(5);
+					}else{
+						sizeGroups = sizeChartIdToSizeGroupsMap.get(sizeChart.getId());
+					}
+		
+					if(sizeGroup != null){
+						sizeGroups.add(new SizeGroupDto(sizeGroup));
+					}
+					sizeChartIdToSizeGroupsMap.put(sizeChart.getId(), sizeGroups);
+					//idToSizeGroupDtoMap.put(sizeGroup.getId(), new SizeGroupDto(sizeGroup));
+					//update idToSizeChartMap with the queried SizeChart object associated with sizeChartId key
+					idToSizeChartMap.put(sizeChart.getId(), sizeChart);
+				}	
+			}
+
+
+			// Build <Content, List<Item>> HashMap.  
+			// Set the fully constructed SizeChart Object to each Item object before adding to ArrayList<Item>			
+			for(Object[] tuple : contentItemTuples){
+				content = (Content)tuple[0];
+				item = (Item)tuple[1];
+				itemContent = (ItemContent)tuple[2];
+				picture = (Picture)tuple[3];
+		
+				if(!contentToItemMap.containsKey(content)){
+					items = new ArrayList<ItemDto>(9);
+				}else{
+					if(picture != null) picture.setContent(content);
+					items = contentToItemMap.get(content);
+				}			
+				if(item != null){
+					ItemDto itemDto = new ItemDto(
+						item.getIdText(), 
+						itemContent.getPositionx(), 
+						itemContent.getPositiony(), 
+						item.getApparelType(), 
+						//idToSizeGroupDtoMap.get(item.getSizeGroupIdText()),
+						item.getSizeGroupIdText(),
+						new SizeChartDto(
+							(item.getSizeChartId() != null ? item.getSizeChartId().toString() : null), 
+							null,//idToSizeChartMap.get(item.getSizeChartId()).getChartName(), 
+							sizeChartIdToSizeGroupsMap.get(item.getSizeChartId()) 		//retreive ArrayList<SizeGroupDto> associated with the sizeChart id
+						),
+						null,
+						item.getProduct(),
+						item.getPlatform()
+					);
+					items.add(itemDto);
+				}
+				contentToItemMap.put(content, items);
+			}
+			
+	
+			for(Content c : contentToItemMap.keySet()){
+				if(c.getOutfit() != null){
+					logger.debug("content.outfit = " + c.getOutfit());
+					logger.debug("content.outfit.id = " + c.getOutfit().getId());
+					//Picture picture = c.getPicture();
+					PictureDto pictureDto = c.getPicture() == null ? 
+						null : 
+						//new PictureDto(c.getPicture().getIdText(), c.getPicture().getThumbnailuri(), c.getPicture().getSmalluri(), c.getPicture().getLargeuri());
+						new PictureDto(c.getPicture());
+					
+					items = contentToItemMap.get(c) == null ? new ArrayList<ItemDto>(0) : contentToItemMap.get(c);
+					idToOutfitDtoMap.get(c.getOutfit().getId()).getContents().add(new ContentDto(c.getIdText(), c.getCoverpicuri(), pictureDto, items, null));			
+				}
+			}
+		}
+
+		return idToOutfitDtoMap;
+	}
+
+	public OutfitDto getOutfitById(UUID id){
+		Session session = entityManager.unwrap(Session.class);
+		String outfitQ = "select {o.*} from outfit o where o.id = :id";
+
+		//values used as a Parameter List in the cotnentItemQ SQL query
+		List<Outfit> outfitTuples = session.createSQLQuery(outfitQ)
+			.addEntity("o", Outfit.class)
+			.setParameter("id", id, UUIDBinaryType.INSTANCE)
+			.list();
+
+		return getCompleteOutfit(outfitTuples, 1).get(id);
+
+	}
+
 	public Page<OutfitDto> findByProfileId(UUID id, Pageable pageable){
 		Session session = entityManager.unwrap(Session.class);	
 		Outfit outfit;
@@ -113,7 +347,16 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 			"join item_content ic on ic.content_id=c.id " +
 			"where i.id = ic.item_id " +
 			"and c.outfit_id in (:outfitIdList) " +
-			"and p.content_id=c.id";
+			"and p.content_id=c.id " +
+
+			"union all select c.id, c.coverpicuri, c.outfit_id, " + 
+				"null, null, null, null, null, null, null, null, null, null, " + 
+				"null, null, null, null, null, null, null, null, null, null, " + 
+				"null, null, null, null, null, null, null, null, null, null, " + 
+				"null, null, null " + 
+			"from content c, item_content ic " +
+			"where c.outfit_id in (:outfitIdList) " +
+			"and not c.id=ic.content_id";
 
 		String countQ = "select count(o.id) as cnt from outfit o where o.profile_id = :id";
 
@@ -245,7 +488,7 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 				if(!contentToItemMap.containsKey(content)){
 					items = new ArrayList<ItemDto>(9);
 				}else{
-					picture.setContent(content);
+					if(picture != null) picture.setContent(content);
 					items = contentToItemMap.get(content);
 				}			
 				if(item != null){
@@ -278,7 +521,14 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 					//Picture picture = c.getPicture();
 					PictureDto pictureDto = c.getPicture() == null ? 
 						null : 
-						new PictureDto(c.getPicture().getIdText(), c.getPicture().getThumbnailuri(), c.getPicture().getSmalluri(), c.getPicture().getLargeuri());
+						new PictureDto(
+							c.getPicture().getIdText(), 
+							c.getPicture().getThumbnailuri(), 
+							c.getPicture().getSmalluri(), 
+							c.getPicture().getMediumuri(),
+							c.getPicture().getLargeuri(),
+							c.getPicture().getOriginaluri(),
+							c.getPicture().getCrop());
 					
 					items = contentToItemMap.get(c) == null ? new ArrayList<ItemDto>(0) : contentToItemMap.get(c);
 					idToOutfitDtoMap.get(c.getOutfit().getId()).getContents().add(new ContentDto(c.getIdText(), c.getCoverpicuri(), pictureDto, items, null));
@@ -298,8 +548,9 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 		Session session = entityManager.unwrap(Session.class);	
 
 		String outfitQ = 
-			"select {o.*}, {lc.*} from outfit o " +
-			"join like_count lc on lc.outfit_id=o.id ";
+			"select {o.*}, {lc.*}, {pp.*} from outfit o " +
+			"join like_count lc on lc.outfit_id=o.id " +
+			"join picture_profile pp on pp.id = o.picture_profile_id";
 
 		String lcpQuery =
 			"select {lcp.*}, {p.*}, {lc.*} from like_count_profile lcp " +
@@ -322,6 +573,7 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 		List<Object[]> outfitTuples = session.createSQLQuery(outfitQ)
 			.addEntity("o", Outfit.class)
 			.addEntity("lc", LikeCount.class)
+			.addEntity("pp", PictureProfile.class)
 			.setFirstResult((int)pageable.getOffset())
 			.setMaxResults(pageable.getPageSize())
 			.list();
@@ -330,14 +582,22 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 		int size = outfitTuples.size();
 		List<UUID> likeCountIds = new ArrayList<UUID>(size);
 		List<Outfit> outfits =  new ArrayList<Outfit>(size);
+		HashMap<UUID, PictureProfile> idToPictureProfile = new HashMap<UUID, PictureProfile>();
 
 		for(Object[] tuple : outfitTuples){
 			Outfit o = (Outfit)tuple[0];
 			LikeCount lc = (LikeCount)tuple[1];
+			PictureProfile pp = (PictureProfile)tuple[2];
 			o.setLikeCount(lc);
+			o.setPictureProfileId(pp.getId());
 			outfits.add(o);
 			likeCountIds.add(lc.getId());
+			
+			if(idToPictureProfile.get(pp.getId()) == null){
+				idToPictureProfile.put(pp.getId(), pp);
+			}
 		}
+		logger.debug("idToPictureProfile size = " + idToPictureProfile.size());
 		
 		Map<LikeCount, Profile> likeCountProfiles = new HashMap<LikeCount, Profile>();
 
@@ -364,15 +624,21 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 		List<OutfitDto> outfitDtos = outfits.stream().map(outfit -> {
 
 			Profile profile = likeCountProfiles.get(outfit.getLikeCount());
+			OutfitDto outfitDto = new OutfitDto(outfit);
+			String smalluri = idToPictureProfile.get(outfit.getPictureProfileId()) != null ? idToPictureProfile.get(outfit.getPictureProfileId()).getSmalluri() : "";
+			outfitDto.setProfilePictureUri(smalluri);
+
 			if(profile == null ){
 				logger.debug("profile not found in likeCountProfiles");
 			}
+
 			//check if caller matches the profile.username found in outfits likeCount entity
 			if(profile != null && profile.getUsername().compareTo(callerName) == 0){
-				return new OutfitDto(outfit, true);
+				outfitDto.setIsLiked(true);
+				return outfitDto;
 			}
 
-			return new OutfitDto(outfit);
+			return outfitDto;
 
 		}).collect(Collectors.toList());
 
@@ -433,7 +699,7 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 	
 			outfits = session.createSQLQuery(outfitQ)
 				.addEntity("o", Outfit.class)
-				.setParameter("ids", ids, StringType.INSTANCE)
+				.setParameterList("ids", ids, StringType.INSTANCE)
 				.list();
 		}else{
 			throw new Exception("parameter exceeds page size limit");

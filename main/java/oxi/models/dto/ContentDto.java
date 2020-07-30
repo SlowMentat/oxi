@@ -107,7 +107,7 @@ public class ContentDto implements Serializable, Identifiable<String>
 			}
 			sb.append(indent).append("]")
 				.append(indent).append("picture: {")
-				.append(this.picture).append("}");
+				.append(picture.toString(indents + 1)).append("}");
         return sb.toString();
 	}
 

@@ -6,12 +6,14 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Date;
+import java.util.Enumeration;
 
 import javax.servlet.http.*;
 import javax.servlet.*;
 import javax.persistence.*;
 import java.security.Principal;
 //import javax.annotation.*;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -113,6 +115,8 @@ public class ConsumerController{
 	private ApplicationEventPublisher eventPublisher;
 
 	private static final Logger logger = LogManager.getLogger(ConsumerController.class);
+	private static StringWriter stringWriter = new StringWriter();
+	private static PrintWriter printWriter = new PrintWriter(stringWriter);
 
 
 	/*@RequestMapping(value="*", method=RequestMethod.OPTIONS)
@@ -122,23 +126,76 @@ public class ConsumerController{
 	}*/
 
 	//@Secured ({"ROLE_USER"})
-	@RequestMapping(value="/uploadPhoto", method=RequestMethod.POST)
-	public ResponseEntity<?> uploadImage(MultipartHttpServletRequest requestData){
+
+	//@Secured({"ROLE_USER"})
+	//@RequestMapping(value="/uploadPhoto", method=RequestMethod.POST)
+	//public ResponseEntity<?> uploadImage(MultipartHttpServletRequest requestData){
+	//	StringWriter stringWriter = new StringWriter();
+	//	PrintWriter printWriter = new PrintWriter(stringWriter);
+//
+	//	//try{
+	//		logger.debug("/uploadPhoto content length = " + requestData.getContentLength() + " bytes");
+	//		PictureDto pictureDto = consumerService.saveImage(requestData);
+	//		return new ResponseEntity<PictureDto>(pictureDto, HttpStatus.CREATED);
+	//	/*}catch(Exception e){
+	//		e.printStackTrace(printWriter);
+	//		logger.debug(stringWriter.toString()); //stack trace as stirng		
+	//	}finally{			
+	//		return new ResponseEntity<String>(defaultExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);	
+	//	}*/
+	//}
+
+
+	@Secured({"ROLE_USER"})
+	@RequestMapping(value="/uploadPhoto", method=RequestMethod.POST) //TODO:  Override multipart resolver to allow for put requests
+	public ResponseEntity<?> uploadImage(final Principal principal, MultipartHttpServletRequest formData){	
+
 		StringWriter stringWriter = new StringWriter();
 		PrintWriter printWriter = new PrintWriter(stringWriter);
 
 		//try{
-			logger.debug("/uploadPhoto content length = " + requestData.getContentLength() + " bytes");
-			PictureDto pictureDto = consumerService.saveImage(requestData);
+			//MultipartHttpServletRequest imageBody = (MultipartHttpServletRequest)formData.get("imageFile");
+			//MultipartHttpServletRequest cropBody = (MultipartHttpServletRequest)formData.get("crop");
+			//Enumeration<String> cropBodyParameters = cropBody.getParameterNames();
+			//String[] cropData = cropBody.getParameterValues(cropBodyParameters.nextElement());
+
+			String[] cropData = formData.getParameterValues("crop");
+
+			logger.debug("/updatePhoto data length = " + formData.getContentLength() + " bytes");
+			logger.debug("/crop = " + cropData[0]);
+
+			PictureDto pictureDto = consumerService.saveImage(principal.getName(), formData);
 			return new ResponseEntity<PictureDto>(pictureDto, HttpStatus.CREATED);
-		/*}catch(Exception e){
-			e.printStackTrace(printWriter);
-			logger.debug(stringWriter.toString()); //stack trace as stirng		
-		}finally{			
-			return new ResponseEntity<String>(defaultExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);	
-		}*/
+		//}
+		//catch(Exception e){
+		//	//e.printStackTrace(printWriter);
+		//	logger.debug("Exception thrown in uploadImage");
+		//	logger.error("", e);
+		//	//logger.debug(stringWriter.toString()); //stack trace as stirng	
+		//}
+		//finally{			
+		//	return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
+		//}
 	}
 
+
+	/**
+	*deletes one or more images identified by the user
+	*<p>
+	*\/deletePhoto
+	*</p>
+	*@param token Current expired token sent in request parameter
+	*@return ResponseEntity<?> with Status 400 if there exists a contentId that does not belong to the user, otherwise returns status 200
+	*/
+	@Secured({"ROLE_USER"})
+	@RequestMapping(value="/images", method=RequestMethod.DELETE)
+	public ResponseEntity<?> deleteImages(final Principal principal, @RequestBody ArrayList<String> contentIds){
+		consumerService.deleteImages(principal.getName(), contentIds);
+		return new ResponseEntity<String>(HttpStatus.OK);
+	}
+
+
+	/*@Secured({"ROLE_USER"})
 	@RequestMapping(value="/updatePhoto/{contentId}", method=RequestMethod.POST) //TODO:  Override multipart resolver to allow for put requests
 	public ResponseEntity<?> updateImage(MultipartHttpServletRequest requestData, @PathVariable String contentId){	
 		StringWriter stringWriter = new StringWriter();
@@ -148,11 +205,79 @@ public class ConsumerController{
 			logger.debug("/updatePhoto content length = " + requestData.getContentLength() + " bytes");
 			List<PictureUpdateDto> pictureUpdateDto = consumerService.updateImage(requestData, contentId);
 			return new ResponseEntity<List<PictureUpdateDto>>(pictureUpdateDto, HttpStatus.OK);
-		}catch(Exception e){
+		}
+		catch(Exception e){
 			e.printStackTrace(printWriter);
 			logger.debug(stringWriter.toString()); //stack trace as stirng	
-		}finally{			
+		}
+		finally{			
 			return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}*/
+
+	@Secured({"ROLE_USER"})
+	@RequestMapping(value="/updatePhoto/{contentId}", method=RequestMethod.POST, consumes=MediaType.APPLICATION_FORM_URLENCODED_VALUE) //TODO:  Override multipart resolver to allow for put requests
+	public ResponseEntity<?> updateImage(@RequestBody MultiValueMap<String, Object> formData, @PathVariable String contentId){	
+
+		StringWriter stringWriter = new StringWriter();
+		PrintWriter printWriter = new PrintWriter(stringWriter);
+
+		try{
+			MultipartHttpServletRequest imageBody = (MultipartHttpServletRequest)formData.get("imageFile");
+			MultipartHttpServletRequest cropBody = (MultipartHttpServletRequest)formData.get("crop");
+
+			Enumeration<String> cropBodyParameters = cropBody.getParameterNames();
+			String[] cropData = cropBody.getParameterValues(cropBodyParameters.nextElement());
+
+			logger.debug("/updatePhoto data length = " + imageBody.getContentLength() + " bytes");
+			logger.debug("/crop = " + cropData[0]);
+
+			List<PictureUpdateDto> pictureUpdateDto = consumerService.updateImage(imageBody, contentId);
+			return new ResponseEntity<List<PictureUpdateDto>>(pictureUpdateDto, HttpStatus.OK);
+		}
+		catch(Exception e){
+			e.printStackTrace(printWriter);
+			logger.debug(stringWriter.toString()); //stack trace as stirng	
+		}
+		finally{			
+			return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Secured({"ROLE_USER"})
+	@RequestMapping(value="/updateProfilePhoto", method=RequestMethod.POST) //TODO:  Override multipart resolver to allow for put requests
+	public ResponseEntity<?> updateProfileImage(final Principal principal, MultipartHttpServletRequest requestData){	
+		StringWriter stringWriter = new StringWriter();
+		PrintWriter printWriter = new PrintWriter(stringWriter);
+		String response = "";
+
+		try{
+			response = consumerService.updateProfileImage(requestData, principal.getName());
+			logger.debug("response = " + response);
+			return new ResponseEntity<String>(response, HttpStatus.CREATED);
+		}
+		catch(Exception e){
+			e.printStackTrace(printWriter);
+			logger.debug(stringWriter.toString());
+			return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Secured({"ROLE_USER"})
+	@RestResource(exported = true)
+	@RequestMapping(value="/crop", method=RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> updateCrop(final Principal principal, @RequestBody PictureUpdateDto pictureUpdateDto){
+		//StringWriter stringWriter = new StringWriter();
+		//PrintWriter printWriter = new PrintWriter(stringWriter);
+
+		try{
+			logger.debug("Request Body Received: " + pictureUpdateDto);
+			return new ResponseEntity(consumerService.updateCrop(pictureUpdateDto, principal.getName()), HttpStatus.OK);
+		}
+		catch(Exception e){	
+			e.printStackTrace(printWriter);
+			logger.error(stringWriter.toString());		
+			return new ResponseEntity(HttpStatus.BAD_REQUEST);
 		}
 	}
 	
@@ -248,13 +373,13 @@ public class ConsumerController{
 		String username = principal.getName();
 		logger.debug("Request Body Received: " + outfitDto);
 		//try{	
-			long startTime = System.currentTimeMillis();
+			//long startTime = System.currentTimeMillis();
 
 			//ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.saveOutfit(outfit, username), HttpStatus.CREATED);
 			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.addOutfit(outfitDto, username), HttpStatus.CREATED);
 
-			long endTime = System.currentTimeMillis();
-			logger.debug("ConsumerService execution time for call to saveOutfit: " + (endTime - startTime) + "ms");
+			//long endTime = System.currentTimeMillis();
+			//logger.debug("ConsumerService execution time for call to saveOutfit: " + (endTime - startTime) + "ms");
 			return responseEntity;
 		/*}catch(Exception e){
 			logger.debug("Could not save new outfit data from /outfit controller\n" + e);
@@ -262,6 +387,19 @@ public class ConsumerController{
 		}finally{			
 			return new ResponseEntity<String>(defaultExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);	
 		}*/
+	}
+
+	@Secured({"ROLE_USER"})
+	@RequestMapping(value="/outfits", method=RequestMethod.DELETE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> deleteOutfits(final Principal principal, @RequestBody HashMap<String, List<String>> reqBodyMap){
+		String username = principal.getName();
+		
+		if(reqBodyMap.get("outfitIds") == null){
+			return new ResponseEntity<>("", HttpStatus.BAD_REQUEST);
+		}
+
+		consumerService.deleteOutfits(username, reqBodyMap.get("outfitIds"));
+		return new ResponseEntity<>("", HttpStatus.OK);
 	}
 
 	//@PreAuthorize("#name == principal.username")
@@ -371,25 +509,25 @@ public class ConsumerController{
 	@RequestMapping(value="/content/{outfitId}", method=RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> updateContent(final Principal principal, @PathVariable String outfitId, @RequestBody ContentDto contentDto){
 		String username = principal.getName();
-		try{
+		//try{
 			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.updateContent(contentDto, outfitId), HttpStatus.OK);
 			return responseEntity;
-		}catch(Exception e){
-			return new ResponseEntity<Exception>(e, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		//}catch(Exception e){
+		//	return new ResponseEntity<Exception>(e, HttpStatus.INTERNAL_SERVER_ERROR);
+		//}
 	}
 
 	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
 	@RequestMapping(value="/contents/{outfitId}", method=RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateContents(final Principal principal, @PathVariable String outfitId, @RequestBody ArrayList<ContentDto> contentDtos){
+	public ResponseEntity<?> updateContents(final Principal principal, @PathVariable String outfitId, @RequestBody ArrayList<ContentDto> contentDtos) throws Exception{
 		String username = principal.getName();
-		try{
+		//try{
 			ResponseEntity<?> responseEntity = new ResponseEntity<>(consumerService.updateContents(contentDtos, outfitId), HttpStatus.OK);
 			return responseEntity;
-		}catch(Exception e){
-			return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		//}catch(Exception e){
+		//	return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
+		//}
 	}
 
 	@RestResource(exported = true)
@@ -647,7 +785,6 @@ public class ConsumerController{
 	//	}*/
 	//}
 
-
 	/*
 	******************************************************************
 	HTTP Request handling methods (GET and POST) for PROFILE resource
@@ -672,11 +809,16 @@ public class ConsumerController{
 	@RestResource(exported = true)
 	@RequestMapping(value="/profile", method=RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> putProfile(final Principal principal, @RequestBody ProfileDto profile){
+		//StringWriter stringWriter = new StringWriter();
+		//PrintWriter printWriter = new PrintWriter(stringWriter);
+
 		try{
 			logger.debug("Request Body Received: " + profile);
 			return new ResponseEntity(consumerService.updateProfile(profile, principal.getName()), HttpStatus.CREATED);
-		}catch(Exception e){	
-			logger.error(e);		
+		}
+		catch(Exception e){	
+			e.printStackTrace(printWriter);
+			logger.error(stringWriter.toString());		
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
 		}
 	}
@@ -687,7 +829,8 @@ public class ConsumerController{
 	public ResponseEntity<?> getProfile(final Principal principal, @PathVariable("username") String username){
 		try{
 			return new ResponseEntity(consumerService.readProfile(username, principal.getName()), HttpStatus.OK);			
-		}catch(Exception e){
+		}
+		catch(Exception e){
 			logger.error(e);
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
 		}
@@ -700,10 +843,12 @@ public class ConsumerController{
 		try{
 			if(outfitId == null || outfitId.isEmpty()){ 
 				return new ResponseEntity(consumerService.readProfile(principal.getName(), principal.getName()), HttpStatus.OK);
-			}else{//TODO:  Check if parameter is a valid UUID string
+			}
+			else{//TODO:  Check if parameter is a valid UUID string
 				return new ResponseEntity(consumerService.readMetric(outfitId), HttpStatus.OK);
 			}
-		}catch(Exception e){
+		}
+		catch(Exception e){
 			logger.error("",e);
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
 		}
@@ -717,7 +862,8 @@ public class ConsumerController{
 			FollowingDto followingDto = new FollowingDto(principal.getName(), followee);
 			valueService.follow(followingDto);
 			return new ResponseEntity(HttpStatus.OK);
-		}catch(Exception e){
+		}
+		catch(Exception e){
 			logger.error(e);
 			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -731,7 +877,8 @@ public class ConsumerController{
 			FollowingDto followingDto = new FollowingDto(principal.getName(), followee);
 			valueService.unfollow(followingDto);
 			return new ResponseEntity(HttpStatus.OK);
-		}catch(Exception e){
+		}
+		catch(Exception e){
 			logger.error(e);
 			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -745,7 +892,8 @@ public class ConsumerController{
 			FollowingDto followingDto = new FollowingDto(principal.getName(), followee);
 			valueService.unfollow(followingDto);
 			return new ResponseEntity(HttpStatus.OK);
-		}catch(Exception e){
+		}
+		catch(Exception e){
 			logger.error(e);
 			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -758,7 +906,8 @@ public class ConsumerController{
 	public ResponseEntity<?> getSizeChartByItemId(final Principal principal, @RequestParam(value="itemId", required=true) String itemId){
 		try{
 			return new ResponseEntity(consumerService.getSizeChartByItemId(itemId), HttpStatus.OK);
-		}catch(Exception e){
+		}
+		catch(Exception e){
 			logger.error("", e);
 			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -776,7 +925,8 @@ public class ConsumerController{
 	public ResponseEntity<?> searchUserDefinedRetailers(@RequestParam(value="retailer", required=true) String retailer){
 		try{			
 			return new ResponseEntity(searchService.suggestUserDefinedRetailerNames(retailer), HttpStatus.OK);
-		}catch(Exception e){
+		}
+		catch(Exception e){
 			logger.error(e);
 			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -787,7 +937,8 @@ public class ConsumerController{
 	public ResponseEntity<?> searchUserDefinedSizes(@RequestParam(value="size", required=true) String size){
 		try{			
 			return new ResponseEntity(searchService.suggestUserDefinedSizeLabels(size), HttpStatus.OK);
-		}catch(Exception e){
+		}
+		catch(Exception e){
 			logger.error(e);
 			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -798,7 +949,8 @@ public class ConsumerController{
 	public ResponseEntity<?> searchApparelTypes(final Principal principal){
 		try{			
 			return new ResponseEntity(consumerService.getAllApparelTypes(), HttpStatus.OK);
-		}catch(Exception e){
+		}
+		catch(Exception e){
 			logger.error(e);
 			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -809,7 +961,8 @@ public class ConsumerController{
 	public ResponseEntity<?> getSizeLabels(final Principal principal, @PageableDefault Pageable pageable, @RequestParam(value="name", required=true) String name){
 		try{			
 			return new ResponseEntity(searchService.getSizeLabels(name, pageable), HttpStatus.OK);
-		}catch(Exception e){
+		}
+		catch(Exception e){
 			logger.error(e);
 			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -820,7 +973,8 @@ public class ConsumerController{
 	public ResponseEntity<?> searchItems(final Principal principal, @RequestParam(value="term", required=true) String term, @RequestParam(value="retailer", required=true) String retailer){
 		try{
 			return new ResponseEntity(searchService.suggestItems(term, retailer), HttpStatus.OK);
-		}catch(Exception e){
+		}
+		catch(Exception e){
 			logger.error("Exception occured when invoking suggestItems: ", e);
 			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -831,7 +985,8 @@ public class ConsumerController{
 	public ResponseEntity<?> searchRetailerNames(final Principal principal, @RequestParam(value="term", required=true) String term){
 		try{
 			return new ResponseEntity(searchService.suggestRetialerNames(term), HttpStatus.OK);
-		}catch(Exception e){
+		}
+		catch(Exception e){
 			logger.error("Exception occured when invoking suggestItems: ", e);
 			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -849,7 +1004,8 @@ public class ConsumerController{
 			}else{
 				return new ResponseEntity(searchService.suggestApparelType(type), HttpStatus.OK);
 			}
-		}catch(Exception e){
+		}
+		catch(Exception e){
 			logger.error("Exception occured when invoking suggestItems: ", e);
 			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
 		}

@@ -70,8 +70,11 @@ public class BaseVerificationToken implements Serializable, Identifiable<UUID>{
 	public UUID getId(){return this.id;}
 	//public User getUser(){return this.user;}
 	public Date getExpiryDate(){return this.expiryDate;}
+	public String getToken(){return this.token;}
 
 	//Setters
 	public void setId(UUID id){this.id = id;}
+	public void setToken(final String token){this.token = token;}
+	public void resetExpiryDate(){this.expiryDate = this.calculateExpiryDate(BaseVerificationToken.EXPIRATION);}
 	//public void setUser(User user){this.user = user;}
 }

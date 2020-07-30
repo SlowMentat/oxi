@@ -18,4 +18,9 @@ public interface MyContentRepositoryCustom /*extends PagingAndSortingRepository<
 	List<ContentDto> findByOutfitId(UUID id);
 
 	Page<ContentWithOutfitDto> getContentWithOutfitByItemId(UUID itemId, Pageable pageable);
+
+	List<Content> getContentsByIds(List<String> ids);
+
+	//@Query("delete from content c where c.id_text in ?1")
+	//void deleteByIds(List<String> ids);
 }

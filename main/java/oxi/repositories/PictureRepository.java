@@ -10,4 +10,6 @@ import java.util.UUID;
 public interface PictureRepository extends JpaRepository<Picture, UUID>{
 	//@Query("SELECT p FROM Picture AS p WHERE p.id = ?1")
 	//Picture findById(UUID Id);
+
+	Picture findByOriginaluri(String originaluri);
 } 

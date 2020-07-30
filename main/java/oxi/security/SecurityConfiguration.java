@@ -15,8 +15,10 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -44,23 +46,28 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import javax.annotation.Resource;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import org.springframework.beans.factory.annotation.Value;
 import java.util.function.Function;
+import java.util.Set;
+import java.util.HashSet;
 
 import org.springframework.context.annotation.ComponentScan;
-
-
-
 @Configuration
 @EnableWebSecurity
 //@Order(1)
 @ComponentScan(basePackages = {"oxi.security"})
 public class SecurityConfiguration{
-
+	
+	private static String secret;
 	public static final String CSRF_COOKIE = "CSRF-TOKEN";
 	public static final String CSRF_HEADER = "X-CSRF-TOKEN";
 	static public final String TOKEN_PREFIX = "Bearer ";
 	static final long TOKEN_LIFETIME = 604_800_000;
-	static final String TOKEN_SECRET = Base64.getEncoder().encodeToString("ThisIsOurSecretKeyToSignOurTokens".getBytes());
+	//static final String TOKEN_SECRET = Base64.getEncoder().encodeToString(secret.getBytes());
+
+	public SecurityConfiguration(@Value("${jwt.secret}") String secret){
+		this.secret = secret;
+	}
 
 	/*@Bean
 	@Primary
@@ -130,7 +137,10 @@ public class SecurityConfiguration{
 	    //private CustomLoginSuccessHandler CustomLoginSuccessHandler;
 	
 		//@Resource
-		private AuthenticationSuccessHandler authenticationSuccesshandler = new CustomLoginSuccessHandler("https://www.oxisalechannel.com/gs-convert-jar-to-war-0.1.0/consumer/profile");
+		@Bean
+		public AuthenticationSuccessHandler myAuthenticationSuccesshandler(){
+			return new CustomLoginSuccessHandler("https://www.oxisalechannel.com/gs-convert-jar-to-war-0.1.0/consumer/profile");
+		}
 	    //@Bean
 	    //public AuthenticationSuccessHandler authenticationSuccessHandler (){
 	    //	return new CustomLoginSuccessHandler("https://www.oxisalechannel.com/gs-convert-jar-to-war-0.1.0/consumer/profile");
@@ -150,10 +160,11 @@ public class SecurityConfiguration{
 		}
 	
 		@Bean
-		public BCryptPasswordEncoder userPasswordEncoder() throws NoSuchAlgorithmException {
-			return new BCryptPasswordEncoder();
+		public PasswordEncoder userPasswordEncoder() throws NoSuchAlgorithmException {
+			//return new BCryptPasswordEncoder();
+			return PasswordEncoderFactories.createDelegatingPasswordEncoder();
 		}
-	
+//	
 		//@Bean
 		//public PasswordEncoder getEncoder() {
 		//    return new BCryptPasswordEncoder();
@@ -176,7 +187,7 @@ public class SecurityConfiguration{
 
 		//@Bean
 		//public RequestBodyReaderAuthenticationFilter getAuthenticationFilter() throws Exception {
-//
+
 		//	RequestBodyReaderAuthenticationFilter authenticationFilter = new RequestBodyReaderAuthenticationFilter();
 		//	authenticationFilter.setAuthenticationSuccessHandler(this::loginSuccessHandler);
 		//	authenticationFilter.setAuthenticationFailureHandler(this::loginFailureHandler);
@@ -184,30 +195,38 @@ public class SecurityConfiguration{
 		//	authenticationFilter.setAuthenticationManager(authenticationManager());
 		//	return authenticationFilter;
 		//}
+//
 
 		@Bean
 		@Scope("prototype")
 		public TokenBasedAuthenticationFilter tokenBasedAuthenticationFilter() throws Exception {
-			TokenBasedAuthenticationFilter authenticationFilter = new TokenBasedAuthenticationFilter(authenticationManager(), false);
-			authenticationFilter.setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/consumer/login", "POST"));
+			TokenBasedAuthenticationFilter authenticationFilter = new TokenBasedAuthenticationFilter(authenticationManager(), false, secret);
+			Set<AntPathRequestMatcher> matchers = new HashSet<AntPathRequestMatcher>();
+
+			matchers.add(new AntPathRequestMatcher("/consumer/login", "POST"));
+			matchers.add(new AntPathRequestMatcher("/account/user/login", "POST"));
+			matchers.add(new AntPathRequestMatcher("/admin/login", "POST"));
+
+			authenticationFilter.setRequiresAuthenticationRequestMatchers(matchers);
 			return authenticationFilter;
 		}
 	
 		//@Autowired
 		@Override
-		protected void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-			authenticationManagerBuilder.userDetailsService(customUserDetailsService).passwordEncoder(userPasswordEncoder());
+		protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+			auth
+				.userDetailsService(customUserDetailsService)
+				.passwordEncoder(userPasswordEncoder());
 		}
 	
 		@Override
 		protected void configure(HttpSecurity http) throws Exception {
-	
 			http
 					.csrf().disable();
 					//.addFilterBefore(statelessCsrfFilter, CsrfFilter.class);
 	
 			http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint);
-	       	http.formLogin().successHandler(authenticationSuccesshandler);
+	       	http.formLogin().successHandler(myAuthenticationSuccesshandler());
 	        http.formLogin().failureHandler(authenticationFailureHandler);
 	        //http.formLogin().loginProcessingUrl("/consumer/login");
 			//http.logout().logoutUrl("/logout").logoutSuccessHandler(logoutSuccessHandler);
@@ -215,10 +234,8 @@ public class SecurityConfiguration{
 			http
 					//.cors().and()
 					.httpBasic().and()
-					//.addFilterBefore(new TokenBasedAuthenticationFilter(authenticationManager(), false), UsernamePasswordAuthenticationFilter.class)
 					.addFilterBefore(tokenBasedAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
-					//.addFilterBefore(consumerAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-					.addFilterBefore(new TokenBasedAuthorizationFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
+					.addFilterBefore(new TokenBasedAuthorizationFilter(authenticationManager(), secret), UsernamePasswordAuthenticationFilter.class)
 	        		// this disables session creation on Spring Security
 	        		.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 	
@@ -229,16 +246,24 @@ public class SecurityConfiguration{
 					.headers().cacheControl();
 					
 			http
-					.antMatcher("/consumer/**") //determins if incoming requests use this configuration is used or retailer security configuration
+					//determins if incoming requests use this configuration is used or retailer security configuration
+					.requestMatchers()
+						.antMatchers("/consumer/**", "/account/user/**", "/admin/**")
+						.and()
 					.authorizeRequests()
 						//.antMatchers("/").permitAll()
+						.antMatchers("/account/user/login").permitAll()
 						.antMatchers("/consumer/login").permitAll()
+						.antMatchers("/admin/login").permitAll()
+						.antMatchers("/account/user/confirm").permitAll()
+						.antMatchers("/account/verification/user/failedRegistration").permitAll()
 						.antMatchers("/account/user/register").permitAll()
-						//.antMatchers("/account/retailer/register").permitAll()
-						.antMatchers("/account/user/confirm").permitAll() // TODO:  eventually change this to HasRole
-						//.antMatchers(HttpMethod.GET "/**").permitAll()
-						//.antMatchers("/consumer/**").authenticated()
+						.antMatchers("/account/user/iniPassword").permitAll()
+						.antMatchers("/consumer/image/**").permitAll()
 						.anyRequest().authenticated();//.hasRole("USER");
+					//	.and()
+					//.formLogin()
+					//	.successHandler(myAuthenticationSuccesshandler());
 					//	.and()
 					//.formLogin()
 					////	.usernameParameter("username")
@@ -306,14 +331,15 @@ public class SecurityConfiguration{
 		}
 	
 		@Bean
-		public BCryptPasswordEncoder companyPasswordEncoder() throws NoSuchAlgorithmException {
-			return new BCryptPasswordEncoder();
+		public PasswordEncoder companyPasswordEncoder() throws NoSuchAlgorithmException {
+			//return new BCryptPasswordEncoder();
+			return PasswordEncoderFactories.createDelegatingPasswordEncoder();
 		}
 
 		@Bean
 		@Scope("prototype")
 		public TokenBasedAuthenticationFilter tokenBasedAuthenticationFilterRetailer() throws Exception {
-			TokenBasedAuthenticationFilter authenticationFilter = new TokenBasedAuthenticationFilter(authenticationManager(), true);
+			TokenBasedAuthenticationFilter authenticationFilter = new TokenBasedAuthenticationFilter(authenticationManager(), true, secret);
 			authenticationFilter.setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/retailer/login", "POST"));
 			return authenticationFilter;
 		}
@@ -340,7 +366,7 @@ public class SecurityConfiguration{
 					//.httpBasic().and()
 					.addFilterBefore(tokenBasedAuthenticationFilterRetailer(), UsernamePasswordAuthenticationFilter.class)
 					//.addFilterBefore(retailerAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-					.addFilterBefore(new TokenBasedAuthorizationFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
+					.addFilterBefore(new TokenBasedAuthorizationFilter(authenticationManager(), secret), UsernamePasswordAuthenticationFilter.class)
 	        		// this disables session creation on Spring Security
 	        		.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 	
@@ -359,11 +385,96 @@ public class SecurityConfiguration{
 						//.antMatchers("/retailer/account/user/register").permitAll()
 						.antMatchers("/account/retailer/register").permitAll()
 						.antMatchers("/account/user/confirm").permitAll() // TODO:  eventually change this to HasRole
+						.antMatchers("/account/company/finishRegistration").permitAll()
 						//.antMatchers(HttpMethod.GET "/**").permitAll()
 						.anyRequest().authenticated();//.hasRole("RETAILER_USER");//authenticated();
 						//.anyReqyest().hasRole("USER");
 		}
 	}
+
+	/**
+	*Se
+	*/
+	/*@Configuration
+	@Order(3)
+	public static class UserSecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+		@Resource
+		private AuthenticationEntryPoint authenticationEntryPoint;
+	
+		private AuthenticationFailureHandler authenticationFailureHandler = new SimpleUrlAuthenticationFailureHandler();
+		
+		//@Resource
+		private AuthenticationSuccessHandler authenticationSuccesshandler = new CustomLoginSuccessHandler("https://www.oxisalechannel.com/gs-convert-jar-to-war-0.1.0/consumer/profile");
+	
+		private StatelessCsrfFilter statelessCsrfFilter = new StatelessCsrfFilter();
+	
+		@Resource
+		private CustomUserDetailsService customUserDetailsService;
+	
+		@Bean
+		public AccessDeniedHandler userAccessDeniedHandler() {
+			return new AccessDeniedHandlerImpl();
+		}
+	
+		@Bean
+		public BCryptPasswordEncoder userPasswordEncoder() throws NoSuchAlgorithmException {
+			return new BCryptPasswordEncoder();
+		}
+
+		@Bean
+		@Scope("prototype")
+		public TokenBasedAuthenticationFilter tokenBasedAuthenticationFilter() throws Exception {
+			TokenBasedAuthenticationFilter authenticationFilter = new TokenBasedAuthenticationFilter(authenticationManager(), false);
+			authenticationFilter.setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/consumer/login", "POST"));
+			return authenticationFilter;
+		}
+	
+		//@Autowired
+		@Override
+		protected void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
+			authenticationManagerBuilder.userDetailsService(customUserDetailsService).passwordEncoder(userPasswordEncoder());
+		}
+	
+		@Override
+		protected void configure(HttpSecurity http) throws Exception {
+	
+			http
+					.csrf().disable();
+					//.addFilterBefore(statelessCsrfFilter, CsrfFilter.class);
+	
+			http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint);
+	       	http.formLogin().successHandler(authenticationSuccesshandler);
+	        http.formLogin().failureHandler(authenticationFailureHandler);
+	        //http.formLogin().loginProcessingUrl("/consumer/login");
+			//http.logout().logoutUrl("/logout").logoutSuccessHandler(logoutSuccessHandler);
+	
+			http
+					//.cors().and()
+					.httpBasic().and()
+					//.addFilterBefore(new TokenBasedAuthenticationFilter(authenticationManager(), false), UsernamePasswordAuthenticationFilter.class)
+					.addFilterBefore(tokenBasedAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+					//.addFilterBefore(consumerAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+					.addFilterBefore(new TokenBasedAuthorizationFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
+	        		// this disables session creation on Spring Security
+	        		.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+	
+			http
+					//.exceptionHandling().and()
+					.anonymous().and()
+					.servletApi().and()
+					.headers().cacheControl();
+					
+			http
+					//determins if incoming requests use this configuration is used or retailer security configuration
+					.antMatcher("/account/user/sendVerificationEmail/**")
+					.authorizeRequests()
+						.antMatchers("/consumer/login").permitAll()
+						.antMatchers("/account/user/register").permitAll()
+						.antMatchers("/account/user/confirm").permitAll() 
+						.anyRequest().authenticated();//.hasRole("USER");
+		}
+	}*/
 
 	//TODO:  change cors to only trust source from apache web server porxy
 	@Bean

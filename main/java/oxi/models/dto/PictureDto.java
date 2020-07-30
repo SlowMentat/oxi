@@ -21,7 +21,11 @@ public class PictureDto implements Serializable, Identifiable<String>
 	private String id;	
 	private String thumbnailuri;
 	private String smalluri;
+	private String mediumuri;
 	private String largeuri;
+	private String originaluri;
+	@JsonRawValue
+	private String crop;
 	//private String contentId;
 	
 	public PictureDto(){}
@@ -33,11 +37,44 @@ public class PictureDto implements Serializable, Identifiable<String>
 		this.largeuri = largeuri;
 	}
 
+	public PictureDto(String id, String thumbnailuri, String smalluri, String mediumuri, String largeuri){
+		this.id = id;
+		this.thumbnailuri = thumbnailuri;
+		this.smalluri = smalluri;
+		this.mediumuri = mediumuri;
+		this.largeuri = largeuri;
+	}
+
+	public PictureDto(String id, String thumbnailuri, String smalluri, String mediumuri, String largeuri, String originaluri, String crop){
+		this.id = id;
+		this.thumbnailuri = thumbnailuri;
+		this.smalluri = smalluri;
+		this.mediumuri = mediumuri;
+		this.largeuri = largeuri;
+		this.originaluri = originaluri;
+		this.crop = crop;
+	}
+
 	public PictureDto(Picture picture){
 		this.id = picture.getIdText();
 		this.thumbnailuri = picture.getThumbnailuri();
 		this.smalluri = picture.getSmalluri();
+		this.mediumuri = picture.getMediumuri();
 		this.largeuri = picture.getLargeuri();
+		this.originaluri = picture.getOriginaluri();
+		this.crop = picture.getCrop();
+	}
+
+	public PictureDto(BasePicture basePicture){		
+		if(basePicture != null){
+			this.id = basePicture.getIdText();
+			this.thumbnailuri = basePicture.getThumbnailuri();
+			this.smalluri = basePicture.getSmalluri();
+			this.mediumuri = basePicture.getMediumuri();
+			this.largeuri = basePicture.getLargeuri();
+			this.originaluri = basePicture.getOriginaluri();
+			this.crop = basePicture.getCrop();
+		}
 	}
 
 	/*@JsonCreator
@@ -62,16 +99,22 @@ public class PictureDto implements Serializable, Identifiable<String>
 	@Override
 	public String getId(){return (this.id == null) ? this.id : this.id.toLowerCase();}
 	public String getSmalluri(){return this.smalluri;}
+	public String getMediumuri(){return this.mediumuri;}
 	public String getLargeuri(){return this.largeuri;}
 	public String getThumbnailuri(){return this.thumbnailuri;}
+	public String getOriginaluri(){return this.originaluri;}
+	public String getCrop(){return this.crop;}
 	//public String getContentId(){return this.contentId;}
 	//public Content getContent(){return this.content;}
 	
 	//Setters
 	public void setId(String id){this.id = id;}
 	public void setSmalluri(String smalluri){this.smalluri = smalluri;}
+	public void setMediumuri(String mediumuri){this.mediumuri = mediumuri;}
 	public void setLargeuri(String largeuri){this.largeuri = largeuri;}
 	public void setThumbnailrui(String thumbnailuri){this.thumbnailuri = thumbnailuri;}
+	public void setOriginaluri(String originaluri){this.originaluri = originaluri;}
+	public void setCrop(String crop){this.crop = crop;}
 	//public void setContentId(String contentId){this.contentId = contentId;}
 	//public void setContent(Content content){this.content = content;}
 
@@ -83,8 +126,11 @@ public class PictureDto implements Serializable, Identifiable<String>
 		}
         StringBuilder sb = new StringBuilder("\nid: ").append(this.id == null ? "null" : this.id)
 			.append(indent).append("\nsmalluri: ").append(this.smalluri)
+			.append(indent).append("\nmediumuri:").append(this.mediumuri)
 			.append(indent).append("\nlargeuri:").append(this.largeuri)
-			.append(indent).append("\nthumbnailuri: ").append(this.thumbnailuri);
+			.append(indent).append("\nthumbnailuri: ").append(this.thumbnailuri)
+			.append(indent).append("\noriginal:").append(this.originaluri)
+			.append(indent).append("\ncrop: ").append(this.crop);
 			//.append("\ncontentId: ").append(this.contentId);
         return sb.toString();
 	}

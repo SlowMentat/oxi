@@ -56,7 +56,14 @@ public class CursorDto extends HALResource implements KeysetPage
 	*/
 	private Integer direction = 0;
 
-	public CursorDto(Integer direction, Integer firstResult, Integer maxResults, String lowestId, String highestId, String date){
+	public CursorDto(
+		Integer direction, 
+		Integer firstResult, 
+		Integer maxResults, 
+		String lowestId, 
+		String highestId, 
+		String date )
+	{
 		// Convert to passed string ids to UUIDs
 		UUID lowestUUID = lowestId != null && !lowestId.isEmpty() ? UUID.fromString(lowestId) : null;
 		UUID highestUUID = highestId != null && !highestId.isEmpty() ? UUID.fromString(highestId) : null;
@@ -98,15 +105,15 @@ public class CursorDto extends HALResource implements KeysetPage
 	*		firstId:	the first entry from the previous PagedList
 	*		lastId:		the last entry from the preivous PagedList
 	*/
-	public static String getNextURI(PagedList<?> nexPage, CursorDto cursor){
-		UUID lowest = (UUID)nexPage.getKeysetPage().getLowest().getTuple()[0];
-		UUID highest = (UUID)nexPage.getKeysetPage().getHighest().getTuple()[0];
+	public static String getNextURI(PagedList<?> nextPage, CursorDto cursor){
+		UUID lowest = (UUID)nextPage.getKeysetPage().getLowest().getTuple()[0];
+		UUID highest = (UUID)nextPage.getKeysetPage().getHighest().getTuple()[0];
 
 		return String.format(
 			"&direction=%d&firstResult=%d&maxResults=%d&lowestId=%s&highestId=%s&date=%s", 
 			(cursor.getDirection() == 0 ? 1 : cursor.getDirection()),
-			nexPage.getKeysetPage().getFirstResult(), 
-			nexPage.getKeysetPage().getMaxResults(), 
+			nextPage.getKeysetPage().getFirstResult(), 
+			nextPage.getKeysetPage().getMaxResults(), 
 			(lowest != null ? lowest.toString() : ""), 
 			(highest != null ? highest.toString() : ""),
 			cursor.getDate()

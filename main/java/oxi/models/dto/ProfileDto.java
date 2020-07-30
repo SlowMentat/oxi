@@ -46,6 +46,7 @@ public class ProfileDto extends RelatedEntity implements Serializable, Identifia
 	/*private List<OutfitDto> outfits;
 	private List<ItemDto> items;
 	private UserDto user;*/
+	private PictureDto pictureDto;
 
 	public ProfileDto(){
 	}
@@ -59,6 +60,7 @@ public class ProfileDto extends RelatedEntity implements Serializable, Identifia
 			this.toleranceDto = new ToleranceDto(profile.getTolerance());
 			this.profileStatsDto = new ProfileStatsDto(profile.getProfileStats());
 			this.userMetricsDto = new UserMetricsDto(profile.getUserMetrics());
+			this.pictureDto = new PictureDto(profile.getPictureProfile());
 			//this.likeCountIds = profile.getLikeCounts().stream().map(likeCountProfile -> likeCountProfile.getLikeCount().getIdText()).collect(Collectors.toList());	
 		}	
 	}
@@ -97,6 +99,8 @@ public class ProfileDto extends RelatedEntity implements Serializable, Identifia
 
 	public void setUserMetricsDto(UserMetricsDto userMetricsDto){this.userMetricsDto = userMetricsDto;}
 
+	public void setPictureDto(PictureDto pictureDto){this.pictureDto = pictureDto;}
+
 	
 	
 	//Getters
@@ -116,4 +120,6 @@ public class ProfileDto extends RelatedEntity implements Serializable, Identifia
 	public UserMetricsDto getUserMetricsDto(){return this.userMetricsDto;}
 
 	//public List<String> getLikeCountIds(){return this.likeCountIds;}
+
+	public PictureDto getPictureDto(){return this.pictureDto;}
 }

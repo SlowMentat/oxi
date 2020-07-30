@@ -7,7 +7,7 @@ import org.springframework.data.rest.core.annotation.*;
 import org.springframework.data.domain.*;
 import java.util.*;
 
-@RepositoryRestResource(collectionResourceRel="Item", path="item")
+//@RepositoryRestResource(collectionResourceRel="Item", path="item")
 public interface ItemRepository extends JpaRepository<Item, UUID>, ItemRepositoryCustom{
 	
 	@RestResource(exported=true, path="byid", rel="SearchAllById")

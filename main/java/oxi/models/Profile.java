@@ -57,6 +57,11 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	@JsonIdentityReference(alwaysAsId=true)
 	private UserMetrics userMetrics;
 
+	@OneToOne(cascade=CascadeType.MERGE, mappedBy="profile")
+	@RestResource(rel="pictureProfile")
+	@JsonProperty("profilePicture")
+	@JsonIdentityReference(alwaysAsId=true)
+	private PictureProfile pictureProfile;
 	
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="profile")
 	@RestResource(rel="outfits")
@@ -135,6 +140,23 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 			logger.warn("profileStats parameter is null");
 		}
 	}
+
+	public void setPictureProfile(PictureProfile pictureProfile){
+		logger.warn("Setting profile pictureProfile");
+		this.pictureProfile = pictureProfile;
+
+		if (this.pictureProfile != null){		
+			logger.warn("PictureProfile POJO Not NULL");
+			if(this.pictureProfile.getProfile() != this){
+				logger.warn("LINKING PICTURE TO CONTENT");
+				pictureProfile.setProfile(this);
+			}
+		}
+
+		else{
+			logger.warn("!!PICTURE IS NULL!!");
+		}
+	}	
 	
 	
 	//Getters
@@ -178,6 +200,8 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	}
 
 	public List<LikeCountProfile> getLikeCounts(){return this.likeCounts;}
+
+	public PictureProfile getPictureProfile(){ return this.pictureProfile; }
 	
 	@Override 
 	public <T extends Relational> void internalAddChild(T targetChild){

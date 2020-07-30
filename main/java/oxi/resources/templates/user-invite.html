@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+    <head>
+        <title>Sending Email with Thymeleaf HTML Template Example</title>
+    
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+        <link href="http://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans|Roboto" rel="stylesheet">
+    </head>
+    <body>
+        <table style="border-spacing: 0px; width:25vw; margin-top: 24px;">
+            <tbody style="background-color: #304244;">
+                <tr style="background-color: #ffffff; height: 180px">
+                    <td style="
+                        padding-left: 00px;
+                        border-left: solid 1px #c3c3c3;
+                        border-top: solid 1px #c3c3c3;
+                        border-top-left-radius: 4px;
+                        padding-bottom: 55px;"
+                    >
+                        <span style="
+                            width: 85px;
+                            margin: auto;
+                            height: 75px;
+                            display: block;
+                            margin-left: 0px;"
+                        >
+                            <img src="https://oxisalechannel.com/Graphics/Full_lockup/logo_lockup_3_color_031420.png" width="85">
+                        </span>
+                    </td>
+                    <td style="
+                        height: 22px;
+                        line-height: 22px;
+                        font-family: 'Open Sans', sans-serif;
+                        font-size: 35px;
+                        color: #d1c6c4;
+                        padding-left: 40px;
+                        width: calc(100% - 40px);
+                        padding-right: 20px;
+                        border-right: solid 1px #c3c3c3;
+                        border-top: solid 1px #c3c3c3;
+                        border-top-right-radius: 4px;
+                        padding-top: 128px;
+                        text-align: right;"
+                    >
+                        <span th:text="#{message.alphaInvite.header}"></span>
+                    </td>
+                </tr> 
+                <tr>
+                    <td colspan="2" style="padding-left: 20px; padding-right: 20px">
+                        <span th:utext="#{message.alphaInvite.msg.header}" style="
+                            margin-top: 40px;
+                            display: block;
+                            margin-left: 0px;
+                            font-size: 16px;  
+                            line-height: 20px;
+                            font-family: 'Open Sans', sans-serif;
+                            height: 20px;
+                            color: #ffffff;
+                            letter-spacing: 0.02rem;"  
+                        >             
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="padding-left: 20px; padding-right: 20px">
+                        <span th:utext="#{message.alphaInvite.msg.body}" style="
+                            display: block;
+                            margin-left: 0px;
+                            margin-top: 20px;
+                            font-size: 16px;  
+                            line-height: 20px;
+                            font-family: 'Open Sans', sans-serif;
+                            height: 20px;
+                            color: #ffffff;
+                            letter-spacing: 0.02rem;"  
+                        >             
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="padding-left: 20px; padding-right: 20px">                        
+                        <span th:utext="#{message.alphaInvite.body.password}" style="
+                            margin-top: 40px;
+                            display: block;
+                            margin-left: 0px;
+                            font-size: 16px;  
+                            line-height: 20px;
+                            font-family: 'Open Sans', sans-serif;
+                            height: 20px;
+                            color:#a6a6a6;
+                            letter-spacing: 0.02rem;"  
+                        >           
+                        </span>          
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="padding-left: 20px;">
+                        <span 
+                            th:text="@{${tempPassword}}"
+                            style="
+                                display: block;
+                                margin-left: 0px;
+                                font-size: 16px;  
+                                line-height: 20px;
+                                font-family: 'Open Sans', sans-serif;
+                                height: 20px;
+                                color:#a6a6a6;
+                                font-weight: bold;
+                                letter-spacing: 0.08rem;
+                            " 
+                        >  
+                        </span>   
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="padding-left: 20px;position: relative;">
+                        <table style="border-spacing: 0px; margin-top: 41px;">
+                            <tbody>
+                                <span th:te
+                                <a th:href="@{${continueLink}}" style="
+                                    display:block;
+                                    position: absolute;
+                                    width: 82px;
+                                    height: 37px;
+                                    border-radius: 4px;
+                                    bottom: 0px;"
+                                ></a>
+                                <table style="border-spacing: 0px; margin-right: unset;">
+                                    <tbody>
+                                        <a th:text="#{label.continue}" th:href="@{${continueLink}}"
+                                            style="
+                                                margin-top: 40px;
+                                                display: block;
+                                                width: 80px;
+                                                height: 35px;
+                                                line-height: 35px;
+                                                border-radius: 2px;
+                                                bottom: 0px;
+                                                cursor: pointer;
+                                                font-family: 'Roboto', sans-serif;
+                                                background-color: #e24441;
+                                                color: #ede1de;
+                                                letter-spacing: 1px;
+                                                text-align: center;
+                                                position:relative;
+                                                text-decoration: none;"
+                                        ></a>
+                                    </tbody>
+                                </table> 
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="padding: 20px; color: #dadada;">
+                        <span style="display: block; margin-top: 120px; text-align:center;">
+                            <a style="color:#ffffff; text-decoration: none;" th:text="#{label.contact}" href="support@oxisalechannel.com">                                
+                            </a>
+                            &nbsp;•&nbsp;
+                            <a Style="color:#ffffff; text-decoration: none;" th:text="#{label.about}" href="https://www.oxisalechannel.com/about">                                
+                            </a>
+                            &nbsp;•&nbsp;
+                            <a style="color:#ffffff; text-decoration: none;" th:text="#{label.privacyPolicy}" href="https://www.oxisalechannel.com/privacyPolicy">                                
+                            </a>
+                        </span>
+                    </td>
+                </tr>   
+            </tbody>
+        </table>
+    </body>
+</html>

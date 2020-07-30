@@ -16,6 +16,7 @@ import java.util.UUID;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Locale;
+import java.lang.IllegalStateException;
 
 import oxi.models.Privilege;
 import oxi.models.Profile;
@@ -26,10 +27,15 @@ import oxi.models.CompanyVerificationToken;
 import oxi.models.User;
 import oxi.models.dto.UserDto;
 import oxi.models.dto.util.GenericResponse;
+
 import oxi.services.UserAccountService;
 import oxi.services.CompanyAccountService;
+
 import oxi.events.OnRegistrationCompleteEvent;
+import oxi.events.OnSendUserVerificationEvent;
 import oxi.events.OnCompanyRegistrationCompleteEvent;
+import oxi.events.OnUserInviteEvent;
+
 import oxi.errors.UserAlreadyExistException;
 
 import org.apache.logging.log4j.Logger;
@@ -63,6 +69,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.context.request.WebRequest;
 
 import java.net.URI;
+import java.net.URL;
 import java.net.URISyntaxException;
 
 
@@ -93,12 +100,10 @@ public class AccountController{
 		logger.debug("Registering user account with information: {} ", userDto);
 		User registeredUser = userAccountService.registerAccount(userDto);
 
-		if(registeredUser == null){
-			throw new UserAlreadyExistException();
-			//result.rejectValue("email", "message.regError");
-		}
+		//if(registeredUser == null){
+		//	throw new UserAlreadyExistException();
+		//}
 
-		//try{
 		String appUrl = 
 			"https://" + 
 			request.getServerName() + ":" + 
@@ -108,9 +113,6 @@ public class AccountController{
 		logger.debug("registering OnRegistrationCompleteEvent");
 		eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registeredUser, request.getLocale(), appUrl));
 		return new ResponseEntity<>(new GenericResponse("success"), HttpStatus.OK);
-		//}catch (Exception e){
-		//	return new ModelAndView("emailError", "user", userDto);
-		//}
 	}
 
 	/*
@@ -144,6 +146,64 @@ public class AccountController{
 			logger.error("", e);
 			return new ResponseEntity<>(new GenericResponse(e.toString()), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+
+	/**
+	*Endpoint handling requests to resend verification emails
+	*<p>
+	*\/user\/sendVerificationEmail
+	*</p>
+	*@param token Current expired token sent in request parameter
+	*@return ResponseEntity<?> with Status 400 if token does not exist, otherwise status 200
+	*/
+	@Secured({"ROLE_USER"})
+	@RequestMapping(value = "/user/sendVerificationEmail", method=RequestMethod.GET)
+	public ResponseEntity<?> sendVerificationEmail(final Principal principal, final HttpServletRequest request){
+
+		//try{
+			// Expired token may not have been deleted by cron job.  In that case 
+			UserVerificationToken existingUVT = userAccountService.getUvtByUsername(principal.getName());
+	
+			String appUrl = 
+				"https://" + 
+				request.getServerName() + ":" + 
+				//request.getServerPort() +  
+				request.getContextPath();
+
+			if(existingUVT == null) throw new IllegalStateException("No verification token found");
+
+			eventPublisher.publishEvent(new OnSendUserVerificationEvent(existingUVT, request.getLocale(), appUrl));
+			return new ResponseEntity<>(new GenericResponse("success"), HttpStatus.OK);
+		//}
+//
+		//catch(Exception e){
+		//	logger.error("", e);
+		//	return new ResponseEntity<>(new GenericResponse(e.toString()), HttpStatus.INTERNAL_SERVER_ERROR);
+		//}
+	}
+
+	@Secured({"ROLE_ANONYMOUS"})
+	@RequestMapping(value = "/user/iniPassword", method=RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> setUserPassword(@RequestParam(value="token", required=true) String token, @RequestBody UserDto userDto){
+		
+		UserVerificationToken uvt = userAccountService.getUserVerificationToken(token);
+		
+		if(uvt != null){
+			userAccountService.initializeAccountPassword(userDto.getPassword(), uvt);
+		}
+		else{
+			throw new IllegalStateException("Invalid token");
+		}
+
+		return new ResponseEntity<>(new GenericResponse("success"), HttpStatus.OK);
+	}
+
+	@Secured({"ROLE_USER"})
+	@RequestMapping(value = "/user/password", method=RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> updateUserPassword(@RequestParam(value="newPassword", required=true) String newPassword, @RequestBody String oldPassword, final Principal principal)
+	{		
+		userAccountService.updateAccountPassword(newPassword, oldPassword, principal.getName());
+		return new ResponseEntity<>(new GenericResponse("success"), HttpStatus.OK);
 	}
 
 	@Secured({"ROLE_RETAILER_ADMIN"})
@@ -191,6 +251,7 @@ public class AccountController{
 			return new ResponseEntity<>(new GenericResponse(e.toString()), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+//
 
 	//@Secured({"ROLE_ANONYMOUS"})
 	//@RequestMapping(value = "/company/activate", method=RequestMethod.GET)
@@ -225,7 +286,7 @@ public class AccountController{
 	//**********************************************
 	//**********************************************
 	//**********************************************
-
+//
 
 	/*
 	* Controller handling requests from email registration links, which are sent during account provisioning
@@ -234,45 +295,45 @@ public class AccountController{
 	@Secured({"ROLE_ANONYMOUS"})
 	@RequestMapping(value = "/user/confirm", method = RequestMethod.GET)
 	public ResponseEntity<?> confirmRegistration(@RequestParam(value="token", required=true) String token, HttpServletRequest request){
-		try{
+		//try{
+			Calendar calendar = Calendar.getInstance();
 			Locale locale = request.getLocale();
 			final HttpHeaders headers = new HttpHeaders();
-			UserVerificationToken userVerificationToken = userAccountService.getUserVerificationToken(token);
+			UserVerificationToken uvt = userAccountService.getUserVerificationToken(token);
 	
-			//Make sure user agenst hitting this controller are sending tokens
-			if(userVerificationToken == null){
-				String message = messages.getMessage("auth.message.invalidToken", null, locale);
-				headers.setLocation(new URI(request.getServletPath() + "/user/failedRegistration"));
-				return new ResponseEntity<>(new GenericResponse(message), headers, HttpStatus.PERMANENT_REDIRECT);
-				//model.addAttribute("message", message);
-				//return "redirect:/badUser.html?lang=" + locale.getLanguage();
-			}
-	
-			//get the user object associated with the received token
-			User user = userVerificationToken.getUser();
-			Calendar calendar = Calendar.getInstance();
-	
-			//Is received token expired
-			if((userVerificationToken.getExpiryDate().getTime() - calendar.getTime().getTime()) <= 0){
+			// Either the user is sending an invalid token, or the token has expired and its record was deleted.
+			// In either case, redirect user to failedRegistration page.  Credentials will have to be resubmitted
+			if(uvt == null || (uvt.getExpiryDate().getTime() - calendar.getTime().getTime()) <= 0){
+				logger.debug("expired");
+				//String message = messages.getMessage("auth.message.invalidToken", null, locale);
+				//headers.setLocation(new URI(request.getServletPath() + "/user/failedRegistration"));
 				String messageValue = messages.getMessage("auth.message.expired", null, locale);
-				headers.setLocation(new URI(request.getServletPath() + "/user/failedRegistration"));
+				headers.add("location", "/verification/user/failedRegistration?token=");
 				return new ResponseEntity<>(new GenericResponse(messageValue), headers, HttpStatus.PERMANENT_REDIRECT);
 			}
-			//model.addAttribute("message", messageValue);
-			//return "redirect:/badUser.html?lang=" + locale.getLanguage();
 	
-			//set the enable property and update the user in the db
-			user.setEnabled(true);
-			userAccountService.activateProvisionedUser(user);
+			// Get the user object associated with the received token
+			User user = uvt.getUser();
+			logger.debug("Time until expired = " + Long.toString(uvt.getExpiryDate().getTime() - calendar.getTime().getTime()));
 
-			headers.setLocation(new URI(request.getServletPath() + "/user/login"));
+			//// Is received token expired
+			//if((uvt.getExpiryDate().getTime() - calendar.getTime().getTime()) <= 0){
+			//	logger.debug("expired");
+			//	String messageValue = messages.getMessage("auth.message.expired", null, locale);
+			//	headers.add("location", "/verification/user/failedRegistration?token=" + token);
+			//	return new ResponseEntity<>(new GenericResponse(messageValue), headers, HttpStatus.PERMANENT_REDIRECT);
+			//}
+	
+			userAccountService.activateProvisionedUser(user);
+			//headers.setLocation(new URI(request.getServletPath() + "/user/login"));
+			headers.add("location", "/shop/browse");
 			headers.set("WWW-Authenticate", SecurityConfiguration.TOKEN_PREFIX);
 			return new ResponseEntity<>(null, headers, HttpStatus.PERMANENT_REDIRECT);
-			//return "redirect:/login.html?lang=" + request.getLocale().getLanguage();
-		}catch(Exception e){
-			logger.error(e);
-			return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		//}
+		//catch(Exception e){
+		//	logger.error(e);
+		//	return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
+		//}
 	}
 
 	/*
@@ -333,7 +394,8 @@ public class AccountController{
 			// set the enable property and update the company in the db
 			company.setEnabled(true);
 			companyAccountServices.activateProvisionedCompany(company);
-			headers.setLocation(new URI(appURI + request.getServletPath() + "/company/login"));
+			//headers.setLocation(new URI(appURI + request.getServletPath() + "/company/login"));
+			headers.add("location", "/shop/browse");
 			headers.set("WWW-Authenticate", SecurityConfiguration.TOKEN_PREFIX);
 			return new ResponseEntity<>(null, headers, HttpStatus.PERMANENT_REDIRECT);
 		}

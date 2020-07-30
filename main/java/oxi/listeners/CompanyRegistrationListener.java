@@ -75,7 +75,7 @@ class CompanyRegistrationListener implements ApplicationListener<OnCompanyRegist
 		templateVars.put("verifyLink", verifyEmailURL);
 
 		try{
-			emailService.sendSimpleMessage(email, templateVars);
+			emailService.sendSimpleMessage(email, templateVars, "account-verification.html");
 		}catch(Exception e){
 			logger.error(e);
 		}

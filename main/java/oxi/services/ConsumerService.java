@@ -18,6 +18,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.io.Serializable;
+import java.lang.IllegalStateException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -44,6 +45,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.core.convert.converter.*;
 import org.springframework.http.HttpHeaders;
+//import org.springframework.security.crypto.bcrypt.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -54,8 +57,6 @@ import javax.xml.bind.DatatypeConverter;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.Session;
-
-import org.springframework.security.crypto.bcrypt.*;
 
 import static oxi.security.SecurityConfiguration.*;
 
@@ -89,6 +90,8 @@ public class ConsumerService implements ClientService{
 	@Autowired private SizeChartRepository sizeChartRep;
 
 	@Autowired private SizeGroupRepository sizeGroupRep;
+	@Autowired private ItemContentRepository itemContentRep;
+	@Autowired private LikeCountProfileRepository likeCountProfileRep;
 
 	//Resource Assemblers
 	//@Autowired 
@@ -140,8 +143,10 @@ public class ConsumerService implements ClientService{
 	/*@Autowired
 	SessionFactory sessionFactory;*/
 
+	//@Autowired
+	//private BCryptPasswordEncoder userPasswordEncoder;
 	@Autowired
-	private BCryptPasswordEncoder userPasswordEncoder;
+	private PasswordEncoder userPasswordEncoder;
 
 
 	public ConsumerService(){
@@ -294,8 +299,11 @@ public class ConsumerService implements ClientService{
 	private static Outfit copyToOutfit(OutfitDto outfitDto){
 		if(outfitDto != null){
 			List<Content> contents = new ArrayList<Content>(outfitDto.getContents().size());
+
 			for(ContentDto contentDto : outfitDto.getContents()){
+				
 				Content content = copyToContent(contentDto);
+
 				for(ItemDto itemDto : contentDto.getItems()){
 					Item item = copyToItem(itemDto);
 					ItemContent itemContent = new ItemContent(item, content);
@@ -303,9 +311,16 @@ public class ConsumerService implements ClientService{
 					itemContent.setPositiony(itemDto.getPositiony());
 					content.addItem(itemContent);
 				}
+
 				contents.add(content);
 			}
-			return new Outfit(null, outfitDto.getLikes(), outfitDto.getComments(), contents, outfitDto.getCoverpicuri());
+
+			return new Outfit(
+				null, 
+				outfitDto.getLikes(), 
+				outfitDto.getComments(), 
+				contents, 
+				outfitDto.getCoverpicuri());
 		}
 		return null;
 	}
@@ -409,27 +424,43 @@ public class ConsumerService implements ClientService{
 
 	private static PictureDto copyToPictureDto(Picture picture){
 		if(picture != null){
-			return new PictureDto(
-				picture.getId().toString(), 
-				picture.getThumbnailuri(), 
-				picture.getSmalluri(), 
-				picture.getLargeuri());
+			return new PictureDto(picture);
+			//return new PictureDto(
+			//	picture.getId().toString(), 
+			//	picture.getThumbnailuri(), 
+			//	picture.getSmalluri(), 
+			//	picture.getMediumuri(),
+			//	picture.getLargeuri(),
+			//	picture.getOriginaluri(),
+			//	picture.getCrop());
 		}
 		return null;
 	}
 
 	private static Picture copyToPicture(PictureDto pictureDto){
 		if(pictureDto != null){
-			if(pictureDto.getId() != null) return new Picture(
-				UUID.fromString(pictureDto.getId()), 
-				pictureDto.getThumbnailuri(), 
-				pictureDto.getSmalluri(), 
-				pictureDto.getLargeuri());	
-			else return new Picture(
-				null, 
-				pictureDto.getThumbnailuri(), 
-				pictureDto.getSmalluri(), 
-				pictureDto.getLargeuri());
+			return new Picture(pictureDto);
+			//if(pictureDto.getId() != null){
+			//	return new Picture(pictureDto);
+			//	//return new Picture(
+			//	//	UUID.fromString(pictureDto.getId()), 
+			//	//	pictureDto.getThumbnailuri(), 
+			//	//	pictureDto.getSmalluri(), 
+			//	//	pictureDto.getMediumuri(),
+			//	//	pictureDto.getLargeuri(),
+			//	//	pictureDto.getOriginaluri(),
+			//	//	pictureDto.getCrop());	
+			//}
+			//else{
+			//	return new Picture(
+			//		null, 
+			//		pictureDto.getThumbnailuri(), 
+			//		pictureDto.getSmalluri(), 
+			//		pictureDto.getMediumuri(),
+			//		pictureDto.getLargeuri(),
+			//		pictureDto.getOriginaluri(),
+			//		pictureDto.getCrop());
+			//}
 		}
 		return null;
 	}
@@ -486,6 +517,8 @@ public class ConsumerService implements ClientService{
 
 		for(ContentDto contentDto : outfitDto.getContents()){
 			Content content = copyToContent(contentDto);
+			logger.debug("contentDto = " + contentDto.toString());
+			
 			entityManager.persist(content);
 
 			for(ItemDto itemDto : contentDto.getItems()){
@@ -497,32 +530,38 @@ public class ConsumerService implements ClientService{
 				* Normally when adding existing items the user agent should send Item with only id field specified.  Precausions
 				* are taken here ti aviud overriding existing item entities during a merge operation.
 				*/
-				/*if(itemDto.getId() != null){
+				if(itemDto.getId() != null){
 					item = new Item();
 					item.setId(UUID.fromString(itemDto.getId()));
-					entityManager.merge(item);
+					//entityManager.merge(item);
 				}else{
 					item = copyToItem(itemDto);
 					entityManager.persist(item);
-				}*/
-				item = new Item(itemDto);
-				if(item.getId() != null){
-					/*
-					* Consumer service should not be able to modify item db directly,
-					* so make shure all fields relating to item db are cleared in itemDto
-					*/
-					item.setProduct(null);
-					entityManager.merge(item);
-				}else{
-					entityManager.persist(item);
 				}
+				//Item mergedItem = null;
+				//if(item.getId() != null){
+				//	/*
+				//	* Consumer service should not be able to modify item db directly,
+				//	* so make shure all fields relating to item db are cleared in itemDto
+				//	*/
+				//	item.setProduct(null);
+				//	mergedItem = entityManager.merge(item);
+				//	logger.debug("product = " + mergedItem.getProduct());
+				//}else{
+				//	entityManager.persist(item);
+				//}
 
-				logger.debug("ConsumerService#addOutfit:  item object = \n" + item.toString());
-				content.addItem(item, itemDto.getPositionx(), itemDto.getPositiony());
+				ItemContent ic = new ItemContent(item, content);
+				ic.setPositiony(itemDto.getPositiony());
+				ic.setPositionx(itemDto.getPositionx());
+				content.addItem(ic);
+				//content.addItem(mergedItem, itemDto.getPositionx(), itemDto.getPositiony());
 			}
 
 			Picture picture = pictureRep.findById(content.getPicture().getId()).get();
 			picture.setContent(content);
+			// copy crop data from picture dto to picture dao
+			picture.setCrop(contentDto.getPicture().getCrop());
 			entityManager.merge(picture);
 			content.setOutfit(outfit);
 			logger.debug("ConsumerService#addOutfit:  content object = \n" + content.toString());
@@ -690,11 +729,8 @@ public class ConsumerService implements ClientService{
 	@param Long specifying id of outfit to retreive
 	@return OutfitDto which extends ResourceSupport
 	*/
-	public ResourceSupport readOutfit(String outfitId){
-		//TODO:  ???need a customized json serialization to replace HAL links with raw data.
-		logger.debug("Reading Outfit (id=" + outfitId + ")");
-		//logger.debug("OutfitResource:  " + outfitResource);
-		return null;//this.toResource(outfitRep.findById(outfitId));
+	public OutfitDto readOutfit(String outfitId){
+		return outfitRep.getOutfitById(UUID.fromString(outfitId));
 	}
 
 	public PagedResources<?> readOutfits(String username, Pageable pageable){
@@ -867,7 +903,7 @@ public class ConsumerService implements ClientService{
 			entityManager.persist(content);
 			PictureDto pictureDtoResult = null;
 			List<ItemDto> itemsDtosResult  = new ArrayList<ItemDto>(content.getItems().size());
-			//content.setItems(items);
+			//content.setItems(items); 
 			logger.debug("ConsumerService#createContents: content after persist() = " + content.toString());
 
 			for(ItemDto itemDto : contentDto.getItems()){
@@ -911,92 +947,100 @@ public class ConsumerService implements ClientService{
 		return contentDtosResult;
 	}
 
-
 	//TODO  modify to reuse exisitng items
 	//This is called mainly when Content's picture property or its items property (mapping changed, ie adding/removing association to EXISTING items) are modified
+	//@Transactional
+	//public ContentDto updateContent(ContentDto contentDto, String outfitId) /*throws Exception*/{
+	//	logger.debug("Updating Content");
+	//	Outfit outfit = outfitRep.findById(UUID.fromString(outfitId)).get();
+	//	Content content = copyToContent(contentDto);
+	//	Picture picture = content.getPicture();
+	//	PictureDto pictureDto = null;
+	//	List<ItemDto> itemDtos  = new ArrayList<ItemDto>(content.getItems().size());
+	//	List<Integer> exlcudedIndices = new ArrayList<Integer>(content.getItems().size());
+	//	
+	//	Content mergedContent = entityManager.merge(content);
+//
+	//	if(picture != null){
+	//		entityManager.merge(picture);
+	//		logger.debug("picture after persist = " + picture);
+	//		pictureDto = new PictureDto(picture.getId().toString(), picture.getThumbnailuri(), picture.getSmalluri(), picture.getLargeuri());
+	//	}
+	//	else{
+	//		//pictureDto = new PictureDto(mergedContent.getPicture());
+	//	}
+//
+	//	//List<Item> items = mergedContent.getItems();
+	//	//mergedContent.setItems(items);
+	//	mergedContent.setOutfit(outfit);
+	//	logger.debug("ConsumerService#updateContent: mergedContent = " + mergedContent.toString());
+	//	mergedContent.getItems().clear();
+//
+	//	for(ItemDto itemDto : contentDto.getItems()){
+	//		Item item = copyToItem(itemDto);
+	//		ItemContent itemContent = new ItemContent(item, mergedContent);
+	//		//add new itemContent association
+	//		itemContent.setPositionx(itemDto.getPositionx());
+	//		itemContent.setPositiony(itemDto.getPositiony());
+	//		mergedContent.addItem(itemContent);	
+//
+	//		ItemDto iDto = new ItemDto(item);
+	//		iDto.setPositiony(itemDto.getPositiony());
+	//		iDto.setPositionx(itemDto.getPositionx());
+	//		itemDtos.add(iDto);		
+	//	}
+//
+	//	logger.debug("mergedContent after calls persist and setItems: " + mergedContent.toString());
+	//	return new ContentDto(mergedContent.getId().toString(), mergedContent.getCoverpicuri(), pictureDto, itemDtos, null);
+	//}
+
+	// Handles CRUD operations on content excluding picture.
 	@Transactional
-	public ContentDto updateContent(ContentDto contentDto, String outfitId) throws Exception{
-		logger.debug("Updating Content");
-		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId)).get();
-		Content content = copyToContent(contentDto);
-		Picture picture = content.getPicture();
-		PictureDto pictureDto = null;
+	public ContentDto updateContent(ContentDto contentDto, String outfitId) /*throws Exception*/{
+		Content content = contentRep.findById(UUID.fromString(contentDto.getId())).get();
+		// Update content coverpicuri
+		content.setCoverpicuri(contentDto.getCoverpicuri());
+		logger.debug("ConsumerService#updateContent: content = " + content.toString());
+
 		List<ItemDto> itemDtos  = new ArrayList<ItemDto>(content.getItems().size());
-		List<Integer> exlcudedIndices = new ArrayList<Integer>(content.getItems().size());
+		
+		// Update content items
+		if(contentDto.getItems() != null && contentDto.getItems().size() > 0){
+			content.getItems().clear();
 
-		if(picture != null){
-			entityManager.merge(picture);
-			logger.debug("picture after persist = " + picture);
-			pictureDto = new PictureDto(picture.getId().toString(), picture.getThumbnailuri(), picture.getSmalluri(), picture.getLargeuri());
-		}
-		else{
-			pictureDto = null;
-		}
-		//List<Item> items = content.getItems();
-		content = entityManager.merge(content);
-		//content.setItems(items);
-		content.setOutfit(outfit);
-		content.getItems().clear();
-		for(ItemDto itemDto : contentDto.getItems()){
-			Item item = copyToItem(itemDto);
-			ItemContent itemContent = new ItemContent(item, content);
-			//add new itemContent association
-			itemContent.setPositionx(itemDto.getPositionx());
-			itemContent.setPositiony(itemDto.getPositiony());
-			content.addItem(itemContent);	
-
-			ItemDto iDto = new ItemDto(item);
-			iDto.setPositiony(itemDto.getPositiony());
-			iDto.setPositionx(itemDto.getPositionx());
-			itemDtos.add(iDto);		
-		}
-
-		/*for(ItemDto itemDto : contentDto.getItems()){
-			//entityManager.merge(i);
-			Item item = copyToItem(itemDto);
-			//entityManager.persist(item);
-			ItemContent itemContent = new ItemContent(item, content);
-			int itemContentInd = content.getItems().indexOf(itemContent);
-
-			if(itemContentInd > -1){
-				//update coordinates if modified
-				if(content.getItems().get(itemContentInd).getPositionx() != itemDto.getPositionx() || content.getItems().get(itemContentInd).getPositiony() != itemDto.getPositiony()){
-					content.getItems().get(itemContentInd).setPositionx(itemDto.getPositionx());
-					content.getItems().get(itemContentInd).setPositiony(itemDto.getPositiony());
-				}
-				exlcudedIndices.add(itemContentInd);
-			}else{
+			for(ItemDto itemDto : contentDto.getItems()){
+				Item item = copyToItem(itemDto);
+				ItemContent itemContent = new ItemContent(item, content);
 				//add new itemContent association
 				itemContent.setPositionx(itemDto.getPositionx());
 				itemContent.setPositiony(itemDto.getPositiony());
-				content.addItem(itemContent);
+				content.addItem(itemContent);	
+	
+				ItemDto iDto = new ItemDto(item);
+				iDto.setPositiony(itemDto.getPositiony());
+				iDto.setPositionx(itemDto.getPositionx());
+				itemDtos.add(iDto);		
 			}
-
-			itemDtos.add(new ItemDto(
-				item.getId().toString(), 
-				itemDto.getPositionx(), 
-				itemDto.getPositiony(), 
-				item.getApparelType(), 
-				item.getSizeGroupId(), 
-				item.getRetailer().toString(), 
-				item.getBrand().toString()));
 		}
-		//Remove ContentItem contianing items that do not exist in provided contenDto#items property
-		content.removeItems(exlcudedIndices);*/
 
 		logger.debug("content after calls persist and setItems: " + content.toString());
+		PictureDto pictureDto = new PictureDto(content.getPicture());
+		//pictureDto.setId(null);
+
 		return new ContentDto(content.getId().toString(), content.getCoverpicuri(), pictureDto, itemDtos, null);
 	}
 
-	//@Transactional
+	@Transactional
 	public ArrayList<ContentDto> updateContents(ArrayList<ContentDto> contentDtos, String outfitId) throws Exception{
 		//TODO  Hanlde multipled content updates
 		int count = contentDtos.size();		
 		if(count < 7){
-		ArrayList<ContentDto> result = new ArrayList(count);
+			ArrayList<ContentDto> result = new ArrayList(count);
+
 			for(ContentDto contentDto : contentDtos){
 				result.add(updateContent(contentDto, outfitId));
 			}
+
 			return result;
 		}else{
 			throw new Exception("Parameter collection size greater than maximum allowed size.");
@@ -1325,6 +1369,7 @@ public class ConsumerService implements ClientService{
 		return copyToProfileDto(profileRep.saveAndFlush(profile));
 	}
 
+	// TODO: Possibly break this method down into operations on individual child entities
 	@Transactional
 	public ProfileDto updateProfile(ProfileDto profileDto, String username) throws Exception{
 		//if (profileDto.getUsername() == null || profileDto.getUsername().isEmpty() || !profileDto.getUsername().equals(username)){
@@ -1333,22 +1378,79 @@ public class ConsumerService implements ClientService{
 			Profile existingProfile = profileRep.findByUsername(username);
 
 			if(existingProfile == null) throw new Exception("User does not exist");
-			
-			profileDto.setId(existingProfile.getId().toString());
-			profileDto.setUsername(username);
-			profileDto.getUserMetricsDto().setId(existingProfile.getUserMetrics().getId().toString());
-			profileDto.getToleranceDto().setId(existingProfile.getTolerance().getId().toString());
-			//profileDto.getProfileStatsDto().setId()
 
+			PictureProfile pictureProfile = null;
+			// Initialize mergedPP with current PictureProfile.  This will be updated with profileDto.PictureProfile if it exists.
+			PictureProfile mergedPP = existingProfile.getPictureProfile();
+			// Instantiate returned profile object with values from profileDto
 			Profile profile = copyToProfile(profileDto);
+
+			// UpdateProfile is invoked under two cases:  ALL updates to profile INCLUDING PictureProfile, and ANY updates to profile EXCLUDING PictureProfile.
+			// The condition below handles either case.
+			if(profileDto.getPictureDto() != null){
+				pictureProfile = new PictureProfile(profileDto.getPictureDto());
+				// Change pictureProfile originaluri from null to the persisted value
+				pictureProfile.setOriginaluri(existingProfile.getPictureProfile().getOriginaluri());
+			}
+
+			profile.setId(existingProfile.getId());
+			profile.setUsername(username);
+			profile.getUserMetrics().setId(existingProfile.getUserMetrics().getId());
+			profile.getTolerance().setId(existingProfile.getTolerance().getId());
+
+			//if picture entity is modified
+			if(pictureProfile != null && pictureProfile.getId() != null && pictureProfile.getId().toString().compareTo(existingProfile.getPictureProfile().getId().toString()) == 0){
+				logger.debug("About to create cropped images.");
+				// crop and optimize images
+				PictureDto croppedPP = imageService.updateCroppedImages(pictureProfile);
+
+				pictureProfile.setThumbnailuri(croppedPP.getThumbnailuri());
+				pictureProfile.setSmalluri(croppedPP.getSmalluri());
+				pictureProfile.setMediumuri(croppedPP.getMediumuri());
+				pictureProfile.setLargeuri(croppedPP.getLargeuri());
+				pictureProfile.setCrop(croppedPP.getCrop());
+
+				mergedPP = entityManager.merge(pictureProfile);
+			}
+
 			profile.setUser(userRep.findByUsername(username));
+
 			//Ensure ProfileStats is not updated via this method
-			profile.setProfileStats(null);
+			profile.setProfileStats(existingProfile.getProfileStats());
+			logger.debug("about to merge profile");
+			profile.setPictureProfile(mergedPP);
 			Profile mergedProfile = entityManager.merge(profile);
+
 			return copyToProfileDto(mergedProfile);
 		//}
 	}
 
+	//
+	@Transactional
+	public PictureUpdateDto updateCrop(PictureUpdateDto pictureUpdateDto, String username) throws Exception, IllegalStateException{
+		// Check if profile exists for username
+		Profile profile = profileRep.findByUsername(username);
+		if(profile == null) throw new Exception("User does not exist");
+
+		// Verify user is the owner of the picture resource
+		Picture picture = pictureRep.findByOriginaluri(pictureUpdateDto.getOriginaluri());
+		logger.debug("ConsumerService#updateCrop: picture = " + picture.toString());
+		logger.debug("ConsumerService#updateCrop: picture -> profileId = " + picture.getProfileId().toString());
+		logger.debug("ConsumerService#updateCrop: profile -> idText = " + profile.getIdText());
+
+		if(!picture.getProfileId().toString().equalsIgnoreCase(profile.getIdText())) throw new IllegalStateException("Unauthorized attempt to modify resource.");
+
+		try{
+			// Update picture crop with the crop passed in pcitureDto
+			picture.setCrop(pictureUpdateDto.getCrop());
+			PictureUpdateDto completePUDto = imageService.updatePictureEntity(picture);
+			completePUDto.setContentId(pictureUpdateDto.getContentId());
+			return completePUDto;
+		}
+		catch(Exception e){
+			throw new Exception("failed to update picture");
+		}
+	}
 
 	
 
@@ -1420,10 +1522,12 @@ public class ConsumerService implements ClientService{
 	@return String indicating generated filename.
 	*/
 	@Transactional
-	public PictureDto saveImage(MultipartHttpServletRequest data){
+	public PictureDto saveImage(String username, MultipartHttpServletRequest data){
+		Profile profile = profileRep.findByUsername(username);
 		logger.debug("ConsumerService.saveImage() invoked");
 		PictureUpdateDto pictureUpdateDto = imageService.saveImage(data);
 		Picture picture = copyToPicture(pictureUpdateDto);
+		picture.setProfileId(profile.getId());
 		entityManager.persist(picture);
 		pictureUpdateDto.setId(picture.getId().toString());
 		return pictureUpdateDto;
@@ -1441,10 +1545,12 @@ public class ConsumerService implements ClientService{
 		//send existing image to the PictureDeleteTable
 		Content content = contentRep.findById(UUID.fromString(contentId)).get();
 		Picture picture = content.getPicture();
+
 		//Picture picture = pictureRep.findById(UUID.fromString(pictureId));
 		PictureDelete pd = new PictureDelete(picture);
 		logger.debug("PictureDelete created = " + pd.toString());
 		pictureDeleteRep.saveAndFlush(pd);
+
 		//save the new image data to fs and return in picture json with existing id.
 		PictureUpdateDto pictureUpdateDto = imageService.saveImage(data);
 		pictureUpdateDto.setId(picture.getId().toString());
@@ -1454,21 +1560,146 @@ public class ConsumerService implements ClientService{
 		return pictureUpdateDtos;		
 	}
 
+	/**
+	*deletes a one or more images identified by the user
+	*<p>
+	*\/user\/sendVerificationEmail
+	*</p>
+	*@param token Current expired token sent in request parameter
+	*@return ResponseEntity<?> with Status 400 contentId does not belong to user, otherwise status 200
+	*/
+	@Transactional
+	public void deleteImages(String username, ArrayList<String> contentIds) {
+
+		List<Content> contents = contentRep.getContentsByIds(contentIds);
+		boolean containsIllegalId = false;		
+
+		// Check if each content entity belongs to the user
+		for(Content content : contents){			
+			if(!content.getOutfit().getUsername().equals(username)){
+				throw new IllegalStateException("Unauthorized action");
+			}
+		}
+
+		// If at least one content entity does not belong to the user, thrwo an exception
+		contentRep.deleteInBatch(contents);
+
+		return;
+	}
+
+	/**
+	*deletes a one or more outfits (including child images) identified by the user
+	*<p>
+	*\/user\/sendVerificationEmail
+	*</p>
+	*@param token Current expired token sent in request parameter
+	*@return ResponseEntity<?> with Status 400 contentId does not belong to user, otherwise status 200
+	*/
+	@Transactional
+	public void deleteOutfits(String username, List<String> outfitIds) {
+		logger.debug("in deleteOutfits");
+		try{
+			List<Outfit> outfits = null;
+	
+			if(outfitIds.size() > 50){
+				throw new IllegalStateException("delete request limit reached");
+			}
+			logger.debug("invoking getOutfitsByIds");
+			outfits = outfitRep.getOutfitsByIds(outfitIds);
+			logger.debug("outfits size = " + outfits.size());
+			List<PictureDelete> pictureDeletes = new ArrayList<PictureDelete>();	
+	
+			// Check if each content entity belongs to the user
+			for(Outfit outfit : outfits){
+				if(!outfit.getUsername().equals(username)){
+					throw new IllegalStateException("Unauthorized action");
+				}
+	
+				// Make record entry in deleted picture database
+				for(Content content : outfit.getContents()){
+					// copy exiting Picture entity to a PictureDelete entity
+					PictureDelete pd = new PictureDelete(content.getPicture());
+					pictureDeletes.add(pd);
+					// delete all records in join table with reference to this contents record
+					logger.debug("ConsumerService#deleteOutfits: content item count = " + content.getItems().size());
+					if(content.getItems() != null && content.getItems().size() > 0) itemContentRep.deleteInBatch(content.getItems());
+				}
+			}
+
+			if (outfitIds.size() > 0){
+				logger.debug("Deleting likeCountProfile record from profile belonging to outfit: " + outfits.get(0).getProfile().getLikeCounts().size());
+				likeCountProfileRep.deleteInBatch(outfits.get(0).getProfile().getLikeCounts());
+			}
+			
+			logger.debug("Batch deleting outfits");
+			outfitRep.deleteInBatch(outfits);
+			// insert all deleted picture records, and delete outfits from database
+			pictureDeleteRep.saveAll(pictureDeletes);
+
+			return;
+		}
+		catch(Exception e){
+			logger.debug("Something went wrong: " + e.toString());
+		}
+	}
+
+	@Transactional
+	public String updateProfileImage(MultipartHttpServletRequest data, String username) throws Exception{
+		//send existing image to the PictureDeleteTable
+		Profile profile = profileRep.findByUsername(username);
+
+		if(profile == null) throw new Exception("User does not exist");
+
+		PictureProfile pp = profile.getPictureProfile();
+		UUID id = null;
+
+		// copy exiting Picture entity to a PictureDelete entity
+		if(pp != null){
+			PictureDelete pd = new PictureDelete(pp);
+			logger.debug("PictureDelete created = " + pd.toString());
+			pictureDeleteRep.saveAndFlush(pd);
+			id = pp.getId();
+		}
+
+		//save the new image data to fs creating a new PictureProfile entity
+		String filename = imageService.saveProfileImage(data);
+		pp = new PictureProfile(id, null, null, null, null, filename, null);
+		//entityManager.persist(pp);
+		profile.setPictureProfile(pp);
+		entityManager.merge(profile);
+
+		String ppId = pp.getId() != null ? pp.getId().toString() : "";
+		logger.debug("pp idText = " + ppId);
+
+		return ppId;		
+	}
+
 	public byte[] getImage(String filename/*, HttpServletResponse response*/){
 		//Path file = Paths.get(imgfolder+filename);
 		byte[] image = null;
 		logger.debug("in ConsumerService.getImage()");
 		String subfolder = "";
 		switch(filename.substring(0, Math.min(filename.length(), 3))){
+			case "ogl":
+				subfolder = "original/";
+				break;
+
 			case "sml":
 				subfolder = "small/";
 				break;
+
+			case "med":
+				subfolder = "medium/";
+				break;
+
 			case "lrg":
 				subfolder = "large/";
 				break;
+
 			case "tnl":
 				subfolder = "thumbnail/";
 				break;
+				
 			default:
 				logger.debug("no matching prefix in filename");
 				break;

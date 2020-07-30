@@ -10,52 +10,61 @@
         <link href="http://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css">
         <link href="https://fonts.googleapis.com/css?family=Open+Sans|Roboto" rel="stylesheet">
     </head>
-    <body style="margin: 0;padding: 0;">
-        <table style="border-spacing: 0px; width:100%;">
-            <tbody >
-                <tr style="background-color: #263238; height: 180px">
-                    <td style="padding-left: 20px;">
+    <body>
+        <table style="border-spacing: 0px; width:25vw; margin-left: 72px; margin-top: 24px;">
+            <tbody style="background-color: #304244;">
+                <tr style="background-color: #ffffff; height: 180px">
+                    <td style="
+                  padding-left: 20px;
+                   border-left: solid 1px #c3c3c3;
+                   border-top: solid 1px #c3c3c3;
+                   border-top-left-radius: 4px;"
+               >
                         <span style="
                             width: 85px;
                             margin: auto;
                             height: 75px;
                             display: block;
-                            padding-top: 25%;"
+                            padding-top: calc(.25*75px);"
                         >
-                            <img src="https://oxisalechannel.com/Graphics/logo-fitsee.png" style="width: 100%;">
+                            <img src="https://oxisalechannel.com/Graphics/Full_lockup/logo_lockup_3_color_031420.png" width="85">
                         </span>
                     </td>
                     <td style="
-                        height: 28px;
-                        line-height: 28px;
+                        height: 22px;
+                        line-height: 22px;
                         font-family: 'Open Sans', sans-serif;
-                        font-size: 28px;
-                        color: #636363;
+                        font-size: 22px;
+                        color: #304244;
                         padding-left: 40px;
                         width: calc(100% - 40px);
-                        padding-right: 20px;"
+                        padding-right: 20px;
+                   border-right: solid 1px #c3c3c3;
+                   border-top: solid 1px #c3c3c3;
+                   border-top-right-radius: 4px;"
                     >
                         <span th:text="#{message.emailVer.header}"></span>
                     </td>
                 </tr> 
                 <tr>
                     <td colspan="2" style="padding-left: 20px;">
-                        <span th:text="#{message.emailVer.body}" style="
+                        <span th:utext="#{message.emailVer.body}" style="
                             margin-top: 40px;
                             display: block;
                             margin-left: 0px;
-                            font-size: 18px;  
-                            line-height: 18px;
+                            font-size: 16px;  
+                            line-height: 20px;
                             font-family: 'Open Sans', sans-serif;
-                            height: 18px;
-                            color: #8e8e8e;"  
-                        >                            
+                            height: 20px;
+                            color: #ece0dc;
+                            letter-spacing: 0.02rem;"  
+                        >                     
                         </span>
                     </td>
                 </tr>
                 <tr>
                     <td colspan="2" style="padding-left: 20px;position: relative;">
-                        <table>
+                        <table style="border-spacing: 0px; margin-top: 41px;">
                             <tbody>
                                 <span th:te
                                 <a th:href="@{${verifyLink}}" style="
@@ -66,7 +75,7 @@
                                     border-radius: 4px;
                                     bottom: 0px;"
                                 ></a>
-                                <table>
+                                <table style="border-spacing: 0px; margin-right: unset;">
                                     <tbody>
                                         <a th:text="#{label.verifyEmail}" th:href="@{${verifyLink}}" style="
 
@@ -76,12 +85,11 @@
                                             height: 35px;
                                             line-height: 35px;
                                             border-radius: 4px;
-                                            border: solid 1px #7b7b7b;
                                             bottom: 0px;
                                             cursor: pointer;
                                             font-family: 'Roboto', sans-serif;
-                                            background-color: #636363;
-                                            color: #f9f9f9;
+                                            background-color: #ece0dc;
+                                            color: #071719;
                                             letter-spacing: 1px;
                                             text-align: center;
                                             position:relative;"

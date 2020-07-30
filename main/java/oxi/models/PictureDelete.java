@@ -54,6 +54,13 @@ public class PictureDelete extends RelatedEntity implements Serializable, Identi
 		this.largeuri = picture.getLargeuri();
 	}
 
+	public PictureDelete(PictureProfile pictureProfile){
+		this.id = pictureProfile.getId();
+		this.thumbnailuri = pictureProfile.getThumbnailuri();
+		this.smalluri = pictureProfile.getSmalluri();
+		this.largeuri = pictureProfile.getLargeuri();
+	}
+
 	public PictureDelete(UUID id, String thumbnailuri, String smalluri, String largeuri){
 		this.id = id;
 		this.thumbnailuri = thumbnailuri;

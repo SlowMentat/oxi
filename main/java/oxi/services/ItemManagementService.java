@@ -35,6 +35,8 @@ import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.core.convert.converter.*;
+//import org.springframework.security.crypto.bcrypt.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -46,7 +48,6 @@ import javax.xml.bind.DatatypeConverter;
 import org.hibernate.SessionFactory;
 import org.hibernate.Session;
 
-import org.springframework.security.crypto.bcrypt.*;
 
 
 
@@ -89,7 +90,7 @@ public class ItemManagementService{
 	SessionFactory sessionFactory;*/
 
 	@Autowired
-	private BCryptPasswordEncoder companyPasswordEncoder;
+	private PasswordEncoder companyPasswordEncoder;
 
 
 	public ItemManagementService(){

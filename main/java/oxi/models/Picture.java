@@ -21,21 +21,22 @@ import org.hibernate.annotations.GenericGenerator;
 @Entity
 @Table(name="picture")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=Picture.class)
-public class Picture extends RelatedEntity implements Serializable, Identifiable<UUID>{
+public class Picture extends BasePicture implements Serializable, Identifiable<UUID>{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Picture.class);
 	
-	@Id
-	@GeneratedValue(generator = "uuid2")
-	@GenericGenerator(name = "uuid2", strategy = "uuid2")
-	@Column(columnDefinition = "BINARY(16)")
-	private UUID id;
-
-	@Column(name = "id_text", updatable = false, insertable = false)
-	private String idText;	
-	private String smalluri;
-	private String largeuri;
-	private String thumbnailuri;
+	//@Id
+	//@GeneratedValue(generator = "uuid2")
+	//@GenericGenerator(name = "uuid2", strategy = "uuid2")
+	//@Column(columnDefinition = "BINARY(16)")
+	//private UUID id;
+//
+	//@Column(name = "id_text", updatable = false, insertable = false)
+	//private String idText;	
+	//private String smalluri;
+	//private String largeuri;
+	//private String mediumuri;
+	//private String thumbnailuri;
 	
 	@OneToOne(cascade=CascadeType.ALL)
 	//@JoinColumn(name="content_id")
@@ -44,6 +45,8 @@ public class Picture extends RelatedEntity implements Serializable, Identifiable
 	@JsonIdentityReference(alwaysAsId=true)	
 	//@JsonManagedReference
 	private Content content;
+	@Column(columnDefinition = "BINARY(16)", name = "profile_id", updatable = true, insertable = true)
+	private UUID profileId;
 
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="picture")
 	@RestResource(rel="items")
@@ -52,36 +55,69 @@ public class Picture extends RelatedEntity implements Serializable, Identifiable
 
 	
 	public Picture(){
+		super();
 	}
 
 	public Picture(UUID id, String thumbnailuri, String smalluri, String largeuri){
-		this.id = id;
-		this.thumbnailuri = thumbnailuri;
-		this.smalluri = smalluri;
-		this.largeuri = largeuri;
+		super(id, thumbnailuri, smalluri, null, largeuri);
+		//this.id = id;
+		//this.thumbnailuri = thumbnailuri;
+		//this.smalluri = smalluri;
+		//this.largeuri = largeuri;
+	}
+
+	public Picture(UUID id, String thumbnailuri, String smalluri, String mediumuri, String largeuri){
+		super(id, thumbnailuri, smalluri, mediumuri, largeuri);
+		//this.id = id;
+		//this.thumbnailuri = thumbnailuri;
+		//this.smalluri = smalluri;
+		//this.mediumuri = mediumuri;
+		//this.largeuri = largeuri;
+	}
+
+	public Picture(UUID id, String thumbnailuri, String smalluri, String mediumuri, String largeuri, String originaluri, String crop){
+		super(id, thumbnailuri, smalluri, mediumuri, largeuri, originaluri, crop);
+		//this.id = id;
+		//this.thumbnailuri = thumbnailuri;
+		//this.smalluri = smalluri;
+		//this.mediumuri = mediumuri;
+		//this.largeuri = largeuri;
 	}
 
 	public Picture(PictureDto pictureDto){
-		this.id = UUID.fromString(pictureDto.getId());
-		this.thumbnailuri = pictureDto.getThumbnailuri();
-		this.smalluri = pictureDto.getSmalluri();
-		this.largeuri = pictureDto.getLargeuri();
+		super(
+			pictureDto.getId() != null ? UUID.fromString(pictureDto.getId()) : null,
+			pictureDto.getThumbnailuri(),
+			pictureDto.getSmalluri(),
+			pictureDto.getMediumuri(),
+			pictureDto.getLargeuri(),
+			pictureDto.getOriginaluri(),
+			pictureDto.getCrop()
+		);
+		//this.id = UUID.fromString(pictureDto.getId());
+		//this.thumbnailuri = pictureDto.getThumbnailuri();
+		//this.smalluri = pictureDto.getSmalluri();
+		//this.mediumuri = pictureDto.getMediumuri();
+		//this.largeuri = pictureDto.getLargeuri();
 	}
 	
 	//Getters
-	public UUID getId(){return this.id;}
-	public String getIdText(){return this.idText;}
-	public String getSmalluri(){return this.smalluri;}
-	public String getLargeuri(){return this.largeuri;}
-	public String getThumbnailuri(){return this.thumbnailuri;}
+	//public UUID getId(){return this.id;}
+	//public String getIdText(){return this.idText;}
+	//public String getSmalluri(){return this.smalluri;}
+	//public String getMediumuri(){return this.mediumuri;}
+	//public String getLargeuri(){return this.largeuri;}
+	//public String getThumbnailuri(){return this.thumbnailuri;}
 	public Content getContent(){return this.content;}
 	public List<Item> getItems(){return this.items;}
+	public UUID getProfileId(){return this.profileId;}
 	
 	//Setters
-	public void setId(UUID id){this.id = id;}
-	public void setSmalluri(String smalluri){this.smalluri = smalluri;}
-	public void setLargeuri(String largeuri){this.largeuri = largeuri;}
-	public void setThumbnailuri(String thumbnailuri){this.thumbnailuri = thumbnailuri;}
+	//public void setId(UUID id){this.id = id;}
+	//public void setSmalluri(String smalluri){this.smalluri = smalluri;}
+	//public void setMediumuri(String mediumuri){this.mediumuri = mediumuri;}
+	//public void setLargeuri(String largeuri){this.largeuri = largeuri;}
+	//public void setThumbnailuri(String thumbnailuri){this.thumbnailuri = thumbnailuri;}
 	public void setContent(Content content){
 		if(content != null){
 			this.content = content;
@@ -92,6 +128,7 @@ public class Picture extends RelatedEntity implements Serializable, Identifiable
 	}
 
 	public void setItems(List<Item> items){this.items = items;}
+	public void setProfileId(UUID profileId){this.profileId = profileId;}
 
 	@JsonAnySetter
 	public void addItem(Item item){
@@ -122,16 +159,18 @@ public class Picture extends RelatedEntity implements Serializable, Identifiable
 			logger.warn("Item parameter is null");
 		}
 	}*/
-
+	@Override
 	public String toString(int indents) {
 		String indent = "\n";
 		for(int i = 0; i < indents; i++){
 			indent += "    ";
 		}
-		StringBuilder sb = new StringBuilder(indent).append("id: ").append(((this.id == null) ? "null" : id))
-			.append(indent).append("smalluri: ").append(this.smalluri)
-			.append(indent).append("largeuri:").append(this.largeuri)
-			.append(indent).append("thumbnail:").append(this.thumbnailuri)
+		//StringBuilder sb = new StringBuilder(indent).append("id: ").append(((this.id == null) ? "null" : id))
+		StringBuilder sb = new StringBuilder(indent).append(super.toString(indents))
+			//.append(indent).append("smalluri: ").append(this.smalluri)
+			//.append(indent).append("mediumuri:").append(this.mediumuri)
+			//.append(indent).append("largeuri:").append(this.largeuri)
+			//.append(indent).append("thumbnail:").append(this.thumbnailuri)
 			.append(indent).append(indent).append("content: ").append((this.content == null ? "null" : this.content.getId() == null ? "null" : content.getId().toString()))
 			.append(indent).append("items: [");
 		if(this.items != null){

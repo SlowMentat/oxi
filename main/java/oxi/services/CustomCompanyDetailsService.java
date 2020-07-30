@@ -57,6 +57,7 @@ public class CustomCompanyDetailsService implements UserDetailsService{
 			    //	getAuthorities(Arrays.asList(roleRepository.findByName("ROLE_USER")))
 			    //);
 			}	
+
 			return new org.springframework.security.core.userdetails.User(
 				company.getCompanyName(), 
 				company.getPassword(), 
@@ -93,8 +94,13 @@ public class CustomCompanyDetailsService implements UserDetailsService{
 	private List<GrantedAuthority> getGrantedAuthorities(List<String> privileges){
 		List<GrantedAuthority> authorities = new ArrayList<>();
 		for (String privilege : privileges) {
-			authorities.add(new SimpleGrantedAuthority(privilege));
+			logger.debug("privilege = " + privilege);
+			SimpleGrantedAuthority sga = new SimpleGrantedAuthority(privilege);
+			logger.debug("SimpleGrantedAuthority.getAuthority = " + sga.getAuthority());
+			authorities.add(sga);
+
 		}
+		logger.debug("Size of List<GrantedAuthority> = " + authorities.size());
 		return authorities;
 	}
 }

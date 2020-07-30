@@ -15,9 +15,22 @@ import org.springframework.hateoas.Identifiable;
 public class PictureUpdateDto extends PictureDto
 {
 	private String contentId;
+
+	public PictureUpdateDto(){
+		super();
+	}
 	
-	public PictureUpdateDto(String id, String thumbnailuri, String smalluri, String largeuri){
-		super(id, thumbnailuri, smalluri, largeuri);
+	public PictureUpdateDto(String id, String thumbnailuri, String smalluri, String mediumuri, String largeuri){
+		super(id, thumbnailuri, smalluri, mediumuri, largeuri);
+	}
+
+	public PictureUpdateDto(String id, String thumbnailuri, String smalluri, String mediumuri, String largeuri, String originaluri, String crop){
+		super(id, thumbnailuri, smalluri, mediumuri, largeuri, originaluri, crop);
+	}
+
+	public PictureUpdateDto(String id, String thumbnailuri, String smalluri, String mediumuri, String largeuri, String originaluri, String crop, String contentId){
+		super(id, thumbnailuri, smalluri, mediumuri, largeuri, originaluri, crop);
+		this.contentId = contentId.toLowerCase();
 	}
 	
 	//Getters

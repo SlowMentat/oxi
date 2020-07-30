@@ -14,6 +14,10 @@ import oxi.repositories.MyContentRepositoryCustom;
 import org.hibernate.transform.*;
 import org.hibernate.SQLQuery;
 import org.hibernate.*;
+import org.hibernate.Session;
+import org.hibernate.type.LongType;
+import org.hibernate.type.UUIDBinaryType;
+import org.hibernate.type.StringType;
 
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.data.domain.Page;
@@ -38,9 +42,6 @@ import java.util.Iterator;
 import java.util.stream.Collectors;
 import java.util.UUID;
 
-import org.hibernate.Session;
-import org.hibernate.type.LongType;
-import org.hibernate.type.UUIDBinaryType;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -55,6 +56,8 @@ public class MyContentRepositoryImpl implements MyContentRepositoryCustom {
 	@Autowired
 	@PersistenceContext
 	private EntityManager entityManager;
+
+	private int MAX_PAGE_SIZE = 50;
 
 	/*private static String buildPagedQuery(String query, Pageable page){
 
@@ -168,5 +171,22 @@ public class MyContentRepositoryImpl implements MyContentRepositoryCustom {
 		);
 
 		return pagedResult;
+	}
+
+	@Override
+	public List<Content> getContentsByIds(List<String> ids){
+
+		Session session = entityManager.unwrap(Session.class);	
+		List<Content> contents;
+			
+		Content content;	
+		String contentQ = "select {c.*} from content c where c.id_text in (:ids)";
+	
+		contents = session.createSQLQuery(contentQ)
+			.addEntity("c", Content.class)
+			.setParameter("ids", ids, StringType.INSTANCE)
+			.list();
+
+		return contents;
 	}
 }

@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.Date;
 import java.util.stream.Stream;
+import java.util.UUID;
 
 
 public interface UserVerificationTokenRepository extends JpaRepository<UserVerificationToken, Long>{
@@ -18,7 +19,11 @@ public interface UserVerificationTokenRepository extends JpaRepository<UserVerif
 	
 	UserVerificationToken findByUser(User user);
 
+	UserVerificationToken findByUserId(UUID userId);
+
 	void deleteByExpiryDateLessThan(Date now);
+
+	void deleteById(UUID id);
 
 	//@Modifying
 	//@Query("delete from UserVerificationToken t where t.expiryDate <= 1?")

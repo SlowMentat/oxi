@@ -1,5 +1,7 @@
 package oxi.models;
 
+import oxi.models.dto.UserDto;
+
 import javax.persistence.*;
 import java.util.List;
 import java.util.UUID;
@@ -55,6 +57,18 @@ public class User extends BaseAccount/*RelatedEntity*/ /*implements Serializable
 		super();
 		//this.enabled = false;
 	}
+
+	public User(UserDto userDto){
+		super();
+		this.username = userDto.getUsername();
+	}
+
+
+	public User(User user){
+		super(user.getUsername(), user.getPassword());
+		this.profile = user.getProfile();
+	}
+	
 	
 	//Setters
 	//@Override
