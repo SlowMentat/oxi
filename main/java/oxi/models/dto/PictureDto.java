@@ -77,6 +77,30 @@ public class PictureDto implements Serializable, Identifiable<String>
 		}
 	}
 
+	//public PictureDto(PictureUpdateDto pictureUpdateDto){		
+	//	if(pictureUpdateDto != null){
+	//		this.id = pictureUpdateDto.getId();
+	//		this.thumbnailuri = pictureUpdateDto.getThumbnailuri();
+	//		this.smalluri = pictureUpdateDto.getSmalluri();
+	//		this.mediumuri = pictureUpdateDto.getMediumuri();
+	//		this.largeuri = pictureUpdateDto.getLargeuri();
+	//		this.originaluri = pictureUpdateDto.getOriginaluri();
+	//		this.crop = pictureUpdateDto.getCrop();
+	//	}
+	//}
+
+	public PictureDto(PictureDto pictureDto){		
+		if(pictureDto != null){
+			this.id = pictureDto.getId();
+			this.thumbnailuri = pictureDto.getThumbnailuri();
+			this.smalluri = pictureDto.getSmalluri();
+			this.mediumuri = pictureDto.getMediumuri();
+			this.largeuri = pictureDto.getLargeuri();
+			this.originaluri = pictureDto.getOriginaluri();
+			this.crop = pictureDto.getCrop();
+		}
+	}
+
 	/*@JsonCreator
 	public PictureDto(
 		@JsonProperty("id")

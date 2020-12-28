@@ -32,6 +32,10 @@ public class PictureUpdateDto extends PictureDto
 		super(id, thumbnailuri, smalluri, mediumuri, largeuri, originaluri, crop);
 		this.contentId = contentId.toLowerCase();
 	}
+
+	public PictureUpdateDto(PictureDto pictureDto){
+		super(pictureDto);
+	}
 	
 	//Getters
 	public String getContentId(){return (this.contentId == null) ? this.contentId : this.contentId.toLowerCase();}

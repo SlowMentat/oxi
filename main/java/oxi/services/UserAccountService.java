@@ -28,6 +28,7 @@ import oxi.repositories.UserVerificationTokenRepository;
 
 import oxi.models.User;
 import oxi.models.Profile;
+import oxi.models.PictureProfile;
 import oxi.models.UserVerificationToken;
 import oxi.models.dto.UserDto;
 import oxi.models.User;
@@ -65,6 +66,7 @@ public class UserAccountService /*implements IAccountService<IVerificationToken>
 	@Autowired UserRepository userRep;
 	@Autowired UserVerificationTokenRepository uvtRep;
 	@Autowired RoleRepository roleRep;
+	//@Autowired PictureProfileRepository pictureProfileRep;
 	//@Autowired PasswordResetTokenRepository passwordResetTokenRep;
 	//@Autowired PasswordEncoder userPasswordEncoder;
 	
@@ -197,12 +199,16 @@ public class UserAccountService /*implements IAccountService<IVerificationToken>
 			UserMetrics userMetrics = new UserMetrics();
 			Tolerance tolerance = new Tolerance();
 			ProfileStats profileStats = new ProfileStats();	
+			PictureProfile pp = new PictureProfile();
+
+			entityManager.persist(pp);
 	
 			profile.setUsername(user.getUsername());
 			profile.setUser(user);
 			profile.setUserMetrics(userMetrics);
 			profile.setTolerance(tolerance);
 			profile.setProfileStats(profileStats);
+			profile.setPictureProfile(pp);
 
 			entityManager.persist(profile);
 		}

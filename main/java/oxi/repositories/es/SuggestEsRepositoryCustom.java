@@ -27,6 +27,8 @@ public interface SuggestEsRepositoryCustom{
 	*/
 	List<SuggestItemEsDto> itemSuggest(String prefix, String context);
 
+	List<SuggestUDItemESDTO> userDefinedItemSuggest(String prefix, String retailer, String apparelType, String sizeLabel);
+
 	/*
 	* performs field completion for retailer input
 	*/

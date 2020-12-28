@@ -176,11 +176,12 @@ public class SizeChartRepositoryImpl implements SizeChartRepositoryCustom {
 		//Example 553. Hibernate native query selecting entities with joined one-to-many association
 		String sizeChartQ = "select {sg.*} from size_label sc join item i on i.size_chart_id = sc.id where i.id = :id";
 		String sizeChartSizeGroupQ = "select {sc.*}, {sg.*}, {scsg.*} "+
-			"from size_group sg, size_chart sc " +
-			"join size_chart_size_group scsg on scsg.size_chart_id=sc.id " +
+			"from size_chart sc " +
+			"join size_chart_size_group scsg on scsg.size_chart_id = sc.id " +
+			"join size_group sg on sg.id = scsg.size_group_id " +
 			//"join size_label sl on sl.id = sg.size_label_id " +
 			"join item i on i.size_chart_id = sc.id " +
-			"where i.id = :id and sg.id = scsg.size_group_id";
+			"where i.id = :id";// and sg.id = scsg.size_group_id";
 
 		String SizeLabelQ = "select {sl.*} from size_label sl where sl.id in (:sizeLabelIds)";
 
@@ -227,7 +228,8 @@ public class SizeChartRepositoryImpl implements SizeChartRepositoryCustom {
 		for(SizeGroup sg : sizeGroups){
 			SizeGroupDto sgDto = new SizeGroupDto();
 			sgDto.setId(sg.getIdText());
-			sgDto.setSizeLabel(idToSizeLabel.get(sg.getSizeLabelId()).getName());
+			//sgDto.setSizeLabel(idToSizeLabel.get(sg.getSizeLabelId()).getName());
+			sgDto.setSizeLabel(sg.getSizeLabel());
 			sgDto.setMetric(sg.getMetric());
 			sizeGroupDtos.add(sgDto);
 		}

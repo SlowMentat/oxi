@@ -8,6 +8,8 @@ import java.util.Iterator;
 import java.util.UUID;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 import java.io.Serializable;
 import java.lang.*;
 import org.springframework.data.rest.core.annotation.*;
@@ -53,6 +55,12 @@ public class LikeCount extends RelatedEntity implements Serializable, Identifiab
 	@JsonProperty("profiles")
 	@JsonIdentityReference(alwaysAsId=true)
 	private List<LikeCountProfile> profiles = new ArrayList<>(); //TODO:  see if this clears all item assoications on a given 
+
+	@OneToMany(cascade=CascadeType.ALL, orphanRemoval = true, mappedBy = "likeCount", fetch = FetchType.LAZY)
+	@RestResource(rel="vendor_0")
+	@JsonProperty("items")
+	@JsonIdentityReference(alwaysAsId=true)
+	private Set<LikeCountItem> items = new HashSet<LikeCountItem>(); 
 	
 	
 	//Constructor
@@ -112,6 +120,30 @@ public class LikeCount extends RelatedEntity implements Serializable, Identifiab
 				likeCountProfile.setLikeCount(null);
 				likeCountProfile.setProfile(null);
 				decrementCount();
+			}
+		}
+	}
+
+	public void addItem(Item item){
+		LikeCountItem likeCountItem = new LikeCountItem(item, this);
+		this.items.add(likeCountItem);
+		item.getLikeCounts().add(likeCountItem);
+	}
+
+	public void addItem(LikeCountItem likeCountItem){
+		this.items.add(likeCountItem);
+		likeCountItem.getItem().getLikeCounts().add(likeCountItem);
+	}
+
+	public void removeItem(Item item){
+		for(Iterator<LikeCountItem> iterator = items.iterator(); iterator.hasNext();){
+			LikeCountItem likeCountItem = iterator.next();
+
+			if(likeCountItem.getLikeCount().equals(this) && likeCountItem.getItem().equals(item)){
+				iterator.remove();
+				likeCountItem.getItem().getLikeCounts().remove(likeCountItem);  //Needed for bi-directional mapping
+				likeCountItem.setLikeCount(null);
+				likeCountItem.setItem(null);
 			}
 		}
 	}

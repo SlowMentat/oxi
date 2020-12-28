@@ -63,6 +63,9 @@ import static oxi.security.SecurityConfiguration.*;
 import com.blazebit.persistence.PagedList;
 import com.blazebit.persistence.PagedArrayList;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+
 
 @Service
 public class ConsumerService implements ClientService{
@@ -92,6 +95,8 @@ public class ConsumerService implements ClientService{
 	@Autowired private SizeGroupRepository sizeGroupRep;
 	@Autowired private ItemContentRepository itemContentRep;
 	@Autowired private LikeCountProfileRepository likeCountProfileRep;
+
+	@Autowired private PictureProfileRepository pictureProfileRep;
 
 	//Resource Assemblers
 	//@Autowired 
@@ -153,18 +158,24 @@ public class ConsumerService implements ClientService{
 
 	}
 
-
+	private void logStackTrace(Exception e){
+		StringWriter stringWriter = new StringWriter();
+		PrintWriter printWriter = new PrintWriter(stringWriter);
+		e.printStackTrace(printWriter);
+		logger.debug(stringWriter.toString());
+	}
 	/*
 	* Converter functions for maping Paged entities to their respective Dtos
 	*/
 
 	private OutfitDto convertToOutfitDto(final Outfit outfit){
 		return new OutfitDto(outfit);
-		//return new OutfitDto(outfit.getIdText(), outfit.getLikes(), outfit.getComments(), new ArrayList<ContentDto>(5), outfit.getCoverpicuri(), outfit.getUsername());
+		//return new OutfitDto(outfit.getIdText(), outfit.getLikes(), outfit.getComments(), new ArrayList<ContentDto>(5), outfit.getCoverPictureId(), outfit.getUsername());
 	}
 
 	private ContentDto convertToContentDto(final Content content){
-		return new ContentDto(content.getIdText(), content.getCoverpicuri(), new PictureDto(content.getPicture()), null, content.getOutfit().getIdText());
+		//return new ContentDto(content.getIdText(), content.getCoverpicuri(), new PictureDto(content.getPicture()), null, content.getOutfit().getIdText());
+		return new ContentDto(content);
 	}
 
 	private ItemDto convertToItemDto(final Item item){
@@ -286,11 +297,15 @@ public class ConsumerService implements ClientService{
 		if(outfit != null){
 			int contentLength = outfit.getContents().size();
 			List<ContentDto> contentDtos = new ArrayList<ContentDto>(contentLength);
+
 			for(Content content: outfit.getContents()){
 				contentDtos.add(copyToContentDto(content));
 			}
-			//return new OutfitDto(outfit);
-			return new OutfitDto(outfit.getId().toString(), outfit.getLikes(), outfit.getComments(), contentDtos, outfit.getCoverpicuri(), outfit.getUsername());
+
+			OutfitDto outfitDto = new OutfitDto(outfit);
+			outfitDto.setContents(contentDtos);
+			return outfitDto;
+			//return new OutfitDto(outfit.getId().toString(), outfit.getLikes(), outfit.getComments(), contentDtos, outfit.getCoverPictureId().toString(), outfit.getUsername());
 		}
 		return null;
 	}
@@ -320,7 +335,7 @@ public class ConsumerService implements ClientService{
 				outfitDto.getLikes(), 
 				outfitDto.getComments(), 
 				contents, 
-				outfitDto.getCoverpicuri());
+				UUID.fromString(outfitDto.getCoverPictureId()));
 		}
 		return null;
 	}
@@ -333,29 +348,35 @@ public class ConsumerService implements ClientService{
 				outfitDto.getLikes(), 
 				outfitDto.getComments(), 
 				new ArrayList<Content>(outfitDto.getContents().size()), 
-				outfitDto.getCoverpicuri(),
-				outfitDto.getUsername());
+				UUID.fromString(outfitDto.getCoverPictureId()),
+				outfitDto.getUsername(),
+				null,
+				outfitDto.getCoverpicuri());
 		}
 		return null;		
 	}
 
 	private static ContentDto copyToContentDto(Content content){
+		logger.debug("test: content = " + content.toString());
+
 		if(content != null){
-			int itemLength = content.getItems().size();
-			List<ItemDto> itemDtos = new ArrayList(itemLength);
+			//int itemLength = content.getItems().size();
+			//List<ItemDto> itemDtos = new ArrayList(itemLength);
 
-			for(ItemContent itemContent : content.getItems()){
-				itemDtos.add(copyToItemDto(itemContent));
-			}
+			//for(ItemContent itemContent : content.getItems()){
+			//	//itemDtos.add(copyToItemDto(itemContent));
+			//	itemDtos.add(new ItemDto(itemContent));
+			//}
 
-			PictureDto pictureDto = copyToPictureDto(content.getPicture());
-			String outfitId = null;
+			//PictureDto pictureDto = copyToPictureDto(content.getPicture());
+			//String outfitId = null;
 
-			if(content.getOutfit()  != null){
-				outfitId = content.getOutfit().getIdText();
-			}
+			//if(content.getOutfit()  != null){
+			//	outfitId = content.getOutfit().getIdText();
+			//}
 			
-			return new ContentDto(content.getId().toString(), content.getCoverpicuri(), pictureDto, itemDtos, outfitId);
+			//return new ContentDto(content.getId().toString(), content.getCoverpicuri(), pictureDto, itemDtos, outfitId);
+			return new ContentDto(content);
 		}
 		return null;
 	}
@@ -367,19 +388,21 @@ public class ConsumerService implements ClientService{
 					null,
 					contentDto.getCoverpicuri(),
 					copyToPicture(contentDto.getPicture()),
-					new ArrayList<ItemContent>(contentDto.getItems().size()));
+					new HashSet<ItemContent>(contentDto.getItems().size()));
 			}
 
 			return new Content(
 				UUID.fromString(contentDto.getId()),
 				contentDto.getCoverpicuri(),
 				copyToPicture(contentDto.getPicture()),
-				new ArrayList<ItemContent>(contentDto.getItems().size()));
+				new HashSet<ItemContent>(contentDto.getItems().size()));
 		}
 		return null;
 	}
 
 	private static ItemDto copyToItemDto(ItemContent itemContent){
+		logger.debug("test: itemContent = " + itemContent.toString());
+
 		if(itemContent != null){
 			ItemDto itemDto = new ItemDto(itemContent.getItem());
 			itemDto.setPositiony(itemContent.getPositiony());
@@ -465,11 +488,29 @@ public class ConsumerService implements ClientService{
 		return null;
 	}
 
+	private Item buildExistingItem(ItemDto itemDto) throws IllegalStateException{
+		ObjectMapper mapper = new ObjectMapper();
+		ItemDto.Product productObject = null;
+
+		try{
+			productObject = mapper.readValue(itemDto.getProduct(), ItemDto.Product.class);
+		}
+		catch(Exception e){
+			logStackTrace(e);
+			throw new IllegalStateException(e.toString());
+		}
+
+		Item existingItem = itemRep.findByExistingCustomItem(productObject.getUdr(), productObject.getUds(), itemDto.getApparelType());
+
+		if(existingItem != null) return existingItem;
+
+		return copyToItem(itemDto);
+	}
+
 
 	@Transactional
 	public List<ApparelType> getAllApparelTypes(){
-		List<ApparelType> apparelTypes = apparelTypeRep.findAll();
-		return apparelTypes;
+		return apparelTypeRep.findAll();
 	}
 
 
@@ -513,31 +554,46 @@ public class ConsumerService implements ClientService{
 		Profile profile = profileRep.findByUsername(username);
 		LikeCount likeCount = new LikeCount();
 
+		if(profile.getPictureProfile() != null){
+			outfit.setPictureProfileId(profile.getPictureProfile().getId());
+		}
+		
 		entityManager.persist(likeCount);
 
 		for(ContentDto contentDto : outfitDto.getContents()){
 			Content content = copyToContent(contentDto);
 			logger.debug("contentDto = " + contentDto.toString());
-			
+
 			entityManager.persist(content);
 
 			for(ItemDto itemDto : contentDto.getItems()){
-				Item item = null;
+				//Item item = null;
 
-				/*
-				* If id exists in itemDto then create a new Item object with itemDto's id value as UUID.  
-				* This object will be merged into the persistence context without overriding existing Item properties.
-				* Normally when adding existing items the user agent should send Item with only id field specified.  Precausions
-				* are taken here ti aviud overriding existing item entities during a merge operation.
-				*/
-				if(itemDto.getId() != null){
-					item = new Item();
-					item.setId(UUID.fromString(itemDto.getId()));
-					//entityManager.merge(item);
-				}else{
-					item = copyToItem(itemDto);
+				///*
+				//* If id exists in itemDto then create a new Item object with itemDto's id value as UUID.  
+				//* This object will be merged into the persistence context without overriding existing Item properties.
+				//* Normally when adding existing items the user agent should send Item with only id field specified.  Precausions
+				//* are taken here ti aviud overriding existing item entities during a merge operation.
+				//*/
+				//if(itemDto.getId() != null){
+				//	item = new Item();
+				//	item.setId(UUID.fromString(itemDto.getId()));
+				//	//entityManager.merge(item);
+				//}else{
+				//	item = copyToItem(itemDto);
+				//	entityManager.persist(item);
+				//}
+				Item item = buildExistingItem(itemDto);
+
+				// item is new so add the picture id associated with this outfit
+				if(item.getId() == null){
+					item.setPicture(pictureRep.findById(outfit.getCoverPictureId()).get());
 					entityManager.persist(item);
 				}
+				//else{
+				//	item = (Item)entityManager.merge(item);
+				//}
+				
 				//Item mergedItem = null;
 				//if(item.getId() != null){
 				//	/*
@@ -563,7 +619,8 @@ public class ConsumerService implements ClientService{
 			// copy crop data from picture dto to picture dao
 			picture.setCrop(contentDto.getPicture().getCrop());
 			entityManager.merge(picture);
-			content.setOutfit(outfit);
+			//content.setOutfit(outfit);
+			outfit.addContent(content);
 			logger.debug("ConsumerService#addOutfit:  content object = \n" + content.toString());
 		}
 		
@@ -605,7 +662,7 @@ public class ConsumerService implements ClientService{
 	//Item
 	//TODO:  this needs some serious optimizing
 	@Transactional
-	public OutfitDto updateItems(HashMap<String, ArrayList<ItemDto>> contentIdToItemMap, String username, String outfitId){
+	public OutfitDto updateItems(HashMap<String, ArrayList<ItemDto>> contentIdToItemMap, String username, String outfitId) throws IllegalStateException{
 		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId)).get();
 		Profile profile = outfit.getProfile();
 		OutfitDto outfitDto;
@@ -618,65 +675,73 @@ public class ConsumerService implements ClientService{
 		if(profile.getUsername().equals(username)){
 			//logger.debug("content Ids:");
 			//entityManager.merge(outfit);
-			for(String contentId : contentIdToItemMap.keySet()){
-				//logger.debug(contentId + ": " + "{\n");
-				Content content = contentRep.findById(UUID.fromString(contentId)).get();				
-				//List<ItemContent> itemContents = content.getItems();
-				//entityManager.persist(content);
-				List<ItemContent> itemContents = content.getItems();
-				//itemDtos = new ArrayList<ItemDto>();
-
-				//
-				for(ItemDto itemDto : contentIdToItemMap.get(contentId)){
-					int ind = -1;
-					boolean isAssociated = false;
-
-					//itemIds.add(UUID.fromString(itemDto.getId()));
-
-					// Check each content/item combination exists in the item_content join table. 
-					// If so, then merge changes to existing record
-					for(ItemContent itemContent : itemContents){
-						ind++;
-						if(content.getId().equals(itemContent.getContent().getId()) && itemDto.getId().equals(itemContent.getItem().getId().toString())){
-							logger.debug("ConsumerService#updateItems: itemContents = \n" + itemContent.toString());
-							itemContent.setPositionx(itemDto.getPositionx()); 
-							itemContent.setPositiony(itemDto.getPositiony());
-							//itemContent.getItem().setApparelType(itemDto.getApparelType()); 
-
-							//TODO: make sure this isn't needed
-							//itemContent.getItem().setSizeGroupId(UUID.fromString(itemDto.getSizeGroupId()));
-							
-							//itemContent.getItem().setRetailer(UUID.fromString(itemDto.getRetailer()));
-							//itemContent.getItem().setBrand(UUID.fromString(itemDto.getBrand()));
-							entityManager.merge(itemContent);
-							itemContents.set(ind, itemContent);
-							logger.debug("ConsumerService#updateItems: updated itemContent = \n" + itemContent.toString());
-							isAssociated = true;
-
-							break;
+			try{
+				for(String contentId : contentIdToItemMap.keySet()){
+					//logger.debug(contentId + ": " + "{\n");
+					Content content = contentRep.findById(UUID.fromString(contentId)).get();				
+					//List<ItemContent> itemContents = content.getItems();
+					//entityManager.persist(content);
+					Set<ItemContent> itemContents = content.getItems();
+					//itemDtos = new ArrayList<ItemDto>();
+	
+					//
+					for(ItemDto itemDto : contentIdToItemMap.get(contentId)){
+						int ind = -1;
+						boolean isAssociated = false;
+	
+						//itemIds.add(UUID.fromString(itemDto.getId()));
+	
+						// Check each content/item combination exists in the item_content join table. 
+						// If so, then merge changes to existing record
+						for(ItemContent itemContent : itemContents){
+							ind++;
+	
+							if(content.getId().equals(itemContent.getContent().getId()) && itemDto.getId().equals(itemContent.getItem().getId().toString())){
+								logger.debug("ConsumerService#updateItems: itemContents = \n" + itemContent.toString());
+								itemContent.setPositionx(itemDto.getPositionx()); 
+								itemContent.setPositiony(itemDto.getPositiony());
+								//itemContent.getItem().setApparelType(itemDto.getApparelType()); 
+	
+								//TODO: make sure this isn't needed
+								//itemContent.getItem().setSizeGroupId(UUID.fromString(itemDto.getSizeGroupId()));
+								
+								//itemContent.getItem().setRetailer(UUID.fromString(itemDto.getRetailer()));
+								//itemContent.getItem().setBrand(UUID.fromString(itemDto.getBrand()));
+								entityManager.merge(itemContent);
+								//itemContents.set(ind, itemContent);
+								itemContents.add(itemContent);
+								logger.debug("ConsumerService#updateItems: updated itemContent = \n" + itemContent.toString());
+								isAssociated = true;
+	
+								break;
+							}
 						}
+	
+						// This handles newly added retailer items.  It creates a new content/item record in the item_content database
+						if(!isAssociated){
+							Item item = itemRep.findById(UUID.fromString(itemDto.getId())).get();
+							ItemContent ic = new ItemContent(item, content);
+							ic.setPositiony(itemDto.getPositiony());
+							ic.setPositionx(itemDto.getPositionx());
+							content.addItem(ic);
+						}
+	
+						//itemDtos.add(itemDto);
 					}
-
-					// This handles newly added retailer items.  It creates a new content/item record in the item_content database
-					if(!isAssociated){
-						Item item = itemRep.findById(UUID.fromString(itemDto.getId())).get();
-						ItemContent ic = new ItemContent(item, content);
-						ic.setPositiony(itemDto.getPositiony());
-						ic.setPositionx(itemDto.getPositionx());
-						content.addItem(ic);
-					}
-
-					//itemDtos.add(itemDto);
+	
+					content = entityManager.merge(content);
+					
+					//ContentDto contentDto = new ContentDto(content);
+					//contentDto.setItems(itemDtos);
+					//contentDtos.add(contentDto);
+					
+					//Note: more than one content entity may have been updated
+					outfit.getContents().set(outfit.getContents().indexOf(content), content);
 				}
-
-				content = entityManager.merge(content);
-				
-				//ContentDto contentDto = new ContentDto(content);
-				//contentDto.setItems(itemDtos);
-				//contentDtos.add(contentDto);
-				
-				//Note: more than one content entity may have been updated
-				outfit.getContents().set(outfit.getContents().indexOf(content), content);
+			}
+			catch(Exception e){
+				logStackTrace(e);
+				throw new IllegalStateException(e.toString());
 			}
 
 			////batch select sizeGroups associated with each itemDto id
@@ -701,25 +766,57 @@ public class ConsumerService implements ClientService{
 
 	//TODO  modify to reuse exisitng items
 	@Transactional
-	public OutfitDto addItems(HashMap<String, ArrayList<ItemDto>> contentIdToItemMap, String username, String outfitId){
+	public OutfitDto addItems(HashMap<String, ArrayList<ItemDto>> contentIdToItemMap, String username, String outfitId) throws IllegalStateException{
 		Outfit outfit = outfitRep.findById(UUID.fromString(outfitId)).get();
 		Profile profile = outfit.getProfile();
+		PictureProfile pictureProfile = null;
+
+		ObjectMapper mapper = new ObjectMapper();
+
 		if(profile.getUsername().equals(username)){
 			//entityManager.persist(outfit);
 			//work on each content id key provided in the payload received
+			ItemDto.Product productObject = null;
+			Item existingItem = null;
+			Item item = null;
+			pictureProfile = pictureProfileRep.findById(outfit.getPictureProfileId()).get();
+
 			for(String contentId : contentIdToItemMap.keySet()){
 				Content content = contentRep.findById(UUID.fromString(contentId)).get();
 				entityManager.persist(content);
-				for(ItemDto itemDto : contentIdToItemMap.get(contentId)){
-					Item item = copyToItem(itemDto);
-					entityManager.persist(item);
-					content.addItem(item, itemDto.getPositionx(), itemDto.getPositiony());
+
+				try{
+					for(ItemDto itemDto : contentIdToItemMap.get(contentId)){
+						//Item item = copyToItem(itemDto);
+						
+						// Determine if item exists by searching db on product.uds, product.udr, appartelType id
+						productObject = mapper.readValue(itemDto.getProduct(), ItemDto.Product.class);
+						item = buildExistingItem(itemDto);
+						//existingItem = itemRep.findByExistingCustomItem(productObject.getUdr(), productObject.getUds(), itemDto.getApparelType());
+						//item = existingItem != null ? existingItem : copyToItem(itemDto);
+	
+						if(item.getId() == null){
+							item.setPicture(pictureRep.findById(outfit.getCoverPictureId()).get());
+							entityManager.persist(item);
+						}
+
+						content.addItem(item, itemDto.getPositionx(), itemDto.getPositiony());
+					}
+				}
+				catch(Exception e){
+					logStackTrace(e);
+					throw new IllegalStateException(e.toString());
 				}
 			}
-		}else{
+		}
+		else{
 			logger.warn("User, " + username + " does not have permissions to edit item");
 		}
-		return copyToOutfitDto(outfit);
+
+		OutfitDto outfitDto = copyToOutfitDto(outfit);
+		if(pictureProfile != null) outfitDto.setProfilePictureUri(pictureProfile.getSmalluri());
+
+		return outfitDto;
 	}
 
 
@@ -733,62 +830,92 @@ public class ConsumerService implements ClientService{
 		return outfitRep.getOutfitById(UUID.fromString(outfitId));
 	}
 
-	public PagedResources<?> readOutfits(String username, Pageable pageable){
-		logger.debug("username = " + username);
-		Profile profile = profileRep.findByUsername(username);
-		Page<OutfitDto> outfits = outfitRep.findByProfileId(profile.getId(), pageable);
-		logger.debug("outfits return from repository: \n" + outfits);
-		// Tell Paged Resource Assembler to use the user assembler for individual items.
-		PagedResources<?> pagedOutfitResource = outfitPRAP.toResource(outfits, this::toResource);
-		return pagedOutfitResource;
+	// TDOD:  generalize this method for getContentsByItemId
+	private <T> Resource<CursorDto> buildPagedResponse(CursorDto cursor, PagedList<T> pagedDtoList, String filterQueryParam){
+		String queryParams = cursor.getNextURI(pagedDtoList, cursor);
+
+		Link afterLink = ControllerLinkBuilder.linkTo(ConsumerController.class)
+			.slash("outfits?filter=" + filterQueryParam + queryParams)
+			.withRel("after");
+
+		cursor.embedResource("outfitDtoes", new Resources<T>(pagedDtoList));
+
+		return new Resource<CursorDto>(cursor, afterLink);
+	}
+
+	public Resource<CursorDto> readOutfitsByUsername(String username, String callerName, CursorDto cursor, String filterQueryParam) throws Exception{
+		//logger.debug("username = " + username);
+		//Profile profile = profileRep.findByUsername(username);
+		////Page<OutfitDto> outfits = outfitRep.findByProfileId(profile.getId(), pageable);
+		//List<OutfitDto> outfitDtos = outfitRep.findByProfileId(callerName, cursor, profile.getId().toString());
+		////logger.debug("outfits return from repository: \n" + outfitDtos);
+		////// Tell Paged Resource Assembler to use the user assembler for individual items.
+		////PagedResources<?> pagedOutfitResource = outfitPRAP.toResource(outfits, this::toResource);
+		////return pagedOutfitResource;
+		PagedList<OutfitDto> pagedOutfitDtos = null;
+
+		try{
+			Profile profile = profileRep.findByUsername(username);
+			pagedOutfitDtos = (PagedList)outfitRep.findByProfileId(callerName, cursor, profile.getId());
+		}
+		catch(Exception e){
+			logStackTrace(e);
+			throw new Exception("Error getting outfits.");
+		}
+
+		return buildPagedResponse(cursor, pagedOutfitDtos, filterQueryParam);
+
 	}
 
 	public ResponseEntity<?> readOutfitsByIds(List<String> ids){
 		List<Outfit> outfits;
 
 		try{
-
 			outfits = outfitRep.getOutfitsByIds(ids);
-
-		}catch(Exception e){
-
+		}
+		catch(Exception e){
 			List<String> exception = new ArrayList(1);
 			exception.add(e.toString());
 			return new ResponseEntity<>(exception, HttpStatus.INTERNAL_SERVER_ERROR);
-
 		}
+
 		return new ResponseEntity<>( outfits.stream().map(this::toResource).collect(Collectors.toList()), HttpStatus.OK );
 	}
 
-	public PagedResources<?> readPagedOutfits(String filter, String callerName, Pageable pageable){
-		Page<OutfitDto> outfits = outfitRep.customFindAll(callerName, pageable);//outfitRep.getAllOutfitsWithUsername(pageable).map(this::convertToOutfitDto);
-		return outfitPRAP.toResource(outfits, this::toResource);
-		//switch(filter){
-		//	case "all":
-		//		/*Page<OutfitDto> outfits = outfitRep.getAllOutfitsWithUsername(pageable).get().map(new Converter<Outfit, OutfitDto>(){
-		//			@Override
-		//			public OutfitDto convert(Outfit outfit){
-		//				return new OutfitDto(outfit.getIdText(), outfit.getLikes(), outfit.getComments(), new ArrayList<ContentDto>(5), outfit.getCoverpicuri(), outfit.getUsername());
-		//			}	
-		//		});*/
-		//		Page<OutfitDto> outfits = outfitRep.getAllOutfitsWithUsername(pageable).map(this::convertToOutfitDto);
-		//		return outfitPRAP.toResource(outfits, this::toResource);
-		//	default:
-		//		return null;
-		//}		
+	//public PagedResources<?> readPagedOutfits(String filter, String callerName, Pageable pageable) throws Exception{
+	public Resource<CursorDto> readPagedOutfits(String filter, String callerName, CursorDto cursor, String filterQueryParam) throws Exception{
+		//Page<OutfitDto> outfits = outfitRep.customFindAll(callerName, pageable);//outfitRep.getAllOutfitsWithUsername(pageable).map(this::convertToOutfitDto);
+
+		PagedList<OutfitDto> pagedOutfitDtos = null;
+
+		try{
+			pagedOutfitDtos = (PagedList)outfitRep.customFindAll(callerName, cursor, null);
+		}
+		catch(Exception e){
+			logStackTrace(e);
+			throw new Exception("Error getting outfits.");
+		}
+
+		return buildPagedResponse(cursor, pagedOutfitDtos, filterQueryParam);
 	}
 
 	@Transactional
-	public ResponseEntity<?> updateOutfitCoverpic(String id, String username, OutfitCoverpicDto outfitCoverpicDto){
-		Profile profile = profileRep.findByUsername(username);
-		if(profile.getUsername().equals(username)){
+	public void/*ResponseEntity<?>*/ updateOutfitCoverpic(String id, String username, OutfitCoverpicDto outfitCoverpicDto) throws Exception, IllegalStateException{
+		//try{
+			UUID pictureId = UUID.fromString(outfitCoverpicDto.getCoverPictureId());
+			Profile profile = profileRep.findByUsername(username);
+	
+			if(pictureId == null) throw new IllegalStateException("The provided picture id does not exist.");
+			Picture picture = pictureRep.findById(pictureId).get();
+
 			Outfit outfit = outfitRep.findById(UUID.fromString(id)).get();
-			outfit.setCoverpicuri(outfitCoverpicDto.getCoverpicuri());
-			entityManager.merge(outfit);
-			return new ResponseEntity<String>("", HttpStatus.OK);
-		}else{
-			return new ResponseEntity<String>("User does not have permissions to edit this resouce", HttpStatus.UNAUTHORIZED);
-		}
+			if(!profile.getId().toString().equalsIgnoreCase(picture.getProfileId().toString())) throw new Exception("User does not have permissions to edit this resouce.");
+			//if(profile.getUsername().equals(username)) throw new Exception("User does not have permissions to edit this resouce.");
+	
+	
+			Outfit mergedOutfit = entityManager.merge(outfit);
+			mergedOutfit.setCoverPictureId(pictureId);
+			mergedOutfit.setCoverpicuri(picture.getMediumuri());
 	}
 
 	public List<?> readContents(String outfitId){
@@ -796,18 +923,32 @@ public class ConsumerService implements ClientService{
 		return contents.stream().map(this::toResource).collect(Collectors.toList());
 	}
 
-	public PagedResources<?> getContentsByItemId(String itemId, Pageable pageable){
-		/*Page<ContentDto> contentDtos = contentRep.findByItemId(UUID.fromString(itemId), pageable).map(new Converter<Content, ContentDto>(){
-			@Override
-			public ContentDto convert(Content content){
-				return new ContentDto(content.getIdText(), content.getCoverpicuri(), new PictureDto(content.getPicture()), null, content.getOutfit().getIdText());
-			}	
-		});*/
-		Page<ContentWithOutfitDto> contentWithOutfitDto = contentRep.getContentWithOutfitByItemId(UUID.fromString(itemId), pageable);
-		return contentWithOutfitPRAP.toResource(contentWithOutfitDto, this::toResource);
+	//public PagedResources<?> getContentsByItemId(String itemId, Pageable pageable){
+	//	Page<ContentWithOutfitDto> contentWithOutfitDto = contentRep.getContentWithOutfitByItemId(UUID.fromString(itemId), pageable);
+	//	return contentWithOutfitPRAP.toResource(contentWithOutfitDto, this::toResource);
+	//}
 
-		//Page<ContentDto> contentDtos = contentRep.findByItemId(UUID.fromString(itemId), pageable).map(this::convertToContentDto);
-		//return contentPRAP.toResource(contentDtos, this::toResource);
+	public Resource<CursorDto> getContentsByItemId(String itemId, CursorDto cursor) throws Exception{
+		PagedList<ContentWithOutfitDto> pagedContentWithOutfitDto = null;
+
+		try{
+			pagedContentWithOutfitDto = (PagedList)contentRep.getContentWithOutfitByItemId(UUID.fromString(itemId), cursor);
+		}
+		catch(Exception e){
+			logStackTrace(e);
+			throw new Exception("Error getting outfits.");
+		}
+
+		//return buildPagedResponse(cursor, pagedOutfitDtos, null);
+		String queryParams = cursor.getNextURI(pagedContentWithOutfitDto, cursor);
+
+		Link afterLink = ControllerLinkBuilder.linkTo(ConsumerController.class)
+			.slash("contents/items/" + itemId + queryParams)
+			.withRel("after");
+
+		cursor.embedResource("contentWithOutfitDtoes", new Resources<ContentWithOutfitDto>(pagedContentWithOutfitDto));
+
+		return new Resource<CursorDto>(cursor, afterLink);
 	}
 
 
@@ -887,7 +1028,8 @@ public class ConsumerService implements ClientService{
 		entityManager.persist(content);
 		content.setOutfit(parentOutfit);
 		entityManager.persist(parentOutfit);
-		return new ContentDto(content.getId().toString(), content.getCoverpicuri(), pictureDto, itemsDto, null);
+		//return new ContentDto(content.getId().toString(), content.getCoverpicuri(), pictureDto, itemsDto, null);
+		return new ContentDto(content);
 	}
 
 
@@ -900,6 +1042,7 @@ public class ConsumerService implements ClientService{
 
 		for(ContentDto contentDto : contentDtos){
 			Content content = copyToContent(contentDto);
+			content.setId(null);
 			entityManager.persist(content);
 			PictureDto pictureDtoResult = null;
 			List<ItemDto> itemsDtosResult  = new ArrayList<ItemDto>(content.getItems().size());
@@ -907,12 +1050,21 @@ public class ConsumerService implements ClientService{
 			logger.debug("ConsumerService#createContents: content after persist() = " + content.toString());
 
 			for(ItemDto itemDto : contentDto.getItems()){
-				Item item = copyToItem(itemDto);
+				//Item item = copyToItem(itemDto);
+
+				Item item = buildExistingItem(itemDto);
+
 				logger.debug("ConsumerService#createContents: item before persist/merge =" + item.toString() + "\n");
 				logger.debug("ConsumerService#createContents: item#contents before persist/merge =" + item.getContents().toString() + "\n");
-				
-				if(item.getId() != null) item = (Item)entityManager.merge(item);
-				else entityManager.persist(item);
+
+				// Item is new so add the picture id associated with its outfit
+				if(item.getId() == null){
+					item.setPicture(pictureRep.findById(parentOutfit.getCoverPictureId()).get());
+					entityManager.persist(item);
+				}				
+				//else{
+				//	item = (Item)entityManager.merge(item);
+				//}
 
 				logger.debug("ConsumerService#createContents: item after persist/merge = " + item.toString() + "\n");
 				logger.debug("ConsumerService#createContents: item#contents after persist/merge =" + item.getContents().toString() + "\n");
@@ -1027,7 +1179,8 @@ public class ConsumerService implements ClientService{
 		PictureDto pictureDto = new PictureDto(content.getPicture());
 		//pictureDto.setId(null);
 
-		return new ContentDto(content.getId().toString(), content.getCoverpicuri(), pictureDto, itemDtos, null);
+		//return new ContentDto(content.getId().toString(), content.getCoverpicuri(), pictureDto, itemDtos, null);
+		return new ContentDto(content);
 	}
 
 	@Transactional
@@ -1427,18 +1580,26 @@ public class ConsumerService implements ClientService{
 
 	//
 	@Transactional
-	public PictureUpdateDto updateCrop(PictureUpdateDto pictureUpdateDto, String username) throws Exception, IllegalStateException{
+	public PictureUpdateDto updateCrop(PictureUpdateDto pictureUpdateDto, String username, String type) throws Exception, IllegalStateException{
 		// Check if profile exists for username
 		Profile profile = profileRep.findByUsername(username);
 		if(profile == null) throw new Exception("User does not exist");
+		BasePicture picture = null;
 
 		// Verify user is the owner of the picture resource
-		Picture picture = pictureRep.findByOriginaluri(pictureUpdateDto.getOriginaluri());
-		logger.debug("ConsumerService#updateCrop: picture = " + picture.toString());
-		logger.debug("ConsumerService#updateCrop: picture -> profileId = " + picture.getProfileId().toString());
-		logger.debug("ConsumerService#updateCrop: profile -> idText = " + profile.getIdText());
+		logger.debug("ConsumerService#updateCrop: type = " + type);
+		if(type.equals("profile")){
+			picture = pictureProfileRep.findByOriginaluri(pictureUpdateDto.getOriginaluri());
+			if(!((PictureProfile)picture).getProfile().getId().toString().equalsIgnoreCase(profile.getIdText())) throw new IllegalStateException("Unauthorized attempt to modify resource.");	
+		}
+		else{
+			picture = pictureRep.findByOriginaluri(pictureUpdateDto.getOriginaluri());	
+			if(!((Picture)picture).getProfileId().toString().equalsIgnoreCase(profile.getIdText())) throw new IllegalStateException("Unauthorized attempt to modify resource.");		
+		}
 
-		if(!picture.getProfileId().toString().equalsIgnoreCase(profile.getIdText())) throw new IllegalStateException("Unauthorized attempt to modify resource.");
+		//logger.debug("ConsumerService#updateCrop: picture = " + picture.toString());
+		//logger.debug("ConsumerService#updateCrop: picture -> profileId = " + picture.getProfileId().toString());
+		//logger.debug("ConsumerService#updateCrop: profile -> idText = " + profile.getIdText());
 
 		try{
 			// Update picture crop with the crop passed in pcitureDto
@@ -1447,7 +1608,12 @@ public class ConsumerService implements ClientService{
 			completePUDto.setContentId(pictureUpdateDto.getContentId());
 			return completePUDto;
 		}
+		catch(IllegalStateException e){
+			logStackTrace(e);
+			throw new IllegalStateException("failed to update picture");
+		}
 		catch(Exception e){
+			logStackTrace(e);
 			throw new Exception("failed to update picture");
 		}
 	}
@@ -1525,21 +1691,21 @@ public class ConsumerService implements ClientService{
 	public PictureDto saveImage(String username, MultipartHttpServletRequest data){
 		Profile profile = profileRep.findByUsername(username);
 		logger.debug("ConsumerService.saveImage() invoked");
-		PictureUpdateDto pictureUpdateDto = imageService.saveImage(data);
-		Picture picture = copyToPicture(pictureUpdateDto);
+		PictureDto pictureDto = imageService.saveImage(data);
+		Picture picture = copyToPicture(pictureDto);
 		picture.setProfileId(profile.getId());
 		entityManager.persist(picture);
-		pictureUpdateDto.setId(picture.getId().toString());
-		return pictureUpdateDto;
+		pictureDto.setId(picture.getId().toString());
+		return pictureDto;
 	}
 	
-	/*
-	saves jpeg data to filesystem, and creates an entry in PictureDeleted with associating picture entity.
-	TODO:  Finiah implementing multiple files identified by a multipart contentId parameter
-	@param MulitpartHttpServletRequest data 
-	@param String contentId
-	@returns json picture object of existing picture entity having properties modified with new image filnames.
-	*/
+	/**
+	*saves jpeg data to filesystem, and creates an entry in PictureDeleted with associating picture entity.
+	*TODO:  Finiah implementing multiple files identified by a multipart contentId parameter
+	*@param MulitpartHttpServletRequest data 
+	*@param String contentId
+	*@returns json picture object of existing picture entity having properties modified with new image filnames.
+	**/
 	@Transactional
 	public List<PictureUpdateDto> updateImage(MultipartHttpServletRequest data, String contentId){
 		//send existing image to the PictureDeleteTable
@@ -1552,11 +1718,13 @@ public class ConsumerService implements ClientService{
 		pictureDeleteRep.saveAndFlush(pd);
 
 		//save the new image data to fs and return in picture json with existing id.
-		PictureUpdateDto pictureUpdateDto = imageService.saveImage(data);
+		PictureUpdateDto pictureUpdateDto = (PictureUpdateDto)imageService.saveImage(data);
 		pictureUpdateDto.setId(picture.getId().toString());
 		pictureUpdateDto.setContentId(contentId);
+
 		List<PictureUpdateDto> pictureUpdateDtos = new ArrayList<PictureUpdateDto>();
 		pictureUpdateDtos.add(pictureUpdateDto);
+
 		return pictureUpdateDtos;		
 	}
 
@@ -1644,34 +1812,32 @@ public class ConsumerService implements ClientService{
 	}
 
 	@Transactional
-	public String updateProfileImage(MultipartHttpServletRequest data, String username) throws Exception{
+	public PictureDto updateProfileImage(MultipartHttpServletRequest data, String username) throws Exception{
 		//send existing image to the PictureDeleteTable
 		Profile profile = profileRep.findByUsername(username);
 
 		if(profile == null) throw new Exception("User does not exist");
 
 		PictureProfile pp = profile.getPictureProfile();
-		UUID id = null;
+		PictureDto pictureDto = imageService.saveImage(data);
 
-		// copy exiting Picture entity to a PictureDelete entity
-		if(pp != null){
-			PictureDelete pd = new PictureDelete(pp);
-			logger.debug("PictureDelete created = " + pd.toString());
-			pictureDeleteRep.saveAndFlush(pd);
-			id = pp.getId();
+		// First time submitting a profile picture
+		if(pp == null){
+			pp = new PictureProfile(pictureDto);
+			profile.setPictureProfile(pp);
+			entityManager.merge(profile);
+		}
+		// Existing profile picture updated.
+		else {
+			pp.setThumbnailuri(pictureDto.getThumbnailuri());
+			pp.setSmalluri(pictureDto.getSmalluri());
+			pp.setMediumuri(pictureDto.getMediumuri());
+			pp.setLargeuri(pictureDto.getLargeuri());
+			pp.setOriginaluri(pictureDto.getOriginaluri());
+			entityManager.merge(pp);
 		}
 
-		//save the new image data to fs creating a new PictureProfile entity
-		String filename = imageService.saveProfileImage(data);
-		pp = new PictureProfile(id, null, null, null, null, filename, null);
-		//entityManager.persist(pp);
-		profile.setPictureProfile(pp);
-		entityManager.merge(profile);
-
-		String ppId = pp.getId() != null ? pp.getId().toString() : "";
-		logger.debug("pp idText = " + ppId);
-
-		return ppId;		
+		return pictureDto;
 	}
 
 	public byte[] getImage(String filename/*, HttpServletResponse response*/){

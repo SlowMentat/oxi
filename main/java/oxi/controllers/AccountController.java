@@ -106,6 +106,7 @@ public class AccountController{
 
 		String appUrl = 
 			"https://" + 
+			//"fitseeapp://shop/browse" +
 			request.getServerName() + ":" + 
 			//request.getServerPort() +  
 			request.getContextPath();

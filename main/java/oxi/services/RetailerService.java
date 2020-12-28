@@ -413,13 +413,13 @@ public class RetailerService{
 				List<String> itemIds = ra.getItems().stream().map((Item item) -> item.getIdText()).collect(Collectors.toList());				
 				/*
 				* TODO: use an ORDER BY clause in the custom SQL statemnt to retrieve the entitites in the defined order.
-				* This is so that we can binary search on items in retailerAccount against id
+				* This is so that a binary search for id can be performed on items in retailerAccount.
 				*/
 				if(Collections.binarySearch(itemIds, id) >= 0){
 					return UUID.fromString(id);
 				}
 
-				// trying to access an item id that does not belong to this company, so return empty string
+				// Trying to access an item id that does not belong to this company, so return empty string
 				return null;
 			})
 			.collect(Collectors.toList());
@@ -470,11 +470,11 @@ public class RetailerService{
 	@Transactional
 	public PictureDto saveImage(MultipartHttpServletRequest data){
 		logger.debug("ConsumerService.saveImage() invoked");
-		PictureUpdateDto pictureUpdateDto = imageService.saveImage(data);
-		Picture picture = copyToPicture(pictureUpdateDto);
+		PictureDto pictureDto = imageService.saveImage(data);
+		Picture picture = copyToPicture(pictureDto);
 		entityManager.persist(picture);
-		pictureUpdateDto.setId(picture.getId().toString());
-		return pictureUpdateDto;
+		pictureDto.setId(picture.getId().toString());
+		return pictureDto;
 	}
 	
 	/*
@@ -494,7 +494,7 @@ public class RetailerService{
 		logger.debug("PictureDelete created = " + pd.toString());
 		pictureDeleteRep.saveAndFlush(pd);
 		//save the new image data to fs and return in picture json with existing id.
-		PictureUpdateDto pictureUpdateDto = imageService.saveImage(data);
+		PictureUpdateDto pictureUpdateDto = (PictureUpdateDto)imageService.saveImage(data);
 		pictureUpdateDto.setId(picture.getId().toString());
 		pictureUpdateDto.setContentId(contentId);
 		List<PictureUpdateDto> pictureUpdateDtos = new ArrayList<PictureUpdateDto>();

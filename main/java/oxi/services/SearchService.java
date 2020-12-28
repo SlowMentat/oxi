@@ -65,43 +65,68 @@ public class SearchService{
 
 	public List<SuggestRetailerEsDto> suggestRetialerNames(String prefix){
 		List<SuggestRetailerEsDto> result = new ArrayList<SuggestRetailerEsDto>();
+
 		if(prefix != null && !prefix.isEmpty()){
 			result = suggestRep.retailerNameSuggest(prefix);
 		}
+
 		return result;
 	}
 
 	public List<SuggestItemEsDto> suggestItems(String prefix, String retailer){
 		List<SuggestItemEsDto> result = new ArrayList<SuggestItemEsDto>();
+
 		if(prefix != null && retailer != null && !prefix.isEmpty()){
 			result = suggestRep.itemSuggest(prefix, retailer);
 		}
+
 		return result;
 	}
 
 	public List<SuggestUdrEsDto> suggestUserDefinedRetailerNames(String prefix){
 		List<SuggestUdrEsDto> result = new ArrayList<SuggestUdrEsDto>();
+
 		if(prefix != null && !prefix.isEmpty()){
 			result = suggestRep.udrNameSuggest(prefix);
 		}
+
 		return result;		
 	}
 
 	public List<SuggestUdsEsDto> suggestUserDefinedSizeLabels(String prefix){
 		List<SuggestUdsEsDto> result = new ArrayList<SuggestUdsEsDto>();
+
 		if(prefix != null && !prefix.isEmpty()){
 			result = suggestRep.udsLabelSuggest(prefix);
 		}
+
+		return result;		
+	}
+
+	public List<SuggestUDItemESDTO> suggestUserDefinedItems(String prefix, String retailer, String apparelType, String sizeLabel){
+		List<SuggestUDItemESDTO> result = new ArrayList<SuggestUDItemESDTO>();
+
+		if(prefix != null && !prefix.isEmpty()){
+			result = suggestRep.userDefinedItemSuggest(prefix, retailer, apparelType, sizeLabel);
+		}
+
 		return result;		
 	}
 
 	public List<SuggestApparelTypeEsDto> suggestApparelType(String prefix){
 		List<SuggestApparelTypeEsDto> result = new ArrayList<SuggestApparelTypeEsDto>();
+		
 		if(prefix != null && !prefix.isEmpty()){
 			result = suggestRep.apparelTypeSuggest(prefix);
 		}
+
 		return result;		
 	}
+
+	//public List<ApparelTypeEsDto> searchAllApparelTypes(){
+	//	List<ApparelTypeEsDto> results = new ArrayList<ApparelTypeEsDto>();
+	//	
+	//}
 
 	public PagedResources<?> getApparelTypes(String name, Pageable pageable){
 		Page<ApparelTypeEsDto> apparelTypes = null;

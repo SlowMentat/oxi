@@ -8,6 +8,9 @@ import java.util.HashMap;
 import java.util.Date;
 import java.util.Enumeration;
 
+import java.lang.Exception;
+import java.lang.IllegalStateException;
+
 import javax.servlet.http.*;
 import javax.servlet.*;
 import javax.persistence.*;
@@ -184,7 +187,8 @@ public class ConsumerController{
 	*<p>
 	*\/deletePhoto
 	*</p>
-	*@param token Current expired token sent in request parameter
+	*@param principle 
+	*@param contentIds ArrayList of content ids as Strings
 	*@return ResponseEntity<?> with Status 400 if there exists a contentId that does not belong to the user, otherwise returns status 200
 	*/
 	@Secured({"ROLE_USER"})
@@ -216,7 +220,7 @@ public class ConsumerController{
 	}*/
 
 	@Secured({"ROLE_USER"})
-	@RequestMapping(value="/updatePhoto/{contentId}", method=RequestMethod.POST, consumes=MediaType.APPLICATION_FORM_URLENCODED_VALUE) //TODO:  Override multipart resolver to allow for put requests
+	@RequestMapping(value="/updatePhoto/{contentId}", method=RequestMethod.POST) //TODO:  Override multipart resolver to allow for put requests
 	public ResponseEntity<?> updateImage(@RequestBody MultiValueMap<String, Object> formData, @PathVariable String contentId){	
 
 		StringWriter stringWriter = new StringWriter();
@@ -244,17 +248,29 @@ public class ConsumerController{
 		}
 	}
 
+	/**
+	*Controller for creating a new profile picture or updating and existing one.
+	*<p>
+	*\/updateProfilePhoto
+	*</p>
+	*@param principle
+	*@param formData MultiValueMap of String typed keys and Object typed values.
+	*@return ResponseEntity<?> with Status 400 if there exists a contentId that does not belong to the user, otherwise returns status 200
+	*/
 	@Secured({"ROLE_USER"})
 	@RequestMapping(value="/updateProfilePhoto", method=RequestMethod.POST) //TODO:  Override multipart resolver to allow for put requests
-	public ResponseEntity<?> updateProfileImage(final Principal principal, MultipartHttpServletRequest requestData){	
+	public ResponseEntity<?> updateProfileImage(final Principal principal, MultipartHttpServletRequest formData /*MultipartHttpServletRequest requestData*/){	
 		StringWriter stringWriter = new StringWriter();
 		PrintWriter printWriter = new PrintWriter(stringWriter);
-		String response = "";
 
 		try{
-			response = consumerService.updateProfileImage(requestData, principal.getName());
-			logger.debug("response = " + response);
-			return new ResponseEntity<String>(response, HttpStatus.CREATED);
+			String[] cropData = formData.getParameterValues("crop");
+			logger.debug("/updatePhoto data length = " + formData.getContentLength() + " bytes");
+			logger.debug("/crop = " + cropData[0]);
+
+			PictureDto pictureDto = consumerService.updateProfileImage(formData, principal.getName());
+			logger.debug("pictureDto = " + pictureDto);
+			return new ResponseEntity<PictureDto>(pictureDto, HttpStatus.CREATED);
 		}
 		catch(Exception e){
 			e.printStackTrace(printWriter);
@@ -266,19 +282,19 @@ public class ConsumerController{
 	@Secured({"ROLE_USER"})
 	@RestResource(exported = true)
 	@RequestMapping(value="/crop", method=RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateCrop(final Principal principal, @RequestBody PictureUpdateDto pictureUpdateDto){
+	public ResponseEntity<?> updateCrop(final Principal principal, @RequestBody PictureUpdateDto pictureUpdateDto, @RequestParam(value="type", required=false) String type) throws Exception, IllegalStateException{
 		//StringWriter stringWriter = new StringWriter();
 		//PrintWriter printWriter = new PrintWriter(stringWriter);
 
-		try{
+		//try{
 			logger.debug("Request Body Received: " + pictureUpdateDto);
-			return new ResponseEntity(consumerService.updateCrop(pictureUpdateDto, principal.getName()), HttpStatus.OK);
-		}
-		catch(Exception e){	
-			e.printStackTrace(printWriter);
-			logger.error(stringWriter.toString());		
-			return new ResponseEntity(HttpStatus.BAD_REQUEST);
-		}
+			return new ResponseEntity(consumerService.updateCrop(pictureUpdateDto, principal.getName(), type), HttpStatus.OK);
+		//}
+		//catch(Exception e){	
+		//	e.printStackTrace(printWriter);
+		//	logger.error(stringWriter.toString());		
+		//	return new ResponseEntity(HttpStatus.BAD_REQUEST);
+		//}
 	}
 	
 	@RequestMapping(value="/image/{filename}", method=RequestMethod.GET/*, produces = MediaType.IMAGE_JPEG_VALUE*/)
@@ -423,9 +439,10 @@ public class ConsumerController{
 	@RestResource(exported = true)
 	@CrossOrigin(origins = "https://oxisalechannel.com")
 	@RequestMapping(value = "/outfits/{username}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getOutfitsByUsernmae(@PathVariable("username") String username, @PageableDefault Pageable pageable){
+	public ResponseEntity<?> getOutfitsByUsername(final Principal principal, @PathVariable("username") String username, CursorDto cursor/*@PageableDefault Pageable pageable*/) throws Exception{
 		logger.debug("username = <" + username + ">");
-		return new ResponseEntity<PagedResources<?>>(consumerService.readOutfits(username, pageable), HttpStatus.OK);
+		//return new ResponseEntity<PagedResources<?>>(consumerService.readOutfits(username, pageable), HttpStatus.OK);
+		return new ResponseEntity<Resource<CursorDto>>(consumerService.readOutfitsByUsername(username, principal.getName(), cursor, ""), HttpStatus.OK);
 	}
 
 	@RestResource(exported = true)
@@ -434,10 +451,11 @@ public class ConsumerController{
 	public ResponseEntity<?> getFilteredOutfits(
 		final Principal principal, 
 		@PageableDefault Pageable pageable, 
+		CursorDto cursor,
 		@RequestParam(value="filter", required=false) String filter,
 		@RequestBody(required=false) List<String> outfitIds
+	) throws Exception{
 
-	){
 		ResponseEntity<?> response;
 
 		//if(filter == null || filter.isEmpty()){
@@ -446,20 +464,25 @@ public class ConsumerController{
 		//	logger.debug("Principal Name: " + principal.getName());
 		//	response = new ResponseEntity<PagedResources<?>>(consumerService.readOutfits(username, pageable), HttpStatus.OK);
 		//else{
-			switch (filter){
-				case "all":
-					response = new ResponseEntity<PagedResources<?>>(consumerService.readPagedOutfits(filter, principal.getName(), pageable), HttpStatus.OK);
-					break;
+		final String All_FILTER_PARAM = "all";
+		final String IDS_FILTER_PARAM = "ids";
+		final String EMPTY_FILTER_PARAM = "";
 
-				case "ids":
-					response = consumerService.readOutfitsByIds(outfitIds);
-					break;
+		switch (filter){
+			case "all":
+				response = new ResponseEntity<Resource<CursorDto>>(consumerService.readPagedOutfits(filter, principal.getName(), cursor, All_FILTER_PARAM), HttpStatus.OK);
+				break;
 
-				//Default behavior is retreive paged outfits
-				default:
-					response = new ResponseEntity<PagedResources<?>>(consumerService.readOutfits(username, pageable), HttpStatus.OK);
-					break;
-			}
+			case "ids":
+				response = consumerService.readOutfitsByIds(outfitIds);
+				break;
+
+			//Default behavior is retreive paged outfits
+			default:
+				//response = new ResponseEntity<PagedResources<?>>(consumerService.readOutfits(username, pageable), HttpStatus.OK);
+				response = new ResponseEntity<Resource<CursorDto>>(consumerService.readOutfitsByUsername(username, principal.getName(), cursor, EMPTY_FILTER_PARAM), HttpStatus.OK);
+				break;
+		}
 		//}
 		
 		return response;
@@ -536,21 +559,27 @@ public class ConsumerController{
 		return new ResponseEntity<List<?>>(consumerService.readContents(outfitId), HttpStatus.OK);
 	}
 
+	//@RestResource(exported = true)
+	//@RequestMapping(value = "/contents/items/{itemId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	//public ResponseEntity<?> getContents(final Principal principal, @PathVariable("itemId") String itemId, @PageableDefault Pageable pageable){
+	//	return new ResponseEntity<PagedResources<?>>(consumerService.getContentsByItemId(itemId, pageable), HttpStatus.OK);
+	//}
 	@RestResource(exported = true)
 	@RequestMapping(value = "/contents/items/{itemId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getContents(final Principal principal, @PathVariable("itemId") String itemId, @PageableDefault Pageable pageable){
-		return new ResponseEntity<PagedResources<?>>(consumerService.getContentsByItemId(itemId, pageable), HttpStatus.OK);
+	public ResponseEntity<?> getContents(final Principal principal, @PathVariable("itemId") String itemId, CursorDto cursor) throws Exception{
+		return new ResponseEntity<Resource<CursorDto>>(consumerService.getContentsByItemId(itemId, cursor), HttpStatus.OK);
 	}
 
 	@RestResource(exported = true)
 	@RequestMapping(value = "/outfit/{id}", method = RequestMethod.PATCH)
-	public ResponseEntity<?> updateOutfitCoverpic(final Principal principal, @RequestBody OutfitCoverpicDto outfitCoverpicDto, @PathVariable("id") String id){
+	public ResponseEntity<?> updateOutfitCoverpic(final Principal principal, @RequestBody OutfitCoverpicDto outfitCoverpicDto, @PathVariable("id") String id) throws Exception, IllegalStateException{
 		String username = principal.getName();
-		try{
-			return consumerService.updateOutfitCoverpic(id, username, outfitCoverpicDto);
-		}catch(Exception e){
-			return new ResponseEntity<Exception>(e, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		//try{
+			consumerService.updateOutfitCoverpic(id, username, outfitCoverpicDto);
+			return new ResponseEntity<String>("", HttpStatus.OK);
+		//}catch(Exception e){
+		//	return new ResponseEntity<Exception>(e, HttpStatus.INTERNAL_SERVER_ERROR);
+		//}
 	}
 
 	/*
@@ -957,6 +986,24 @@ public class ConsumerController{
 	}
 
 	@Secured({"ROLE_USER"})
+	@RequestMapping(value="/searchCustomItems", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> searchUserDefinedItem(
+		final Principal principal, 
+		@RequestParam(value="term", required=true) String term, 
+		@RequestParam(value="retailer", required=true) String retailer,
+		@RequestParam(value="apparelTypeId", required=true) String apparelTypeId,
+		@RequestParam(value="sizeLabel", required=true) String sizeLabel
+	){
+		try{			
+			return new ResponseEntity(searchService.suggestUserDefinedItems(term, retailer, apparelTypeId, sizeLabel), HttpStatus.OK);
+		}
+		catch(Exception e){
+			logger.error(e);
+			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Secured({"ROLE_USER"})
 	@RequestMapping(value="/sizeLabels", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getSizeLabels(final Principal principal, @PageableDefault Pageable pageable, @RequestParam(value="name", required=true) String name){
 		try{			
@@ -1010,6 +1057,4 @@ public class ConsumerController{
 			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
-
 }

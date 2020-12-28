@@ -3,9 +3,10 @@ package oxi.repositories;
 import oxi.models.projection.OutfitProjection;
 import oxi.models.dto.ContentDto;
 import oxi.models.dto.ContentWithOutfitDto;
+import oxi.models.dto.CursorDto;
 import oxi.models.*;
 
-import java.lang.*;
+import java.lang.NoSuchMethodException;
 
 import java.util.*;
 
@@ -17,7 +18,8 @@ public interface MyContentRepositoryCustom /*extends PagingAndSortingRepository<
 	@Query(value="")
 	List<ContentDto> findByOutfitId(UUID id);
 
-	Page<ContentWithOutfitDto> getContentWithOutfitByItemId(UUID itemId, Pageable pageable);
+	//Page<ContentWithOutfitDto> getContentWithOutfitByItemId(UUID itemId, Pageable pageable);
+	List<ContentWithOutfitDto> getContentWithOutfitByItemId(UUID itemId, CursorDto cursor) throws NoSuchMethodException;
 
 	List<Content> getContentsByIds(List<String> ids);
 

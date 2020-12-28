@@ -157,7 +157,8 @@ public class ValueService{
 
 		try{
 			likeCount = likeCountRep.customFindByOutfitId(UUID.fromString(outfitId));
-		}catch(Exception e){
+		}
+		catch(Exception e){
 			logger.error(e.toString());
 			return null;
 		}

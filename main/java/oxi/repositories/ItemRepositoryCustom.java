@@ -28,4 +28,5 @@ public interface ItemRepositoryCustom /*extends JpaRepository<Item, UUID>*/{
 	List<ItemDto> getAllItemsWithCoverpicUri(CursorDto cursor) throws NoSuchMethodException; 
 
 	//List<Item> findByProductOwner(String productOwner);
+	Item findByExistingCustomItem(String udr, String uds, Integer apparel_type_id);
 } 

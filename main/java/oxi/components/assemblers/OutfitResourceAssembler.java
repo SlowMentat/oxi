@@ -30,7 +30,7 @@ public class OutfitResourceAssembler extends ResourceAssemblerSupport<Outfit, Ou
 		//resource.setLikes(outfit.getLikes());
 		//resource.setComments(outfit.getComments());
 		//resource.setContents(outfit.getContents());
-		//resource.setCoverpicuri(outfit.getCoverpicuri());
+		//resource.setCoverpicuri(outfit.getCoverPictureId());
 
 		//TODO:  add paged resource linkes
 		return resource;

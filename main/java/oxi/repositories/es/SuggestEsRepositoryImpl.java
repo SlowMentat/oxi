@@ -123,6 +123,8 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 						logger.debug("source = " + source.toString());
 						SearchHit sourceHit = SearchHit.createFromMap(source);
 
+						/*=========================== dubuging ===========================*/
+						
 						if(sourceHit != null){
 							logger.debug("sourceHit = " + sourceHit.toString());
 							Map<String, SearchHits> innerHits = sourceHit.getInnerHits();
@@ -145,8 +147,10 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 
 							logger.debug("sourceHit = ", sourceHit.toString());
 
+							// Todo: Clean this up.
 							if(innerHits != null){
 								SearchHits products = innerHits.get("products");
+								SearchHits picture = innerHits.get("picture");
 
 								if(products != null){
 
@@ -173,7 +177,7 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 									}
 								}
 								else{
-									logger.debug("product is null");
+									logger.debug("product is null.");
 								}
 							}
 							else{
@@ -184,6 +188,8 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 						else{
 							logger.debug("sourceHit = " + sourceHit.toString());
 						}
+
+						/*=========================== dubuging ===========================*/
 					}
 				}
 			}			
@@ -192,6 +198,154 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 			logger.error("Exception while executing query {}", e);
 		}
 		return suggestedItems;
+	}
+
+	@Override
+	public List<SuggestUDItemESDTO> userDefinedItemSuggest(String prefix, String retailer, String apparelTypeId, String sizeLabel){
+		final String FIELD = "suggest";
+		final String platform = "wearsit";
+		//final String CONTEXT_CAT1 = "retailer_name";
+		//final String CONTEXT_CAT2 = "apparel_type_id";
+		//final String CONTEXT_CAT3 = "platform";
+		final String CONTEXT = "conjunction";
+		final String contextValue = retailer + "_" + platform + "_" + apparelTypeId + "_" + sizeLabel;
+		final String SUGGEST_NAME = "cust-item-suggest-1";
+
+		Map<String, String> inclusionProps;
+		//BoolQueryBuilder boolQuery = QueryBuilders.boolQuery().must(QueryBuilders.matchQuery(field, ter));
+		//termSuggestionBuilder = new TermSuggestionBuilder(FIELD).text(prefix);
+		Map<String, List<? extends ToXContent>> contexts = Collections.singletonMap(CONTEXT, Collections.singletonList(CategoryQueryContext.builder().setCategory(contextValue).build()));
+		
+		//Map<String, List<? extends ToXContent>> contexts = new HashMap<String, List<? extends ToXContent>>(2);
+		//contexts.put(CONTEXT_CAT1, Collections.singletonList(CategoryQueryContext.builder().setCategory(retailer).build()));
+		//contexts.put(CONTEXT_CAT2, Collections.singletonList(CategoryQueryContext.builder().setCategory(apparelTypeId).build()));
+		//contexts.put(CONTEXT_CAT3, Collections.singletonList(CategoryQueryContext.builder().setCategory(platform).build()));
+		
+		completionSuggestionBuilder = new CompletionSuggestionBuilder(FIELD)
+			//.prefix(prefix)
+			.prefix(prefix)
+			.contexts(contexts);
+
+		SuggestBuilder suggestionBuilder = new SuggestBuilder().addSuggestion(SUGGEST_NAME, completionSuggestionBuilder);
+
+		//prepare search on size_label index
+		SearchRequestBuilder searchReqBuilder = client.prepareSearch("item")
+			.setTypes("doc")
+			.setFetchSource(new String[]{"product.handle", "product.udr", "product.uds", "product.onlineStoreUrl", "apparel_type_id"}, null)
+			.suggest(suggestionBuilder);
+
+		//extends ActionResponse 
+		SearchResponse searchResponse;
+		List<SuggestUDItemESDTO> suggestedItems = new ArrayList<SuggestUDItemESDTO>();
+
+		try{
+			//execute() returns a ListenableActionFuture<Response>, which calls get() when complete, returning a Response.
+			searchResponse = searchReqBuilder.execute().get();	
+			logger.debug("searchResponse: " + searchResponse.toString());
+			logger.debug("REST status: " + RestStatus.fromCode(searchResponse.status().getStatus()));
+			logger.debug("suggestion: " + searchResponse.getSuggest().toString());
+
+			//XContentBuilder jsonContentBuilder = JsonXContent.contentBuilder();
+			//inclusionProps = new HashMap<String, String>();
+			//inclusionProps.put("", "");
+			
+			CompletionSuggestion suggestion = (CompletionSuggestion) searchResponse.getSuggest().getSuggestion(SUGGEST_NAME);
+
+			//XContentBuilder xContentBuilder = searchResponse.getSuggest().getSuggestion(CONTEXT_CAT)
+			//	.iterator().next().getOptions()
+			//	.iterator().next().toXContent(JsonXContent.contentBuilder(), new ToXContent.MapaParams(inclusionProps));
+
+			for(CompletionSuggestion.Entry entry : suggestion.getEntries()){
+				//log the suggested text from provided prefix
+				logger.debug("suggestion text: " + entry.getText().toString());
+				//logger.debug("suggestion options: " + entry.getOption())
+		
+				for(CompletionSuggestion.Entry.Option option : entry.getOptions()){
+					//Map<String, Object> wtf = option.getPayloadAsMap();
+					SearchHit hit = option.getHit();
+		
+					if(hit != null){
+						//Map<String, SearchHits> innerHits = hit.getInnerHits();
+						suggestedItems.add(new SuggestUDItemESDTO(hit.getId(), hit.getSourceAsMap()));
+						Map<String, Object> source = hit.getSourceAsMap();
+						logger.debug("source = " + source.toString());
+						SearchHit sourceHit = SearchHit.createFromMap(source);
+		
+						/*=========================== dubuging ===========================*/
+						
+						if(sourceHit != null){
+							logger.debug("sourceHit = " + sourceHit.toString());
+							Map<String, SearchHits> innerHits = sourceHit.getInnerHits();
+							DocumentField product = sourceHit.field("product");
+		
+							if(product != null){
+								logger.debug("product = " + product.toString());
+								Iterator<Object> itr = product.iterator();
+								int index = 0;
+		
+								while(itr.hasNext()){
+									Object value = itr.next();
+									logger.debug("product[" + index + "]" + (value != null ? value.toString() : "null"));
+									index++;
+								}
+							}
+							else{
+								logger.debug("product is null");
+							}
+		
+							logger.debug("sourceHit = ", sourceHit.toString());
+		
+							// Todo: Clean this up.
+							if(innerHits != null){
+								SearchHits products = innerHits.get("products");
+								SearchHits picture = innerHits.get("picture");
+		
+								if(products != null){
+		
+									if(products.iterator().hasNext()){
+		
+										SearchHit prod = products.iterator().next();
+		
+										if(prod != null){
+											DocumentField picUrl = prod.field("onlineStorePreviewUrl");
+		
+											if(picUrl != null){
+												logger.debug("picUrl = " + picUrl.getValue());
+											}
+											else{
+												logger.debug("picUrl is null");
+											}
+										}
+										else{
+											logger.debug("prod is null");
+										}
+									}
+									else{
+										logger.debug("product.iterator().hasNext() is false");
+									}
+								}
+								else{
+									logger.debug("product is null.");
+								}
+							}
+							else{
+								logger.debug("innerHits is null");
+							}
+							//logger.debug("preview picture: " + sourceHit.getInnerHits().get("product").iterator().next().field("onlineStorePreviewUrl").getValue());
+						}
+						else{
+							logger.debug("sourceHit = " + sourceHit.toString());
+						}
+		
+						/*=========================== dubuging ===========================*/
+					}
+				}
+			}			
+		}
+		catch(InterruptedException | ExecutionException e ){
+			logger.error("Exception while executing query {}", e);
+		}
+		return suggestedItems;		
 	}
 
 	@Override
@@ -316,9 +470,9 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 		SuggestBuilder suggestionBuilder = new SuggestBuilder().addSuggestion(SUGGEST_NAME, completionSuggestionBuilder);
 
 		//prepare search on size_label index
-		SearchRequestBuilder searchReqBuilder = client.prepareSearch("uds")
+		SearchRequestBuilder searchReqBuilder = client.prepareSearch("size_label")
 			.setTypes("doc")
-			.setFetchSource(new String[]{"size"}, null)
+			.setFetchSource(new String[]{"name"}, null)
 			.suggest(suggestionBuilder);
 
 		//extends ActionResponse 

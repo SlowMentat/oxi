@@ -34,7 +34,7 @@ public class TokenBasedAuthorizationFilter extends BasicAuthenticationFilter{
 	TokenBasedAuthorizationFilter(AuthenticationManager authenticationManager, String secret){
 		super(authenticationManager);
 		this.secret = secret;
-		logger.debug("TokenBasedAuthorizationFilter#constuctor: secret = " + secret);
+		//logger.debug("TokenBasedAuthorizationFilter#constuctor: secret = " + secret);
 	}
 
 	@Override
@@ -45,6 +45,7 @@ public class TokenBasedAuthorizationFilter extends BasicAuthenticationFilter{
 		//String authorizationToken = request.getAuthType();
 		Enumeration<String> headerNames = request.getHeaderNames();
 		logger.debug("Request Headers:");
+		
 		while(headerNames.hasMoreElements()){
 			logger.debug("	" + headerNames.nextElement());
 		}

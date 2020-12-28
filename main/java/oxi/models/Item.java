@@ -11,6 +11,8 @@ import java.util.List;
 import java.time.Instant;
 import java.util.Date;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.UUID;
 import java.io.Serializable;
 import java.lang.*;
@@ -77,6 +79,12 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	//private Instant updatedOn = createdOn;
 	private Date updatedOn = null;
 
+	@Column(name = "udr", nullable=true)
+	private String udr = null;
+
+	@Column(name = "uds", nullable=true)
+	private String uds = null;
+
 	//@Column(name = "udr",  columnDefinition="VARCHAR(36)")
 	//private String userDefinedRetailer;
 //
@@ -86,7 +94,12 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	@OneToMany(/*cascade = CascadeType.ALL,*/ orphanRemoval= true, mappedBy = "item")
 	@RestResource(rel="client_0")	
 	@JsonIdentityReference(alwaysAsId=true)
-	private List<ItemContent> contents = new ArrayList<>();
+	private Set<ItemContent> contents = new HashSet<ItemContent>();
+
+	@OneToMany(/*cascade = CascadeType.ALL,*/ orphanRemoval= true, mappedBy = "item")
+	@RestResource(rel="client_0")	
+	@JsonIdentityReference(alwaysAsId=true)
+	private Set<LikeCountItem> likeCounts = new HashSet<LikeCountItem>();
 
 	@ManyToOne(cascade=CascadeType.ALL)
 	@RestResource(rel="picture")
@@ -114,6 +127,15 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 		this.sizeChartId = sizeChartId;
 		this.sizeGroupId = sizeGroupId;
 		this.isActive = isActive;
+		
+		try{
+			ItemDto.Product udProduct = ItemDto.Product.build(product);
+			this.udr = udProduct.getUdr();
+			this.uds = udProduct.getUds();
+		}
+		catch(Exception e){
+
+		}
 	}
 
 	public Item(UUID id, String apparelType, String size, UUID retailer, UUID brand){
@@ -207,6 +229,8 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	//public void setUpdatedOn(){this.updatedOn = Instant.now();}
 	public void setUpdatedOn(Date updatedOn){this.updatedOn = updatedOn;}
 	public void setOutfitId(UUID outfitId){this.outfitId = outfitId;}
+	public void setUdr(String udr){this.udr = udr;}
+	public void setUds(String uds){this.uds = uds;}
 	//public void setUserDefinedSize(String uds){this.userDefinedSize = uds;}
 	//public void setUserDefinedRetailer(String udr){this.userDefinedRetailer = udr;}
 	/*public void setContents(List<Content> contents){
@@ -234,7 +258,8 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	public String getSizeChartIdText(){return this.sizeChartIdText;}
 	public RetailerAccount getRetailerAccount(){return this.retailerAccount;}
 	public Integer getApparelType(){return this.apparelType;}
-	public List<ItemContent> getContents(){return this.contents;}
+	public Set<ItemContent> getContents(){return this.contents;}
+	public Set<LikeCountItem> getLikeCounts(){return this.likeCounts;}
 	public Picture getPicture(){return this.picture;}
 	public boolean getIsActive(){return this.isActive;}
 	//public Instant getUpdatedOn(){return this.updatedOn;}
@@ -242,6 +267,8 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	public Date getCreatedOn(){return this.createdOn;}
 	public UUID getOutfitId(){return this.outfitId;}
 	public String getOutfitIdText(){return this.outfitIdText;}
+	public String getUds(){return this.uds;}
+	public String getUdr(){return this.udr;}
 	//public String getUserDefinedSize(){return this.userDefinedSize;}
 	//public String getUserDefinedRetailer(){return this.userDefinedRetailer;}
 	

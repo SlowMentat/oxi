@@ -15,5 +15,9 @@ import java.util.*;
 import oxi.models.dto.*;
 
 //@RepositoryRestResource(collectionResourceRel="Bookmark", path="bookmark")
-public interface ApparelTypeRepository extends JpaRepository<ApparelType, UUID>{
+public interface ApparelTypeRepository extends JpaRepository<ApparelType, UUID>{	
+
+	//@Query("SELECT * FROM apparel_type")
+	//List<ApparelType> findAll();
+
 } 

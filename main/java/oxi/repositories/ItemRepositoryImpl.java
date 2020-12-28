@@ -44,6 +44,8 @@ import java.util.Date;
 
 import org.hibernate.Session;
 import org.hibernate.type.LongType;
+import org.hibernate.type.StringType;
+import org.hibernate.type.IntegerType;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -57,12 +59,7 @@ import com.blazebit.persistence.spring.data.base.query.KeysetAwarePageImpl;
 
 
 public class ItemRepositoryImpl implements ItemRepositoryCustom{
-	
-	//@RestResource(exported=true, path="byid", rel="SearchAllById")
-	//@Query(value = "SELECT * FROM item WHERE profile_id = ?1", nativeQuery = true)
-	//List<Item> findByProfileId(long profileid/*, Pageable pageable*/);
 
-	//Item findById(UUID id);
 	@Transient
 	private static final Logger logger = LogManager.getLogger(ItemRepositoryImpl.class);
 
@@ -187,8 +184,8 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom{
 //		for(Object[] tuple : itemCoverpicTuples){
 //			item = (Item)tuple[0];
 //			outfit = (Outfit)tuple[1];
-//			logger.debug("outfti coverpicuri = " + outfit.getCoverpicuri());
-//			itemDtos.add(new ItemDto(item, outfit.getCoverpicuri()));
+//			logger.debug("outfti coverpicuri = " + outfit.getCoverPictureId().toString());
+//			itemDtos.add(new ItemDto(item, outfit.getCoverPictureId().toString()));
 //			//count++;
 //		}
 //
@@ -266,5 +263,37 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom{
 		logger.debug("pal instantiated");
 		//return kaPal;
 		return itemPage;
+	}
+
+	@Override
+	public Item findByExistingCustomItem(String udr, String uds, Integer apparelTypeId){
+		//String query = 'SELECT DISTINCT product->>"$.udr" as udr, product->>"$.uds" as uds, apparel_type FROM item WHERE platform=wearsit';
+		String query = "SELECT {i.*} from item i WHERE udr = :udr and uds = :uds and apparel_type = :apparelTypeId";
+		String queriedUDR = null;
+		String queriedUDS = null;
+		Integer queriedApparelTypeId = null;
+		Session session = entityManager.unwrap(Session.class);	
+
+		Item item = (Item)session.createSQLQuery(query)
+			.addEntity("i", Item.class)
+			.setParameter("udr", udr, StringType.INSTANCE)
+			.setParameter("uds", uds, StringType.INSTANCE)
+			.setParameter("apparelTypeId", apparelTypeId, IntegerType.INSTANCE)
+			.uniqueResult();
+
+		/*for(Objectp[] tuple : itemTuple){
+			queriedUDR = (String)tuple[0];
+ 			queriedUDS = (String)tuple[1];
+ 			queriedApparelTypeId = (Integer)tuple[2];
+		}
+
+		HashMap resultMap new HashMap<String, String>(3);
+		resultMap.put("udr", queriedUDR);
+		resultMap.put("uds", queriedUDS);
+		resultMap.put("apparel_type_id", queriedApparelTypeId.toString());
+
+		return resultMap;*/
+
+		return item;
 	}
 } 

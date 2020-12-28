@@ -269,7 +269,7 @@ public class ImageService{
      * @param crop The Crop instance to use for cropping oglRotBI
      * @return An initialized instance of PictureUpdateDto.
      */
-    private PictureUpdateDto createOptimizedImages(BufferedImage oglRotBI, Crop crop, String oglFilename) throws IOException{
+    private PictureDto createOptimizedImages(BufferedImage oglRotBI, Crop crop, String oglFilename) throws IOException{
 
 		long mediumImageWidth = 1080L;
 		long smallImageWidth = 200L;
@@ -350,7 +350,7 @@ public class ImageService{
 		String cropString = mapper.writeValueAsString(crop);
 		logger.debug("crop instance serialization result = " + cropString);
 
-		return new PictureUpdateDto(null, thumbnailFilename, smallfilename, mediumFilename, largeFilename, oglFilename, cropString);	
+		return new PictureDto(null, thumbnailFilename, smallfilename, mediumFilename, largeFilename, oglFilename, cropString);	
     }
 
 
@@ -361,7 +361,7 @@ public class ImageService{
      * @return An initialized instance of PictureUpdateDto created Picture entity.
      * @throws IOException
      */
-	private PictureUpdateDto createPicture(byte[] data, String cropString) throws IOException{
+	private PictureDto createPicture(byte[] data, String cropString) throws IOException{
 		// Convert crop to Rectangle object.
 		ObjectMapper mapper = new ObjectMapper();
 		Crop crop = mapper.readValue(cropString, Crop.class);
@@ -381,7 +381,7 @@ public class ImageService{
      * @return An initialized instance of PictureUpdateDto representing the updated Picture entity.
      * @throws IOException
      */
-	public PictureUpdateDto updatePictureEntity(Picture picture) throws IOException{
+	public <T extends BasePicture> PictureUpdateDto updatePictureEntity(T picture) throws IOException{
 		if(picture == null) return null;
 		if(picture.getCrop() == null) return null;
 		if(picture.getOriginaluri() == null || picture.getOriginaluri().length() < 4) return null;
@@ -391,26 +391,27 @@ public class ImageService{
 
 		// Create BufferedImage of the existing original image
 		BufferedImage oglBI = ImageIO.read(new File(originalFolder + "/" + picture.getOriginaluri() + ".jpg"));
-		PictureUpdateDto pictureUpdateDto = createOptimizedImages(oglBI, crop, picture.getOriginaluri());
+		PictureDto pictureDto = createOptimizedImages(oglBI, crop, picture.getOriginaluri());
 
 		// Schedule previous picture for deletion if update successful.
-		if(pictureUpdateDto != null){
+		if(pictureDto != null){
 			PictureDelete pd = new PictureDelete(picture);
 			logger.debug("PictureDelete created = " + pd.toString());
 			pictureDeleteRep.save(pd);
-			Picture managedPicture = entityManager.merge(picture);
+
+			T managedPicture = entityManager.merge(picture);
 			logger.debug("ImageService#updatePictureEntity managedPicture = " + managedPicture);
 
 			// Update picture instance with new optimized filenames
-			managedPicture.setThumbnailuri(pictureUpdateDto.getThumbnailuri());
-			managedPicture.setSmalluri(pictureUpdateDto.getSmalluri());
-			managedPicture.setMediumuri(pictureUpdateDto.getMediumuri());
-			managedPicture.setLargeuri(pictureUpdateDto.getLargeuri());
+			managedPicture.setThumbnailuri(pictureDto.getThumbnailuri());
+			managedPicture.setSmalluri(pictureDto.getSmalluri());
+			managedPicture.setMediumuri(pictureDto.getMediumuri());
+			managedPicture.setLargeuri(pictureDto.getLargeuri());
 
-			pictureUpdateDto.setId(picture.getIdText());
+			pictureDto.setId(picture.getIdText());
 		}
 
-		return pictureUpdateDto;
+		return new PictureUpdateDto(pictureDto);
 	}
 
 	//Saves original image and return Picture enitity ID only
@@ -452,35 +453,17 @@ public class ImageService{
 		return filename;
 	}	
 
-	public String saveProfileImage(MultipartHttpServletRequest formData){
-		logger.debug("Ivoking ImageService.uploadImage() method!");
-		StringWriter stringWriter = new StringWriter();
-		PrintWriter printWriter = new PrintWriter(stringWriter);
-		Enumeration<String> parameters = formData.getParameterNames();
-		String[] multipartPayload = formData.getParameterValues(parameters.nextElement());
-		//trimm the base64 prefix to get the formData
-		String file = multipartPayload[0].split(",")[1];
+	//public PictureDto updateProfileImage(Picture picture){
+	//	return updatePictureEntity(picture);
+	//}
 
-		if(!file.isEmpty()){
-			try{
-				byte[] bytes = DatatypeConverter.parseBase64Binary(file);
-				return provisionPictureProfile(bytes);
-			}
-			catch(Exception e){
-				e.printStackTrace(printWriter);
-				logger.error(stringWriter.toString());
-				//printWriter.flush();
-				return null;
-			}
-		}
-		else{
-			return null;
-		}
+	public PictureDto saveProfileImage(MultipartHttpServletRequest formData){
+		return saveImage(formData);
 	}
 
 	// Crops the original image
 	// public PictureDto updateCroppedImages(PictureProfile pp){
-	public PictureDto updateCroppedImages(PictureProfile pp){
+	public PictureDto updateCroppedImages(PictureProfile pp) throws Exception{
 		StringWriter stringWriter = new StringWriter();
 		PrintWriter printWriter = new PrintWriter(stringWriter);
 		String originalFilename = pp.getOriginaluri();
@@ -532,15 +515,16 @@ public class ImageService{
         	ImageIO.write(croppedOutputImage, "jpg", baos);
         	baos.flush();
 
-        	PictureDto updatedPictureDto = (PictureDto)createPicture(baos.toByteArray(), cropStr);
-        	updatedPictureDto.setCrop(cropStr);
-        	return updatedPictureDto;
+        	PictureDto pictureDto = createPicture(baos.toByteArray(), cropStr);
+        	pictureDto.setCrop(cropStr);
+        	return pictureDto;
 		}
 		catch(Exception e){
 			e.printStackTrace(printWriter);
 			logger.error(stringWriter.toString());
 			//printWriter.flush();
-			return null;
+			//return null;
+			throw new Exception("Error creating profile pciture");
 		}
 	}
 
@@ -549,7 +533,7 @@ public class ImageService{
 	* @param MulitpartHttpServletRequest data 
 	* @return String indicating generated filename.
 	*/
-	public PictureUpdateDto saveImage(MultipartHttpServletRequest formData){
+	public PictureDto saveImage(MultipartHttpServletRequest formData){
 		logger.debug("Ivoking ImageService.uploadImage() method!");
 		
 		//Iterator<String> itr = formData.getFileNames();

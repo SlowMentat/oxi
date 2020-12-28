@@ -70,7 +70,7 @@ public class PictureProfile extends BasePicture implements Serializable, Identif
 
 	public PictureProfile(PictureDto pictureDto){
 		super(
-			UUID.fromString(pictureDto.getId()),
+			null,
 			pictureDto.getThumbnailuri(),
 			pictureDto.getSmalluri(),
 			pictureDto.getMediumuri(),
@@ -78,6 +78,8 @@ public class PictureProfile extends BasePicture implements Serializable, Identif
 			pictureDto.getOriginaluri(),
 			pictureDto.getCrop()
 		);
+
+		this.setId(pictureDto.getId() != null ? UUID.fromString(pictureDto.getId()) : null);
 		//this.id = UUID.fromString(pictureDto.getId());
 		//this.thumbnailuri = pictureDto.getThumbnailuri();
 		//this.smalluri = pictureDto.getSmalluri();

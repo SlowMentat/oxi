@@ -13,6 +13,8 @@ import com.fasterxml.jackson.databind.annotation.*;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
+import java.util.Date;
+
 import org.hibernate.annotations.GenericGenerator;
 //import oxi.jackson.*;
 import org.springframework.hateoas.*;
@@ -43,6 +45,8 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 	/*@OneToOne
 	@JoinColumn(name="coverpicture_id")
 	@RestResource(rel="vendor_1")*/
+	@Column(columnDefinition = "BINARY(16)", name = "cover_picture_id")
+	private UUID coverPictureId;
 	private String coverpicuri;
 	
 	//@Cascade(CascadeType.SAVED_UPDATE)
@@ -68,6 +72,12 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 	@Column(columnDefinition = "BINARY(16)", name = "picture_profile_id", updatable = true, insertable = true)
 	private UUID pictureProfileId;
 
+	@Column(name = "created_on", nullable=false, updatable = false)
+	private Date createdOn = new Date();
+
+	@Column(name = "updated_on", nullable=true)
+	private Date updatedOn = null;
+
 	/*@Column(name = "profile_id_text", updatable = false)
 	private String profileText;*/
 	
@@ -75,36 +85,48 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 	public Outfit(){
 	}
 
-	public Outfit(UUID id, int likes, String comments, List<Content> contents, String coverpicuri){
+	public Outfit(UUID id, int likes, String comments, List<Content> contents, UUID coverPictureId){
 		//super();
 		this.id = id;
 		this.likes = likes;
 		this.comments = comments;
 		this.contents = contents;
-		this.coverpicuri = coverpicuri;
+		this.coverPictureId = coverPictureId;
 		this.likeCount = new LikeCount(id, 0);
 	}
 
-	public Outfit(UUID id, int likes, String comments, List<Content> contents, String coverpicuri, String username){
+	public Outfit(UUID id, int likes, String comments, List<Content> contents, UUID coverPictureId, String username){
 		//super();
 		this.id = id;
 		this.likes = likes;
 		this.comments = comments;
 		this.contents = contents;
-		this.coverpicuri = coverpicuri;
+		this.coverPictureId = coverPictureId;
 		this.username = username;
 		this.likeCount = new LikeCount(id, 0);
 	}
 
-	public Outfit(UUID id, int likes, String comments, List<Content> contents, String coverpicuri, String username, LikeCount likeCount){
+	public Outfit(UUID id, int likes, String comments, List<Content> contents, UUID coverPictureId, String username, LikeCount likeCount){
 		//super();
 		this.id = id;
 		this.likes = likes;
 		this.comments = comments;
 		this.contents = contents;
-		this.coverpicuri = coverpicuri;
+		this.coverPictureId = coverPictureId;
 		this.username = username;
 		this.likeCount = likeCount;
+	}
+
+	public Outfit(UUID id, int likes, String comments, List<Content> contents, UUID coverPictureId, String username, LikeCount likeCount, String coverpicuri){
+		//super();
+		this.id = id;
+		this.likes = likes;
+		this.comments = comments;
+		this.contents = contents;
+		this.coverPictureId = coverPictureId;
+		this.username = username;
+		this.likeCount = likeCount;
+		this.coverpicuri = coverpicuri;
 	}
 	
 	//Setters
@@ -113,7 +135,8 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 	//public void setIdText(String idText){this.idText = idText;}
 	public void setLikes(int likes){this.likes = likes;}		
 	public void setComments(String comments){this.comments = comments;}	
-	public void setCoverpicuri(String uri){this.coverpicuri = uri;}	
+	public void setCoverPictureId(UUID coverPictureId){this.coverPictureId = coverPictureId;}
+	public void setCoverpicuri(String coverpicuri){this.coverpicuri = coverpicuri;}	
 	public void setUsername(String username){this.username = username;}
 	//set the binary and text profile ids and assures that changes are propogated to all child entity objects
 	public void setProfile(Profile profile){
@@ -179,11 +202,13 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 	public String getComments(){return this.comments;}	
 	public Profile getProfile(){return this.profile;}
 	public List<Content> getContents(){return this.contents;}
+	public UUID getCoverPictureId(){return this.coverPictureId;}
 	public String getCoverpicuri(){return this.coverpicuri;}
 	public String getUsername(){return this.username;}
 	public LikeCount getLikeCount(){return this.likeCount;}
 	public UUID getPictureProfileId(){return this.pictureProfileId;}
-
+	public Date getUpdatedOn(){return this.updatedOn;}
+	public Date getCreatedOn(){return this.createdOn;}
 	
 	//Auxillary methods
 	/*@Override
@@ -222,7 +247,8 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 		StringBuilder sb = new StringBuilder(indent).append("id: ").append(((this.id == null) ? "null" : id))
 			.append(indent).append("likes: ").append(this.likes)
 			.append(indent).append("comments:").append(this.comments)
-			.append(indent).append("coverpic:").append(this.coverpicuri)
+			.append(indent).append("coverPictureId:").append(this.coverPictureId)
+			.append(indent).append("coverpicuri").append(this.coverpicuri)
 			.append(indent).append("contents: [");
 		for (Content content: this.contents){
 			sb.append(indent).append("{")

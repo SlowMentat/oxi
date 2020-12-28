@@ -5,6 +5,8 @@ import javax.persistence.CascadeType;
 import java.util.Objects;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
@@ -14,6 +16,8 @@ import org.springframework.data.rest.core.annotation.*;
 import com.fasterxml.jackson.annotation.*;
 //import com.fasterxml.jackson.annotation.ObjectIdGenerators.*;
 import org.springframework.hateoas.*;
+
+import java.util.Date;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -37,6 +41,9 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 	@Column(columnDefinition = "BINARY(16)")
 	private UUID id;
 
+	@Column(name = "created_on", nullable = false, updatable = false)
+	private Date createdOn = new Date();
+
 	@Column(name = "id_text", updatable = false, insertable = false)
 	private String idText;	
 	private String coverpicuri;
@@ -55,7 +62,7 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 	@JsonProperty("items")
 	@JsonIdentityReference(alwaysAsId=true)
 	//private Map<String, Item> items;*
-	private List<ItemContent> items = new ArrayList<>(); //TODO:  see if this clears all item assoications on a given 
+	private Set<ItemContent> items = new HashSet<ItemContent>(); //TODO:  see if this clears all item assoications on a given 
 	
 	@OneToOne(cascade=CascadeType.MERGE, orphanRemoval=true, mappedBy="content")
 	@RestResource(rel="vendor_1")
@@ -69,7 +76,7 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 	public Content(){
 	}
 
-	public Content(UUID id, String coverpicuri, Picture picture, List<ItemContent> items){
+	public Content(UUID id, String coverpicuri, Picture picture, Set<ItemContent> items){
 		super();
 		this.id = id;
 		this.coverpicuri = coverpicuri;
@@ -181,6 +188,7 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 	
 	//Getters==========================================================================	
 	public UUID getId(){return this.id;}
+	public Date getCreatedOn(){return this.createdOn;}
 	public String getIdText(){return this.idText;}
 	public String getCoverpicuri(){return this.coverpicuri;}
 	public Outfit getOutfit(){
@@ -197,7 +205,7 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 		return this.items;
 	}*/
 	
-	public List<ItemContent> getItems(){
+	public Set<ItemContent> getItems(){
 		logger.warn("GETTING items MAP");
 		return this.items;
 	}
@@ -248,7 +256,8 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
         StringBuilder sb = new StringBuilder(indent).append("id: ").append((this.id == null ? "null" : this.id))
         	.append(indent).append("outfit: ").append(outfit == null ? "null" : outfit.getId() == null ? "null" : outfit.getId().toString())
 			.append(indent).append("coverpicuri: ").append(this.coverpicuri)
-			.append(indent).append("items: [");
+			.append(indent).append("items: [")
+			.append(indent).append("createdOn: ").append(this.createdOn.toString());
 			for (ItemContent itemContent: this.items) {
 				sb.append(indent).append("{")
 					.append((itemContent == null ? "null" : itemContent.toString(indents + 1))).append(", ")

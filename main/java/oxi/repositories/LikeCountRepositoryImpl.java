@@ -72,17 +72,30 @@ public class LikeCountRepositoryImpl implements LikeCountRepositoryCustom {
 		//HashMap used to build OutfitDTO with nested List<Content>
 		HashMap<Content, ArrayList<ItemDto>> contentToItemMap = new HashMap<Content, ArrayList<ItemDto>>();
 
-		String contentQ = "select {lc.*} from like_count lc where lc.outfit_id = :outfitId";
+		String likeCountQ = "select {lc.*} from like_count lc where lc.outfit_id = :outfitId";
+		String itemQ = "select {i.*} from item_content ic "
+			+ "join item i on ic.item_id = i.id "
+			+ "join content c on ic.content_id = c.id "
+			+ "where c.outfit_id = :outfitId";
 		//String outfitQ = "select {o.*} from outfit o where o.id in (:outfitIds)";
 
-		List<LikeCount> likeCounts = session.createSQLQuery(contentQ)
+		List<LikeCount> likeCounts = session.createSQLQuery(likeCountQ)
 			.addEntity("lc", LikeCount.class)
 			.setParameter("outfitId", outfitId, UUIDBinaryType.INSTANCE)
 			.list();
 
-		if(likeCounts.size() > 1){
-			throw new Exception("expected 1 LikeCount entity, but got Multiple LikeCount entities");
-		}
+		if(likeCounts.size() > 1) throw new Exception("expected 1 LikeCount entity, but received Multiple LikeCount entities");	
+		if(likeCounts.size() == 0) throw new Exception("expected 1 LikeCount entity, but received 0 LikeCount entities");
+
+		List<Item> items = session.createSQLQuery(itemQ)
+			.addEntity("i", Item.class)
+			.setParameter("outfitId", outfitId, UUIDBinaryType.INSTANCE)
+			.list();
+
+		items.stream().forEach(item -> {
+			// This should add only unique items.
+			likeCounts.get(0).addItem(item);
+		});
 
 		return likeCounts.get(0);
 	}

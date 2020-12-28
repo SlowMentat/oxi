@@ -12,9 +12,10 @@ import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Identifiable;
 import com.fasterxml.jackson.annotation.*;
 
-
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+
+import java.util.stream.Collectors;
 
 
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=ContentDto.class)
@@ -27,6 +28,7 @@ public class ContentDto implements Serializable, Identifiable<String>
 	private String outfitId;
 	private PictureDto picture;
 	private List<ItemDto> items;
+	private String createdOn;
 
 	public ContentDto(){}
 
@@ -47,10 +49,23 @@ public class ContentDto implements Serializable, Identifiable<String>
 		this.outfitId = outfitId;
 	}
 
+	public ContentDto(String id, String coverpicuri, PictureDto picture, List<ItemDto> items, String outfitId, String createdOn){
+		//super();
+		this.id = id;
+		this.coverpicuri = coverpicuri;
+		this.picture = picture;
+		this.items = items;
+		this.outfitId = outfitId;
+		this.createdOn = createdOn;
+	}
+
 	public ContentDto(Content content){
-		this.id = content.getIdText();
+		this.id = content.getId().toString();
 		this.coverpicuri = content.getCoverpicuri();
-		this.outfitId = content.getOutfit().getId().toString();
+		this.picture = new PictureDto(content.getPicture());
+		this.items = content.getItems() != null ? content.getItems().stream().map(itemContent -> new ItemDto(itemContent)).collect(Collectors.toList()) : null;
+		this.outfitId = content.getOutfit() != null && content.getOutfit().getId() != null ? content.getOutfit().getId().toString() : null;
+		this.createdOn = content.getCreatedOn() != null ? content.getCreatedOn().toString() : null;
 	}
 
 	//@JsonCreator
@@ -86,6 +101,7 @@ public class ContentDto implements Serializable, Identifiable<String>
 	public PictureDto getPicture(){return this.picture;}
 	public List<ItemDto> getItems(){return this.items;}
 	public String getOutfitId(){return (this.outfitId == null) ? this.outfitId : this.outfitId.toLowerCase();}
+	public String getCreatedOn(){return this.createdOn;}
 
 	//@Override 
 	public String toString(int indents){

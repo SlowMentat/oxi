@@ -27,24 +27,24 @@ public class OutfitCoverpicDto implements Serializable, Identifiable<String>
 
 	@JsonProperty("id")
 	private String id;
-	private String coverpicuri;
+	private String coverPictureId;
 
 	public OutfitCoverpicDto(){}
 
-	public OutfitCoverpicDto(String id, String coverpicuri){
+	public OutfitCoverpicDto(String id, String coverPictureId){
 		//super();
 		this.id = id;
-		this.coverpicuri = coverpicuri;
+		this.coverPictureId = coverPictureId;
 	}
 
 	//Getters
 	@Override
 	public String getId(){return (this.id == null) ? this.id : this.id.toLowerCase();}
-	public String getCoverpicuri(){return this.coverpicuri;}
+	public String getCoverPictureId(){return this.coverPictureId;}
 
 	//Setters
 	public void setId(String id){this.id = id;}
-	public void setCoverpicuri(String coverpicuri){this.coverpicuri = coverpicuri;}
+	public void setCoverPictureId(String coverPictureId){this.coverPictureId = coverPictureId;}
 
 
 	public String toString(int indents) {
@@ -53,7 +53,7 @@ public class OutfitCoverpicDto implements Serializable, Identifiable<String>
 			indent += "    ";
 		}
 		StringBuilder sb = new StringBuilder(indent).append("id: ").append(((this.id == null) ? "null" : id))
-			.append(indent).append("coverpic:").append(this.coverpicuri);
+			.append(indent).append("coverPictureId:").append(this.coverPictureId);
 		
 		return sb.toString();
 	}	
