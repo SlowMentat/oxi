@@ -269,22 +269,24 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 					items = contentToItemMap.get(content);
 				}			
 				if(item != null){
-					ItemDto itemDto = new ItemDto(
-						item.getIdText(), 
-						itemContent.getPositionx(), 
-						itemContent.getPositiony(), 
-						item.getApparelType(), 
-						//idToSizeGroupDtoMap.get(item.getSizeGroupIdText()),
-						item.getSizeGroupIdText(),
-						new SizeChartDto(
-							(item.getSizeChartId() != null ? item.getSizeChartId().toString() : null), 
-							null,//idToSizeChartMap.get(item.getSizeChartId()).getChartName(), 
-							sizeChartIdToSizeGroupsMap.get(item.getSizeChartId()) 		//retreive ArrayList<SizeGroupDto> associated with the sizeChart id
-						),
-						null,
-						item.getProduct(),
-						item.getPlatform()
-					);
+					//ItemDto itemDto = new ItemDto(
+					//	item.getIdText(), 
+					//	itemContent.getPositionx(), 
+					//	itemContent.getPositiony(), 
+					//	item.getApparelType(), 
+					//	//idToSizeGroupDtoMap.get(item.getSizeGroupIdText()),
+					//	item.getSizeGroupIdText(),
+					//	new SizeChartDto(
+					//		(item.getSizeChartId() != null ? item.getSizeChartId().toString() : null), 
+					//		null,//idToSizeChartMap.get(item.getSizeChartId()).getChartName(), 
+					//		sizeChartIdToSizeGroupsMap.get(item.getSizeChartId()) 		//retreive ArrayList<SizeGroupDto> associated with the sizeChart id
+					//	),
+					//	null,
+					//	item.getProduct(),
+					//	item.getPlatform()
+					//);
+					itemContent.setItem(item);
+					ItemDto itemDto = new ItemDto(itemContent);
 					items.add(itemDto);
 				}
 				contentToItemMap.put(content, items);

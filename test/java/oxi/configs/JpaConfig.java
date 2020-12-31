@@ -9,9 +9,9 @@ import javax.sql.DataSource;
 
 //import org.springframework.context.annotation.ComponentScan;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+//mport org.springframework.context.annotation.Bean;
+//mport org.springframework.context.annotation.Configuration;
+//mport org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -19,25 +19,60 @@ import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.context.annotation.*;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.Ordered;
+import org.springframework.core.io.Resource;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+//import org.springframework.test.context.*;
 
 
 @Configuration
-@EnableJpaRepositories(basePackages = "oxi.repositories")
-@PropertySource("application.properties")
+@EnableJpaRepositories(basePackages = {"oxi.repositories", "oxi.models"})
+@EntityScan(basePackages="oxi.models")
+@ComponentScan(basePackages = {"oxi.config", "oxi.components"})
+//@ComponentScan
+//@PropertySource("application.properties")
+//@TestPropertySource(locations="/application-test.properties")
+//@TestPropertySource(locations = {"application-test.properties"})
 @EnableTransactionManagement
 //@ComponentScan(basePackages = {"oxi.configs"})//removed oxi.security
+@Profile("test")
 public class JpaConfig {
 
 	@Autowired
 	private Environment env;
+	
+	//@Autowired
+    //private PropertySourcesPropertyResolver propertySourceResolver;
+
+    //@Bean
+    //public static PropertyPlaceholderConfigurer properties(){
+    //	PropertyPlaceholderConfigurer ppc = new PropertyPlaceholderConfigurer();
+    //	Resource[] resources = new ClassPathResource[]{ new ClassPathResource( "/resources/application-test.properties" ) };
+    //	ppc.setLocations( resources );
+    //	ppc.setIgnoreUnresolvablePlaceholders( true );
+    //	ppc.setOrder( Ordered.HIGHEST_PRECEDENCE );
+
+    //	return ppc;
+	//}
 
 	@Bean
 	public DataSource dataSource(){
 		DriverManagerDataSource dataSource = new DriverManagerDataSource();
+
 		dataSource.setDriverClassName(env.getProperty("db.driver"));
 		dataSource.setUrl(env.getProperty("db.url"));
 		dataSource.setUsername(env.getProperty("db.username"));
 		dataSource.setPassword(env.getProperty("db.password"));
+		dataSource.setSchema(env.getProperty("db.schema"));
+
+        //dataSource.setDriverClassName("org.h2.Driver");
+        //dataSource.setUrl("jdbc:h2:mem:db;DB_CLOSE_DELAY=-1");
+        //dataSource.setUsername("sa");
+        //dataSource.setPassword("sa");
 
 		return dataSource;
 	}
@@ -47,7 +82,7 @@ public class JpaConfig {
 	public LocalContainerEntityManagerFactoryBean entityManagerFactory(){
 		final LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
 		em.setDataSource(dataSource());
-		em.setPackagesToScan(new String[] {"oxi.models"});
+		em.setPackagesToScan(new String[] {"oxi.models", "oxi.repositories"});
 		em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 		em.setJpaProperties(additionalProperties());
 
@@ -74,6 +109,10 @@ public class JpaConfig {
 		hibernateProperties.setProperty("hibernate.show_sql", env.getProperty("hibernate.show_sql"));
 		//hibernateProperties.setProperty("hibernate.cache.use_second_level_cache", env.getProperty("hibernate.cache.use_second_level_cache"));
 		//hibernateProperties.setProperty("hibernate.cache.use_query_cache", env.getProperty("hibernate.cache.use_query_cache"));
+
+		//hibernateProperties.setProperty("spring.jpa.hibernate.hbm2ddl.auto", "none");
+		//hibernateProperties.setProperty("spring.jpa.hibernate.dialect", "org.hibernate.dialect.H2Dialect");
+		//hibernateProperties.setProperty("spring.jpa.hibernate.show_sql", "true");
 
 		return hibernateProperties;		
 	}

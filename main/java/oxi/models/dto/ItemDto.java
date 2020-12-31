@@ -118,6 +118,8 @@ public class ItemDto implements Serializable, Identifiable<String>
 		this.apparelType = item.getApparelType() == null ? new Integer(8) : item.getApparelType();
 		this.product = item.getProduct();
 		this.platform = item.getPlatform();
+		this.coverpicuri = item.getPicture() != null ? item.getPicture().getMediumuri() : null;
+		this.pictureId = item.getPicture() != null ? item.getPicture().getId().toString() : null;
 	}
 
 	public ItemDto(Item item, String coverpicuri){

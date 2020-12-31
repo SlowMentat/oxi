@@ -19,12 +19,15 @@ import org.springframework.context.annotation.Import;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.context.annotation.*;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Optional;
 import java.util.List;
@@ -44,26 +47,32 @@ import com.github.dockerjava.api.model.Ports;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.ImageFromDockerfile;
+import oxi.PropertyOverrideContextInitializer;
 
 //Provide a bridge between Spring Boot test features and JUnit
 @RunWith(SpringRunner.class)
+//@SpringBootTest(classes = { JpaConfig.class, BlazePersistenceConfiguration.class })
 @ContextConfiguration(
+	//initializers = PropertyOverrideContextInitializer.class,
 	classes = { JpaConfig.class, BlazePersistenceConfiguration.class },
-	loader = AnnotationConfigContextLoader.class)
-@Transactional
+	loader = AnnotationConfigContextLoader.class )
+//@Transactional
 //@TestPropertySource(locations="classpath:application-test.properties")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-//@DataJpaTest
+//@PropertySource("classpath:application-test.properties")
+@TestPropertySource(locations = {"classpath:application-test.properties"})
+@DataJpaTest
+@ActiveProfiles("test")
 public class ItemRepositoryImplTest{
 
-	private static Logger logger = LogManager.getLogger();;
+	private static Logger logger = LogManager.getLogger();
 
-	//@Autowire 
-	//private TestEntityManager entityManager;
+	@Autowired
+	private TestEntityManager entityManager;
 	@Autowired
 	private ItemRepositoryImpl itemRepImpl;
-	@Autowired
-	private DataSource dataSource;
+	//@Autowired
+	//private DataSource dataSource;
 
 	/*@ClassRule
 	public static GenericContainer mysql = new GenericContainer(
@@ -114,20 +123,22 @@ public class ItemRepositoryImplTest{
 		String date = "2020-01-11T09:44:54.360Z";
 
 		logger.debug("Instantiating CursorDto");
-		CursorDto cursor = new CursorDto(direction, firstResult, maxResults, lowestId, highestId, date);
+		CursorDto cursorDto = new CursorDto(direction, firstResult, maxResults, lowestId, highestId, date);
 
 		try{
 			// when
-			List<ItemDto> items = itemRepImpl.getAllItemsWithCoverpicUri(cursor);
+			List<ItemDto> items = itemRepImpl.getAllItemsWithCoverpicUri(cursorDto);
 			logger.debug("database query results received");
 			// then
 			assertThat(items.size()).isGreaterThan(0);
+			assertThat(true).isFalse();
 			/*assertThat(items)
 				.extracting("coverpicuri", String.class)
 				.doesNotContain(null, "");*/
 		}
-		catch(NoSuchMethodException e){
-
+		catch(Exception e){
+			logger.debug(e.toString());
+			assertThat(e != null).isFalse();
 		}
 
 		/*	
