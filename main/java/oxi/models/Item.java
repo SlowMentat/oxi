@@ -27,7 +27,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Entity(name = "Item")
 @Table(name = "item")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=Item.class)
-public class Item extends RelatedEntity implements Serializable, Identifiable<UUID>{
+public class Item extends RelatedEntity implements Serializable/*Identifiable<UUID>*/{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Item.class);
 	
@@ -246,7 +246,7 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	
 
 	//Getters
-	//@Override
+	//
 	public UUID getId(){return this.id;}
 	public String getPlatform(){return this.platform;}
 	public String getProduct(){return this.product;}

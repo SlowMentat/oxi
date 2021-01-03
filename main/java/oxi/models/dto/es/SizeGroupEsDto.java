@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.io.Serializable;
 
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+import org.springframework.hateoas.server.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -24,10 +24,10 @@ import com.google.gson.GsonBuilder;
 
 
 
-@Document(indexName = "size_group", type = "doc")
+@Document(indexName = "size_group"/*, type = "doc"*/)
 @JsonRootName(value = "availableSizeGroup")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=SizeGroupEsDto.class)
-public class SizeGroupEsDto implements Serializable, Identifiable<String>
+public class SizeGroupEsDto implements Serializable/*Identifiable<String>*/
 {
 	@Id
 	private String id;
@@ -50,7 +50,7 @@ public class SizeGroupEsDto implements Serializable, Identifiable<String>
 	public void setSizeLabelEsDto(SizeLabelEsDto sizeLabel){this.sizeLabel = sizeLabel;}
 	
 	//Getters
-	@Override
+	
 	public String getId(){return this.id;}
 	public String getMetric(){return this.metric;}
 	public SizeLabelEsDto getSizeLabelEsDto(){return this.sizeLabel;}

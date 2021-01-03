@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.io.Serializable;
 
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+import org.springframework.hateoas.server.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -31,10 +31,10 @@ import com.google.gson.GsonBuilder;
 * This is the dto returned when user agent selects the size drop down in the add-item modal.
 * The add-item modal is displayed when a consumer is tagging uploaded photos.
 */
-@Document(indexName = "size_label", type = "doc")
+@Document(indexName = "size_label"/*, type = "doc"*/)
 @JsonRootName(value = "availableSizeLabel")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=SizeLabelEsDto.class)
-public class SizeLabelEsDto implements Serializable, Identifiable<Integer>
+public class SizeLabelEsDto implements Serializable/*Identifiable<Integer>*/
 {
 	@Id
 	@JsonProperty("id")
@@ -59,7 +59,7 @@ public class SizeLabelEsDto implements Serializable, Identifiable<Integer>
 	public void setName(String name){this.name = name;}
 	
 	//Getters
-	@Override
+	
 	public Integer getId(){return this.id;}
 	public String getName(){return this.name;}
 

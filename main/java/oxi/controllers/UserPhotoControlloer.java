@@ -57,7 +57,7 @@ public class UserPhotoControlloer{
     public ResponseEntity<?> getDto(@PathVariable("id") Long outfitId) {
         OutfitProjection dto = outfitRepo.getDto(outfitId);
         
-        return ResponseEntity.ok(toResource(dto));
+        return ResponseEntity.ok(toModel(dto));
     }*/
     
     /**
@@ -68,9 +68,9 @@ public class UserPhotoControlloer{
         List<OutfitProjection> dtos = outfitRepo.getDtos();
     
         Link listSelfLink = links.linkFor(Outfit.class).slash("/outfit").withSelfRel();
-        List<?> resources = dtos.stream().map(this::toResource).collect(toList());
+        List<?> resources = dtos.stream().map(this::toModel).collect(toList());
 
-        return ResponseEntity.ok(new Resources<>(resources, listSelfLink));
+        return ResponseEntity.ok(new CollectionModel<>(resources, listSelfLink));
     }*/
 
     /**
@@ -81,16 +81,16 @@ public class UserPhotoControlloer{
         Page<OutfitProjection> dtos = outfitRepo.getDtos(pageable);
 
         Link pageSelfLink = links.linkFor(Outfit.class).slash("/outfitPaged").withSelfRel();
-        PagedResources<?> resources = assembler.toResource(dtos, this::toResource, pageSelfLink);
+        PagedModel<?> resources = assembler.toModel(dtos, this::toModel, pageSelfLink);
 
         return ResponseEntity.ok(resources);
     }*/
 /*
-    private ResourceSupport toResource(OutfitProjection projection) {
+    private RepresentationModel toModel(OutfitProjection projection) {
         OutfitDto dto = new OutfitDto(projection.getId(), projection.getLikes(), projection.getComments(), projection.getContents(), projection.getCoverpicuri());
         
         Link contentsLink = links.linkToCollectionResource(Content).withRel("contents");
-        Link selfLink = links.linkForSingleResource(Outfit).slash("/outfit").withSelfRel();
+        Link selfLink = links.linkForItemResource(Outfit).slash("/outfit").withSelfRel();
         
-        return new Resource<>(dto, contentsLink, selfLink);
+        return new EntityModel<>(dto, contentsLink, selfLink);
     }*/

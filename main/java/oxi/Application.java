@@ -27,7 +27,7 @@ import org.springframework.web.*;
 import org.springframework.context.*;
 import org.springframework.context.support.*;
 import org.springframework.context.annotation.*;
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.config.EnableHypermediaSupport;
 import org.springframework.hateoas.config.EnableHypermediaSupport.HypermediaType;
 import org.springframework.core.io.*;
@@ -70,8 +70,8 @@ import java.util.*;
 import java.util.Arrays;
 import org.apache.catalina.connector.*;
 
-import org.springframework.data.mongodb.core.*;
-import com.mongodb.MongoClient;
+//import org.springframework.data.mongodb.core.*;
+//import com.mongodb.MongoClient;
 
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 

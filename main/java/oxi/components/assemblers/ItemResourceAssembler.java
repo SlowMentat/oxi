@@ -7,7 +7,7 @@ import oxi.models.Item;
 import oxi.models.dto.ItemDto;
 import oxi.controllers.ConsumerController;
 
-import org.springframework.hateoas.mvc.ResourceAssemblerSupport;
+import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.stereotype.*;
 import org.springframework.data.domain.*;
 
@@ -22,7 +22,7 @@ public class ItemResourceAssembler extends ResourceAssemblerSupport<Item, ItemDt
 	}
 
 	@Override
-	public ItemDto toResource(Item item){
+	public ItemDto toModel(Item item){
 		ItemDto resource = createResourceWithId(item.getId(), item);
 		logger.debug("ItemDto resource:  " + resource);
 

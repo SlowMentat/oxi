@@ -24,7 +24,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.Ordered;
-import org.springframework.core.io.Resource;
+//import org.springframework.core.io.EntityModel;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 //import org.springframework.test.context.*;
 

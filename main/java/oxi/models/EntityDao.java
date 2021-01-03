@@ -1,9 +1,9 @@
 package oxi.models;
 
 import java.lang.*;
-import org.springframework.hateoas.Identifiable;
+//import org.springframework.hateoas.Identifiable;
 
-public class EntityDao implements Identifiable<Long>
+public class EntityDao /*implements Identifiable<Long>*/
 {
 	private Long Id;
 

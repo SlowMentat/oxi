@@ -23,7 +23,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Entity
 @Table(name="profile")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=Profile.class)
-public class Profile extends RelatedEntity implements Serializable, Identifiable<UUID>
+public class Profile extends RelatedEntity implements Serializable/*Identifiable<UUID>*/
 {
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Profile.class);
@@ -160,7 +160,7 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	
 	
 	//Getters
-	@Override
+	
 	public UUID getId(){return this.id;}
 
 	public String getIdText(){return this.idText;}

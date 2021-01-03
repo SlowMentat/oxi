@@ -20,13 +20,13 @@ import org.hibernate.annotations.GenericGenerator;
 import org.springframework.hateoas.*;
 import java.lang.*;
 
-import oxi.models.projection.OutfitProjection;
+//import oxi.models.projection.OutfitProjection;
 
 @Entity
 @Table(name="outfit")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=Outfit.class)
 //@JsonDeserialize(contentUsing=CustomOutfitDeserializer.class) 
-public class Outfit extends RelatedEntity implements Serializable, Identifiable<UUID>
+public class Outfit extends RelatedEntity implements Serializable/*Identifiable<UUID>*/
 {
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Outfit.class);
@@ -195,7 +195,7 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 
 	
 	//Getters
-	//@Override
+	//
 	public UUID getId(){return this.id;} 
 	public String getIdText(){return this.idText;}
 	public int getLikes(){return this.likes;}	

@@ -7,7 +7,7 @@ import oxi.models.Outfit;
 import oxi.models.dto.OutfitDto;
 import oxi.controllers.ConsumerController;
 
-import org.springframework.hateoas.mvc.ResourceAssemblerSupport;
+import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.stereotype.*;
 import org.springframework.data.domain.*;
 
@@ -22,7 +22,7 @@ public class OutfitResourceAssembler extends ResourceAssemblerSupport<Outfit, Ou
 	}
 
 	@Override
-	public OutfitDto toResource(Outfit outfit){
+	public OutfitDto toModel(Outfit outfit){
 		OutfitDto resource = createResourceWithId(outfit.getId(), outfit);
 		logger.debug("OutfitDto resource:  " + resource);
 

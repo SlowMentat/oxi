@@ -1,15 +1,15 @@
 package oxi.models.dto;
 
-import oxi.models.projection.*;
+//import oxi.models.projection.*;
 import oxi.models.*;
 import java.lang.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.io.Serializable;
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+import org.springframework.hateoas.server.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 
 
 public class PictureUpdateDto extends PictureDto

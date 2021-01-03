@@ -1,6 +1,6 @@
 package oxi.repositories;
 
-import oxi.models.projection.OutfitProjection;
+//import oxi.models.projection.OutfitProjection;
 import oxi.models.dto.OutfitDto;
 import oxi.models.Outfit;
 import oxi.models.*;

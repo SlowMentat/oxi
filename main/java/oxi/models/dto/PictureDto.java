@@ -1,21 +1,21 @@
 package oxi.models.dto;
 
-import oxi.models.projection.*;
+//import oxi.models.projection.*;
 import oxi.models.*;
 import java.lang.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.io.Serializable;
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+import org.springframework.hateoas.server.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 import com.fasterxml.jackson.annotation.*;
 
 
 
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=PictureDto.class)
-public class PictureDto implements Serializable, Identifiable<String>
+public class PictureDto implements Serializable/*Identifiable<String>*/
 {
 	@JsonProperty("id")
 	private String id;	
@@ -120,7 +120,7 @@ public class PictureDto implements Serializable, Identifiable<String>
 	}*/
 	
 	//Getters
-	@Override
+	
 	public String getId(){return (this.id == null) ? this.id : this.id.toLowerCase();}
 	public String getSmalluri(){return this.smalluri;}
 	public String getMediumuri(){return this.mediumuri;}

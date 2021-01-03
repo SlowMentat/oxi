@@ -1,6 +1,6 @@
 package oxi.models.dto.es;
 
-import oxi.models.projection.*;
+//import oxi.models.projection.*;
 import oxi.models.*;
 import oxi.models.retailer.SizeGroup;
 import oxi.models.dto.retailer.*;
@@ -10,9 +10,9 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.io.Serializable;
 
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+import org.springframework.hateoas.server.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 
 
 import org.springframework.data.annotation.Id;
@@ -33,10 +33,10 @@ import com.google.gson.GsonBuilder;
 * This is the dto returned when user agent selects the retailer drop down in the add-item modal.
 * The add-item modal is displayed when a consumer is tagging uploaded photos.
 */
-@Document(indexName = "retailer", type = "doc")
+@Document(indexName = "retailer"/*, type = "doc"*/)
 @JsonRootName(value = "availableRetailer")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="name", scope=RetailerEsDto.class)
-public class RetailerEsDto implements Serializable, Identifiable<String>
+public class RetailerEsDto implements Serializable/*Identifiable<String>*/
 {
 	@Id
 	private String name;
@@ -59,7 +59,7 @@ public class RetailerEsDto implements Serializable, Identifiable<String>
 	public void setHomePageUrl(String homePageUrl){this.homePageUrl = homePageUrl;}
 	
 	//Getters
-	@Override
+	
 	public String getId(){return this.name;}
 	public String getLogoUrl(){return this.logoUrl;}
 	public String getHomePageUrl(){return this.homePageUrl;}

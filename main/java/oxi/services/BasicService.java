@@ -14,7 +14,7 @@ import oxi.repositories.*;
 import org.springframework.stereotype.*;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.web.multipart.*;
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.*;
 import org.springframework.data.domain.*;
 

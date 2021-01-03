@@ -22,13 +22,13 @@ import org.apache.logging.log4j.LogManager;
 
 import org.hibernate.annotations.GenericGenerator;
 
-//import oxi.models.projection.LikeProjection;
+////import oxi.models.projection.LikeProjection;
 
 @Entity
 @Table(name="like_count")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="Like_id")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope=LikeCount.class)
-public class LikeCount extends RelatedEntity implements Serializable, Identifiable<UUID>{
+public class LikeCount extends RelatedEntity implements Serializable/*Identifiable<UUID>*/{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(LikeCount.class);
 

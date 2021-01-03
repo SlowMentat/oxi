@@ -17,8 +17,8 @@
         <!--<context:component-scan base-package="oxi.repositories, oxi.controllers, oxi.models, oxi.security"/>-->
         <!--<context:component-scan base-package="classpath:oxi/repositories, classpath:oxi/controllers, classpath:oxi/models, classpath:oxi/security"/>-->
         <!--<context:component-scan base-package="classpath:repositories.MyContentRepository"/>
-        <context:component-scan base-package="org.springframework.hateoas.Resource"/>
-        <context:component-scan base-package="org.springframework.hateoas.ResourceAssembler"/>-->
+        <context:component-scan base-package="org.springframework.hateoas.EntityModel"/>
+        <context:component-scan base-package="org.springframework.hateoas.RepresentationModelAssembler"/>-->
         <import resource="applicationContext-persistence.xml"/>
         <!--<import resource="applicationContext-persistence-mongo.xml"/>-->
         <!--<import resource="applicationSpring-security.xml"/>-->
@@ -33,8 +33,8 @@
         <!--<bean id="consumerService" class="oxi.services.ConsumerService" />-->
         <bean id="propertyPlaceHolderConfigurer"
               class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
-        <bean id="userResourceAssembler" class="org.springframework.hateoas.ResourceAssembler"/>
-        <bean id="userResource" class="org.springframework.hateoas.Resource"/>
+        <bean id="userResourceAssembler" class="org.springframework.hateoas.RepresentationModelAssembler"/>
+        <bean id="userResource" class="org.springframework.hateoas.EntityModel"/>
     </beans>
 
 

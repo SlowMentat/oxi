@@ -2,6 +2,7 @@ package oxi.services;
 
 import oxi.repositories.es.*;
 import oxi.models.dto.es.*;
+//import oxi.components.assemblers.DtoModelAssembler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.*;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.transaction.annotation.*;
 import org.springframework.hateoas.*;
+import org.springframework.hateoas.server.*;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.data.domain.*;
 import org.springframework.data.repository.*;
@@ -59,9 +61,10 @@ public class SearchService{
 	@PersistenceContext
 	private EntityManager entityManager;
 
-	private <T extends Identifiable<?>> ResourceSupport toResource(T dto){
-		return new Resource<T>(dto);
-	}
+	//@Override
+	//private <T extends Object> RepresentationModel toModel(T dto){
+	//	return new EntityModel<T>(dto);
+	//}
 
 	public List<SuggestRetailerEsDto> suggestRetialerNames(String prefix){
 		List<SuggestRetailerEsDto> result = new ArrayList<SuggestRetailerEsDto>();
@@ -128,7 +131,7 @@ public class SearchService{
 	//	
 	//}
 
-	public PagedResources<?> getApparelTypes(String name, Pageable pageable){
+	public PagedModel<?> getApparelTypes(String name, Pageable pageable){
 		Page<ApparelTypeEsDto> apparelTypes = null;
 		//if name is empty or null, query ApparelTypeEsRep for all names
 		if(name != null && !name.isEmpty()){
@@ -136,11 +139,11 @@ public class SearchService{
 		}
 		//otherwise query by name		
 		else{ apparelTypes = apparelRep.findAll(pageable); }
-		return apparelTypePRAP.toResource(apparelTypes, this::toResource);
+		return apparelTypePRAP.toModel(apparelTypes);
 	}
 
 
-	public PagedResources<?> getSizeLabels(String name, Pageable pageable){
+	public PagedModel<?> getSizeLabels(String name, Pageable pageable){
 		Page<SizeLabelEsDto> sizeLabels = null;
 		//if name is empty or null, query SizeLabelEsDto for all names
 		if(name != null && !name.isEmpty()){
@@ -148,7 +151,7 @@ public class SearchService{
 		}
 		//otherwise query by name		
 		else{ sizeLabels = sizeLabelRep.findAll(pageable); }
-		return sizeLabelPRAP.toResource(sizeLabels, this::toResource);
+		return sizeLabelPRAP.toModel(sizeLabels);
 	}
 }
 

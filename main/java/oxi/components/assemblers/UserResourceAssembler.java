@@ -7,7 +7,7 @@ import oxi.models.User;
 import oxi.models.dto.UserDto;
 import oxi.controllers.ConsumerController;
 
-import org.springframework.hateoas.mvc.ResourceAssemblerSupport;
+import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.stereotype.*;
 import org.springframework.data.domain.*;
 
@@ -22,7 +22,7 @@ public class UserResourceAssembler extends ResourceAssemblerSupport<User, UserDt
 	}
 
 	@Override
-	public UserDto toResource(User user){
+	public UserDto toModel(User user){
 		UserDto resource = createResourceWithId(user.getId(), user);
 		logger.debug("UserDto resource:  " + resource);
 

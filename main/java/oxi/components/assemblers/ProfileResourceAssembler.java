@@ -7,7 +7,7 @@ import oxi.models.Profile;
 import oxi.models.dto.ProfileDto;
 import oxi.controllers.ConsumerController;
 
-import org.springframework.hateoas.mvc.ResourceAssemblerSupport;
+import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.stereotype.*;
 import org.springframework.data.domain.*;
 
@@ -22,7 +22,7 @@ public class ProfileResourceAssembler extends ResourceAssemblerSupport<Profile, 
 	}
 
 	@Override
-	public ProfileDto toResource(Profile profile){
+	public ProfileDto toModel(Profile profile){
 		ProfileDto resource = createResourceWithId(profile.getId(), profile);
 		logger.debug("ProfileDto resource:  " + resource);
 

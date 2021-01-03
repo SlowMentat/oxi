@@ -27,7 +27,7 @@ import oxi.repositories.retailer.*;
 //import oxi.util.assemblers.*;
 import oxi.models.dto.*;
 import oxi.models.dto.retailer.*;
-import oxi.models.projection.*;
+//import oxi.models.projection.*;
 
 import org.springframework.stereotype.*;
 import org.springframework.web.multipart.*;
@@ -79,7 +79,7 @@ public class RetailerService{
 	@Autowired private RetailerAccountRepository retailerAccountRep;
 	@Autowired private SizeChartRepository sizeChartRep;
 
-	//Resource Assemblers
+	//EntityModel Assemblers
 	//@Autowired 
 	//private OutfitResourceAssembler outfitRA;
 	//@Autowired private ContentResourceAssembler contentRA;
@@ -88,7 +88,7 @@ public class RetailerService{
 	//@Autowired private ProfileResourceAssembler profileRA;
 	//@Autowired private UserResourceAssembler userRA;
 
-	//Paged Resource Assemblers 
+	//Paged EntityModel Assemblers 
 	@Autowired private PagedResourcesAssembler<Outfit> outfitPRA;
 	@Autowired private PagedResourcesAssembler<OutfitDto> outfitPRAP;
 
@@ -251,7 +251,7 @@ public class RetailerService{
 	}
 
 	@Transactional
-	public PagedResources<?> getProducts(String username, String filter, Pageable pageable) throws Exception{
+	public PagedModel<?> getProducts(String username, String filter, Pageable pageable) throws Exception{
 		RetailerAccount retailerAccount = null;
 		
 		if(username != null){
@@ -270,7 +270,7 @@ public class RetailerService{
 						}
 					});*/
 					Page<ProductDto> productDtos = itemRep.getAllItemsWithRetailerAccount(retailerAccount.getId(), pageable).map(this::convertToProductDto);
-					return productPRAP.toResource(productDtos, this::toResource);
+					return productPRAP.toModel(productDtos);
 				default:
 					return null;
 			}
@@ -535,9 +535,9 @@ public class RetailerService{
 	}
 
 
-	private <T extends Identifiable<String>> ResourceSupport toResource(T dto){		
-		//Link outfitLink = null;// links.linkForSingleResource(dto).withRel("outfit");
-		//SLink selfLink = links.linkForSingleResource(dto).withSelfRel();
-		return new Resource<T>(dto/*, null, selfLink*/);
+	private <T extends Object> RepresentationModel toModel(T dto){		
+		//Link outfitLink = null;// links.linkForItemResource(dto).withRel("outfit");
+		//SLink selfLink = links.linkForItemResource(dto).withSelfRel();
+		return new EntityModel<T>(dto/*, null, selfLink*/);
 	}
 }

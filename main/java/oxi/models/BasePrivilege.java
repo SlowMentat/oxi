@@ -19,7 +19,7 @@ import org.hibernate.annotations.GenericGenerator;
 //@Entity
 //@Table(name="privilege")
 @MappedSuperclass
-public class BasePrivilege implements Serializable, Identifiable<Long>{
+public class BasePrivilege implements Serializable/*, Identifiable<Long>*/{
   
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

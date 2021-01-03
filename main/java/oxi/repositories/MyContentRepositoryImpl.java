@@ -7,8 +7,8 @@ import oxi.models.dto.ContentDto;
 import oxi.models.dto.ContentWithOutfitDto;
 import oxi.models.dto.ItemDto;
 import oxi.models.dto.PictureDto;
-import oxi.models.projection.OutfitProjection;
-import oxi.models.projection.ContentProjection;
+//import oxi.models.projection.OutfitProjection;
+//import oxi.models.projection.ContentProjection;
 import oxi.repositories.MyContentRepositoryCustom;
 
 //import org.hibernate.Query;

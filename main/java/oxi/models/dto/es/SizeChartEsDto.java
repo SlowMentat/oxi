@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.io.Serializable;
 
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+import org.springframework.hateoas.server.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -24,10 +24,10 @@ import com.google.gson.GsonBuilder;
 
 
 
-@Document(indexName = "size_chart", type = "doc")
+@Document(indexName = "size_chart"/*, type = "doc"*/)
 @JsonRootName(value = "availableSizeGroup")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=SizeChartEsDto.class)
-public class SizeChartEsDto implements Serializable, Identifiable<Integer>
+public class SizeChartEsDto implements Serializable/*Identifiable<Integer>*/
 {
 	@Id
 	@JsonProperty("id")
@@ -51,7 +51,7 @@ public class SizeChartEsDto implements Serializable, Identifiable<Integer>
 	public void setSizeLabelEsDto(SizeLabelEsDto sizeLabel){this.sizeLabel = sizeLabel;}
 	
 	//Getters
-	@Override
+	
 	public Integer getId(){return this.id;}
 	public String getMetric(){return this.metric;}
 	public SizeLabelEsDto getSizeLabelEsDto(){return this.sizeLabel;}

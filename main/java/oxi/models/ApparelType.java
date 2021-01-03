@@ -17,12 +17,12 @@ import org.apache.logging.log4j.LogManager;
 
 import org.hibernate.annotations.GenericGenerator;
 
-//import oxi.models.projection.LikeProjection;
+////import oxi.models.projection.LikeProjection;
 
 @Entity
 @Table(name="apparel_type")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope=ApparelType.class)
-public class ApparelType extends RelatedEntity implements Serializable, Identifiable<Integer>{
+public class ApparelType extends RelatedEntity implements Serializable/*Identifiable<Integer>*/{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(ApparelType.class);
 

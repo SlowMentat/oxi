@@ -23,9 +23,9 @@ import org.springframework.data.elasticsearch.repository.*;
 import org.springframework.stereotype.Repository;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchType;
+//import org.elasticsearch.action.search.SearchRequestBuilder;
+//import org.elasticsearch.action.search.SearchResponse;
+//import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.suggest.Suggest;
 import org.elasticsearch.search.suggest.SuggestionBuilder;
@@ -35,7 +35,9 @@ import org.elasticsearch.search.suggest.completion.CompletionSuggestionBuilder;
 import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.search.suggest.completion.context.CategoryQueryContext;
 //import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
-import org.elasticsearch.client.transport.TransportClient;
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+//import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.common.xcontent.ToXContent.MapParams;
@@ -43,6 +45,8 @@ import org.elasticsearch.search.suggest.completion.CompletionSuggestion;
 //import org.elasticsearch.search.internal.InternalSearchHit;  //Folded into its interface
 import org.elasticsearch.search.internal.*;
 import org.elasticsearch.search.*;
+import org.elasticsearch.search.builder.*;
+import org.elasticsearch.action.search.*;
 import org.elasticsearch.common.document.*;
 
 import org.apache.logging.log4j.Logger;
@@ -56,7 +60,8 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 	private SuggestionBuilder termSuggestionBuilder;
 	private CompletionSuggestionBuilder completionSuggestionBuilder;
 
-	@Autowired TransportClient client;
+	@Autowired 
+	private RestHighLevelClient client;
 
 	@Override
 	public List<SizeLabelEsDto> sizeLabelSuggest(String prefix, String context){
@@ -68,7 +73,9 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 		final String FIELD = "suggest";
 		final String CONTEXT_CAT = "retailer_name";
 		final String SUGGEST_NAME = "item-suggest-1";
-
+		List<SuggestItemEsDto> suggestedItems = new ArrayList<SuggestItemEsDto>();
+//
+	/*
 		Map<String, String> inclusionProps;
 		//BoolQueryBuilder boolQuery = QueryBuilders.boolQuery().must(QueryBuilders.matchQuery(field, ter));
 		//termSuggestionBuilder = new TermSuggestionBuilder(FIELD).text(prefix);
@@ -88,7 +95,6 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 
 		//extends ActionResponse 
 		SearchResponse searchResponse;
-		List<SuggestItemEsDto> suggestedItems = new ArrayList<SuggestItemEsDto>();
 
 		try{
 			//execute() returns a ListenableActionFuture<Response>, which calls get() when complete, returning a Response.
@@ -123,7 +129,7 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 						logger.debug("source = " + source.toString());
 						SearchHit sourceHit = SearchHit.createFromMap(source);
 
-						/*=========================== dubuging ===========================*/
+						//=========================== dubuging ===========================
 						
 						if(sourceHit != null){
 							logger.debug("sourceHit = " + sourceHit.toString());
@@ -189,14 +195,18 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 							logger.debug("sourceHit = " + sourceHit.toString());
 						}
 
-						/*=========================== dubuging ===========================*/
+						//=========================== dubuging ===========================
 					}
 				}
 			}			
 		}
 		catch(InterruptedException | ExecutionException e ){
 			logger.error("Exception while executing query {}", e);
+			client.close();
 		}
+		client.close();
+		*/
+//
 		return suggestedItems;
 	}
 
@@ -210,7 +220,9 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 		final String CONTEXT = "conjunction";
 		final String contextValue = retailer + "_" + platform + "_" + apparelTypeId + "_" + sizeLabel;
 		final String SUGGEST_NAME = "cust-item-suggest-1";
-
+		List<SuggestUDItemESDTO> suggestedItems = new ArrayList<SuggestUDItemESDTO>();
+//
+		/*
 		Map<String, String> inclusionProps;
 		//BoolQueryBuilder boolQuery = QueryBuilders.boolQuery().must(QueryBuilders.matchQuery(field, ter));
 		//termSuggestionBuilder = new TermSuggestionBuilder(FIELD).text(prefix);
@@ -236,7 +248,6 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 
 		//extends ActionResponse 
 		SearchResponse searchResponse;
-		List<SuggestUDItemESDTO> suggestedItems = new ArrayList<SuggestUDItemESDTO>();
 
 		try{
 			//execute() returns a ListenableActionFuture<Response>, which calls get() when complete, returning a Response.
@@ -271,7 +282,7 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 						logger.debug("source = " + source.toString());
 						SearchHit sourceHit = SearchHit.createFromMap(source);
 		
-						/*=========================== dubuging ===========================*/
+						//=========================== dubuging ===========================
 						
 						if(sourceHit != null){
 							logger.debug("sourceHit = " + sourceHit.toString());
@@ -337,7 +348,7 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 							logger.debug("sourceHit = " + sourceHit.toString());
 						}
 		
-						/*=========================== dubuging ===========================*/
+						//=========================== dubuging ===========================
 					}
 				}
 			}			
@@ -345,6 +356,8 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 		catch(InterruptedException | ExecutionException e ){
 			logger.error("Exception while executing query {}", e);
 		}
+		*/
+//
 		return suggestedItems;		
 	}
 
@@ -353,7 +366,9 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 		final String FIELD = "suggest";
 		final String CONTEXT_CAT = null;
 		final String SUGGEST_NAME = "retailerName-suggest-1";
-
+		List<SuggestRetailerEsDto> suggestedNames = new ArrayList<SuggestRetailerEsDto>();
+//
+		/*
 		Map<String, String> inclusionProps;
 		//Map<String, List<? extends ToXContent>> contexts = Collections.singletonMap(CONTEXT_CAT, Collections.singletonList(CategoryQueryContext.builder().build()));
 		completionSuggestionBuilder = new CompletionSuggestionBuilder(FIELD)
@@ -370,7 +385,6 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 
 		//extends ActionResponse 
 		SearchResponse searchResponse;
-		List<SuggestRetailerEsDto> suggestedNames = new ArrayList<SuggestRetailerEsDto>();
 
 		try{
 			//execute() returns a ListenableActionFuture<Response>, which calls get() when complete, returning a Response.
@@ -401,6 +415,8 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 		}catch(InterruptedException | ExecutionException e ){
 			logger.error(e);
 		}
+		*/
+//
 		return suggestedNames;
 	}
 
@@ -409,6 +425,9 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 		final String FIELD = "suggest";
 		final String CONTEXT_CAT = null;
 		final String SUGGEST_NAME = "udr-suggest-1";
+		//extends ActionResponse 
+		SearchResponse searchResponse;
+		List<SuggestUdrEsDto> suggestedNames = new ArrayList<SuggestUdrEsDto>();
 
 		Map<String, String> inclusionProps;
 		//Map<String, List<? extends ToXContent>> contexts = Collections.singletonMap(CONTEXT_CAT, Collections.singletonList(CategoryQueryContext.builder().build()));
@@ -418,19 +437,28 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 
 		SuggestBuilder suggestionBuilder = new SuggestBuilder().addSuggestion(SUGGEST_NAME, completionSuggestionBuilder);
 
-		//prepare search on size_label index
-		SearchRequestBuilder searchReqBuilder = client.prepareSearch("udr")
-			.setTypes("doc")
-			.setFetchSource(new String[]{"name"}, null)
-			.suggest(suggestionBuilder);
+		////prepare search on size_label index
+		//SearchRequestBuilder searchReqBuilder = client.prepareSearch("udr")
+		//	.setTypes("doc")
+		//	.setFetchSource(new String[]{"name"}, null)
+		//	.suggest(suggestionBuilder);
 
-		//extends ActionResponse 
-		SearchResponse searchResponse;
-		List<SuggestUdrEsDto> suggestedNames = new ArrayList<SuggestUdrEsDto>();
+		// Build search suggest
+		SearchSourceBuilder searchSourceBuilder = SearchSourceBuilder.searchSource()
+			.suggest(suggestionBuilder)
+			.fetchSource(new String[]{"name"}, null);
+
+		// Build search request
+		SearchRequest searchReq = new SearchRequest("udr")
+			.types("doc")
+			.source(searchSourceBuilder);
+
 
 		try{
 			//execute() returns a ListenableActionFuture<Response>, which calls get() when complete, returning a Response.
-			searchResponse = searchReqBuilder.execute().get();	
+			//searchResponse = searchReqBuilder.execute().get();	
+			searchResponse = client.search(searchReq, null);
+
 			logger.debug("searchResponse: " + searchResponse.toString());
 			logger.debug("REST status: " + RestStatus.fromCode(searchResponse.status().getStatus()));
 			logger.debug("suggestion: " + searchResponse.getSuggest().toString());
@@ -449,7 +477,12 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 				}
 			}
 			
-		}catch(InterruptedException | ExecutionException e ){
+		}
+		catch(
+			IOException e//| 
+			//InterruptedException | 
+			//ExecutionException e
+		){
 			logger.error(e);
 		}
 		return suggestedNames;
@@ -460,7 +493,9 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 		final String FIELD = "suggest";
 		final String CONTEXT_CAT = null;
 		final String SUGGEST_NAME = "uds-suggest-1";
-
+		List<SuggestUdsEsDto> suggestedNames = new ArrayList<SuggestUdsEsDto>();
+//
+		/*
 		Map<String, String> inclusionProps;
 		//Map<String, List<? extends ToXContent>> contexts = Collections.singletonMap(CONTEXT_CAT, Collections.singletonList(CategoryQueryContext.builder().build()));
 		completionSuggestionBuilder = new CompletionSuggestionBuilder(FIELD)
@@ -477,7 +512,6 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 
 		//extends ActionResponse 
 		SearchResponse searchResponse;
-		List<SuggestUdsEsDto> suggestedNames = new ArrayList<SuggestUdsEsDto>();
 
 		try{
 			//execute() returns a ListenableActionFuture<Response>, which calls get() when complete, returning a Response.
@@ -503,6 +537,8 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 		}catch(InterruptedException | ExecutionException e ){
 			logger.error(e);
 		}
+		*/
+//		
 		return suggestedNames;
 	}
 
@@ -511,7 +547,9 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 		final String FIELD = "suggest";
 		final String CONTEXT_CAT = null;
 		final String SUGGEST_NAME = "apparel_type-suggest-1";
-
+		List<SuggestApparelTypeEsDto> suggestedNames = new ArrayList<SuggestApparelTypeEsDto>();
+//
+		/*
 		Map<String, String> inclusionProps;
 		//Map<String, List<? extends ToXContent>> contexts = Collections.singletonMap(CONTEXT_CAT, Collections.singletonList(CategoryQueryContext.builder().build()));
 		completionSuggestionBuilder = new CompletionSuggestionBuilder(FIELD)
@@ -528,7 +566,6 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 
 		//extends ActionResponse 
 		SearchResponse searchResponse;
-		List<SuggestApparelTypeEsDto> suggestedNames = new ArrayList<SuggestApparelTypeEsDto>();
 
 		try{
 			//execute() returns a ListenableActionFuture<Response>, which calls get() when complete, returning a Response.
@@ -554,6 +591,8 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 		}catch(InterruptedException | ExecutionException e ){
 			logger.error(e);
 		}
+		*/
+//
 		return suggestedNames;
 	}
 }

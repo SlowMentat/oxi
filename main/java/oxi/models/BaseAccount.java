@@ -60,7 +60,7 @@ public abstract class BaseAccount extends RelatedEntity /*implements Identifiabl
 
 	
 	//Getters
-	//@Override
+	//
 	public UUID getId(){return this.id;}
 	public String getIdText(){return this.idText;}
 	public String getEmail(){return this.email;}	

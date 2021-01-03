@@ -20,7 +20,7 @@ import org.apache.logging.log4j.LogManager;
 import org.hibernate.annotations.GenericGenerator;
 
 @MappedSuperclass
-public class BaseVerificationToken implements Serializable, Identifiable<UUID>{
+public class BaseVerificationToken implements Serializable/*Identifiable<UUID>*/{
 	private static final int EXPIRATION = 60 * 24;
 
 	//@Id

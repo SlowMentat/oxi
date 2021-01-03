@@ -6,7 +6,9 @@ import oxi.repositories.es.SuggestEsRepositoryImpl;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.elasticsearch.client.Client;
+//import org.elasticsearch.client.Client;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.springframework.data.elasticsearch.client.RestClients;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress; 
@@ -18,12 +20,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
+import org.springframework.data.elasticsearch.config.AbstractElasticsearchConfiguration;
+import org.springframework.data.elasticsearch.client.ClientConfiguration;
 
 
 @Configuration
 @EnableElasticsearchRepositories(basePackages = "oxi.repositories.es")
 @ComponentScan(basePackages = {"oxi.models.dto.es"})
-public class ElasticsearchConfig{
+public class ElasticsearchConfig extends AbstractElasticsearchConfiguration{
 
 	@Value("${elasticsearch.home:/home/dbryant/elasticsearch-6.0.1}")
 	private String elasticsearchHome;
@@ -36,23 +40,42 @@ public class ElasticsearchConfig{
 		return new SuggestEsRepositoryImpl();
 	}
 
+	//@Override
+	//@Bean
+	//public RestHighLevelClient client(){
+//
+	//	TransportClient client = null;
+	//	
+	//	try{
+	//		Settings elasticsearchSettings = Settings.builder()
+	//			.put("client.transport.sniff", true)
+	//			.put("path.home", elasticsearchHome)
+	//			.put("cluster.name", clusterName).build();
+	//		client = new PreBuiltTransportClient(elasticsearchSettings);
+	//		client.addTransportAddress(new TransportAddress(InetAddress.getByName("localhost"), 9300));
+	//	}
+	//	catch(UnknownHostException e){
+	//		e.printStackTrace();
+	//	}
+//
+	//	return client;
+	//}
+
+	@Override
 	@Bean
-	public Client client(){
-
-		TransportClient client = null;
+	public RestHighLevelClient elasticsearchClient(){
 		
-		try{
-			Settings elasticsearchSettings = Settings.builder()
-				.put("client.transport.sniff", true)
-				.put("path.home", elasticsearchHome)
-				.put("cluster.name", clusterName).build();
-			client = new PreBuiltTransportClient(elasticsearchSettings);
-			client.addTransportAddress(new TransportAddress(InetAddress.getByName("localhost"), 9300));
-		}catch(UnknownHostException e){
-			e.printStackTrace();
-		}
+		//try{
+			final ClientConfiguration clientConfiguration = ClientConfiguration.builder()
+				.connectedTo("localhost:9200")
+				.build();
+		//}
+		//catch(UnknownHostException e){
+		//	e.printStackTrace();
+		//}
 
-		return client;
+		//return client;
+		return RestClients.create(clientConfiguration).rest(); 
 	}
 
 	//This is already being configured by spring boot. Set spring.main.allow-bean-definition-overriding=true to override spring-boot elasticsearchTemplate

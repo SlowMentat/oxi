@@ -11,9 +11,9 @@ import java.util.Map;
 import java.util.HashMap;
 import java.io.Serializable;
 
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+import org.springframework.hateoas.server.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -35,7 +35,7 @@ import com.google.gson.GsonBuilder;
 */
 @JsonRootName(value = "suggestItem")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=SuggestItemEsDto.class)
-public class SuggestItemEsDto implements Serializable, Identifiable<String>
+public class SuggestItemEsDto implements Serializable/*Identifiable<String>*/
 {
 	@Id
 	@JsonProperty("id")
@@ -70,7 +70,7 @@ public class SuggestItemEsDto implements Serializable, Identifiable<String>
 	//}
 
 	//Getters
-	@Override
+	
 	public String getId(){return this.id;}
 	public Map<String, Object> getItemSnippet(){return this.itemSnippet;}
 	//@JsonAnyGetter

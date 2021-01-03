@@ -1,6 +1,6 @@
 package oxi.models.dto.es;
 
-import oxi.models.projection.*;
+//import oxi.models.projection.*;
 import oxi.models.*;
 import oxi.models.retailer.SizeGroup;
 import oxi.models.dto.retailer.*;
@@ -11,9 +11,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.io.Serializable;
 
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+import org.springframework.hateoas.server.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -32,9 +32,9 @@ import com.google.gson.GsonBuilder;
 *Suggest User Defined Retailer Elasticsearch Data Transfer Object
 */
 
-@Document(indexName = "udr", type = "doc")
+@Document(indexName = "udr"/*, type = "doc"*/)
 @JsonRootName(value = "udr")
-public class SuggestUdrEsDto implements Serializable, Identifiable<String>
+public class SuggestUdrEsDto implements Serializable/*Identifiable<String>*/
 {
 	@Id
 	private String id;
@@ -53,7 +53,7 @@ public class SuggestUdrEsDto implements Serializable, Identifiable<String>
 	public void setData(Map<String, Object> data){this.data = data;}
 	
 	//Getters
-	@Override
+	
 	public String getId(){return this.id;}
 	public Map<String, Object> getData(){return this.data;}
 

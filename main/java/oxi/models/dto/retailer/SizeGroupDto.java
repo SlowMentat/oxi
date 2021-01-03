@@ -1,6 +1,6 @@
 package oxi.models.dto.retailer;
 
-import oxi.models.projection.*;
+//import oxi.models.projection.*;
 import oxi.models.*;
 import oxi.models.retailer.SizeGroup;
 import oxi.models.dto.retailer.*;
@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.io.Serializable;
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+import org.springframework.hateoas.server.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 import com.fasterxml.jackson.annotation.*;
 
 import com.google.gson.Gson;
@@ -21,7 +21,7 @@ import com.google.gson.GsonBuilder;
 
 @JsonRootName(value = "sizeGroup")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=SizeGroupDto.class)
-public class SizeGroupDto implements Serializable, Identifiable<String>
+public class SizeGroupDto implements Serializable/*Identifiable<String>*/
 {
 	private String id;
 	private String sizeLabel;
@@ -124,7 +124,7 @@ public class SizeGroupDto implements Serializable, Identifiable<String>
 	//public void setCalf(float calf){this.calf = calf;}
 	
 	//Getters
-	@Override
+	
 	public String getId(){return this.id;}
 	public String getSizeLabel(){return this.sizeLabel;}	
 	public String getMetric(){return this.metric;}

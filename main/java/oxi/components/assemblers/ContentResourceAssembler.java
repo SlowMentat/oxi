@@ -7,7 +7,7 @@ import oxi.models.Content;
 import oxi.models.dto.ContentDto;
 import oxi.controllers.ConsumerController;
 
-import org.springframework.hateoas.mvc.ResourceAssemblerSupport;
+import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.stereotype.*;
 import org.springframework.data.domain.*;
 
@@ -22,7 +22,7 @@ public class ContentResourceAssembler extends ResourceAssemblerSupport<Content, 
 	}
 
 	@Override
-	public ContentDto toResource(Content content){
+	public ContentDto toModel(Content content){
 		ContentDto resource = createResourceWithId(content.getId(), content);
 		logger.debug("ContentDto resource:  " + resource);
 

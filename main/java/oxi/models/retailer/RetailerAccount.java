@@ -2,7 +2,7 @@ package oxi.models.retailer;
 
 import oxi.models.RelatedEntity;
 import oxi.models.Relational;
-import oxi.models.projection.*;
+//import oxi.models.projection.*;
 import oxi.models.*;
 //import oxi.models.retailer.*;
 
@@ -14,9 +14,9 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.io.Serializable;
 import org.springframework.data.rest.core.annotation.*;
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+import org.springframework.hateoas.server.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 import com.fasterxml.jackson.annotation.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.apache.logging.log4j.Logger;
@@ -25,7 +25,7 @@ import org.apache.logging.log4j.LogManager;
 @Entity
 @Table(name="retailer_account")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=RetailerAccount.class)
-public class RetailerAccount extends RelatedEntity implements Serializable, Identifiable<UUID>
+public class RetailerAccount extends RelatedEntity implements Serializable/*Identifiable<UUID>*/
 {
 	@Transient
 	private static final Logger logger = LogManager.getLogger(RetailerAccount.class);

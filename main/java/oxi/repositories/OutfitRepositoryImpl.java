@@ -11,8 +11,8 @@ import oxi.models.dto.retailer.SizeChartDto;
 import oxi.models.retailer.SizeGroup;
 import oxi.models.retailer.SizeChart;
 import oxi.models.retailer.SizeChartSizeGroup;
-import oxi.models.projection.OutfitProjection;
-import oxi.models.projection.ContentProjection;
+//import oxi.models.projection.OutfitProjection;
+//import oxi.models.projection.ContentProjection;
 import oxi.repositories.OutfitRepositoryCustom;
 
 //import org.hibernate.Query;

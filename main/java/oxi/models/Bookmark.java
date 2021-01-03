@@ -17,13 +17,13 @@ import org.apache.logging.log4j.LogManager;
 
 import org.hibernate.annotations.GenericGenerator;
 
-//import oxi.models.projection.BookmarkProjection;
+////import oxi.models.projection.BookmarkProjection;
 
 @Entity
 @Table(name="bookmark")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="Bookmark_id")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope=Bookmark.class)
-public class Bookmark extends RelatedEntity implements Serializable, Identifiable<UUID>{
+public class Bookmark extends RelatedEntity implements Serializable/*Identifiable<UUID>*/{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Bookmark.class);
 

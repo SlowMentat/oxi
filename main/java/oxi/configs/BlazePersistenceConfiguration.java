@@ -19,6 +19,7 @@ package oxi.configs;
 import com.blazebit.persistence.Criteria;
 import com.blazebit.persistence.CriteriaBuilderFactory;
 import com.blazebit.persistence.spi.CriteriaBuilderConfiguration;
+
 //import com.blazebit.persistence.view.EntityViewManager;
 //import com.blazebit.persistence.view.spi.EntityViewConfiguration;
 //import com.blazebit.persistence.integration.view.spring.EnableEntityViews;

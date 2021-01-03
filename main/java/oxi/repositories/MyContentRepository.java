@@ -2,7 +2,7 @@ package oxi.repositories;
 
 import oxi.models.*;
 import oxi.models.dto.*;
-import oxi.models.projection.ContentProjection;
+//import oxi.models.projection.ContentProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.rest.core.annotation.*;
