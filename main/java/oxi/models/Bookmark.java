@@ -81,7 +81,8 @@ public class Bookmark extends RelatedEntity implements Serializable, Identifiabl
 		logger.debug("building Bookmark string");
         StringBuilder sb = new StringBuilder(indent).append("id: ").append((this.id == null ? "null" : this.id))
 			.append(indent).append("username: ").append(this.username)
-			.append(indent).append("itemId: ").append(this.itemId);
+			.append(indent).append("itemId: ").append(this.itemId)
+			.append(indent).append("date: ").append(this.createdOn);
         return sb.toString();
 	}
 
@@ -91,16 +92,38 @@ public class Bookmark extends RelatedEntity implements Serializable, Identifiabl
 	}
 
 
-	@Override
-	public boolean equals(Object object){
-		if(this == object) return true;
-		if(this == null || getClass() != object.getClass()) return false;
-		Bookmark bookmark = (Bookmark) object;
-		return Objects.equals(id, bookmark.getId());
-	}
+	//@Override
+	//public boolean equals(Object object){
+	//	if(this == object) return true;
+	//	if(this == null || getClass() != object.getClass()) return false;
+	//	Bookmark bookmark = (Bookmark) object;
+	//	return Objects.equals(id, bookmark.getId());
+	//}
+//
+	//@Override
+	//public int hashCode(){
+	//	return Objects.hash(id);
+	//}
 
 	@Override
-	public int hashCode(){
-		return Objects.hash(id);
-	}
+    public boolean equals(Object o) {
+
+        if (o == this) return true;
+        if (!(o instanceof Bookmark)) {
+            return false;
+        }
+
+        Bookmark bookmark = (Bookmark) o;
+
+        return 
+        	Objects.equals(id, bookmark.getId()) &&
+            Objects.equals(username, bookmark.getUsername()) &&
+            Objects.equals(itemId, bookmark.getItemId());
+            //Objects.equals(createdOn, bookmark.getCreatedOn());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, username, itemId, createdOn);
+    }
 }

@@ -1374,8 +1374,8 @@ public class ConsumerService implements ClientService{
 
 
 	public HashMap<String, Date> getBookmarkedItemsByUsername(String username){
-		//return bookmarkRep.findIdsByUsername(username);
-		return bookmarkRep.customfindIdsByUsername(username);
+		//return bookmarkRep.findItemIdsByUsername(username);
+		return bookmarkRep.customfindItemIdsByUsername(username);
 	}
 	
 	@Transactional

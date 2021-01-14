@@ -68,7 +68,7 @@ public class BillingService /*implements IAccountService<IVerificationToken>*/{
 	//@Autowired PasswordResetTokenRepository passwordResetTokenRep;
 	@Autowired
 	private PasswordEncoder companyPasswordEncoder;
-	@Autowired EntityManager entityManager;
+	@PersistenceContext EntityManager entityManager;
 
 
 	@Transactional

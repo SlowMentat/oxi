@@ -38,7 +38,9 @@ import oxi.models.ProfileStats;
 import oxi.errors.UserAlreadyExistException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -77,7 +79,9 @@ public class UserAccountService /*implements IAccountService<IVerificationToken>
 	private PasswordEncoder userPasswordEncoder;
 
 	//@Autowired SessionRegistry sessionRegistry;
-	@Autowired 
+	//@Qualifier("default")
+	//@PersistenceContext//(unitName = "default")
+	@PersistenceContext
 	private EntityManager entityManager;
 
 	private boolean emailExist(String email){

@@ -31,8 +31,7 @@
     <beans profile="application">
         <context:property-placeholder location="classpath:resources.application.properties"/>
         <!--<bean id="consumerService" class="oxi.services.ConsumerService" />-->
-        <bean id="propertyPlaceHolderConfigurer"
-              class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
+        <bean id="propertyPlaceHolderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
         <bean id="userResourceAssembler" class="org.springframework.hateoas.ResourceAssembler"/>
         <bean id="userResource" class="org.springframework.hateoas.Resource"/>
     </beans>

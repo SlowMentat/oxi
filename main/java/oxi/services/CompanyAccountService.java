@@ -70,7 +70,8 @@ public class CompanyAccountService /*implements IAccountService<IVerificationTok
 	@Autowired
 	private PasswordEncoder companyPasswordEncoder;
 	//@Autowired SessionRegistry sessionRegistry;
-	@Autowired EntityManager entityManager;
+	@PersistenceContext 
+	private EntityManager entityManager;
 
 
 	//public static String QR_PREFIX = "https://chart.googleapis.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=";

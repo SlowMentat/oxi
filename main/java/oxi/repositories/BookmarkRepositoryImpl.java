@@ -61,9 +61,10 @@ public class BookmarkRepositoryImpl implements BookmarkRepositoryCustom {
 	private EntityManager entityManager;
 
 	@Override
-	public HashMap<String, Date> customfindIdsByUsername(String username){		
+	public HashMap<String, Date> customfindItemIdsByUsername(String username){		
 		Session session = entityManager.unwrap(Session.class);	
 		HashMap<String, Date> itemIdToDate = new HashMap<String, Date>();
+		logger.debug("itemIdToDate = " + itemIdToDate.toString());
 		Bookmark bookmark;
 		String bookmarkQ = "select {b.*} from bookmark b where b.username = :username";
 
@@ -72,14 +73,21 @@ public class BookmarkRepositoryImpl implements BookmarkRepositoryCustom {
 			.setParameter("username", username, StringType.INSTANCE)
 			.list();
 
+		logger.debug("bookmarkTuples = " + bookmarkTuples.toString());
+
 		for(Bookmark tuple : bookmarkTuples){			
 			bookmark = (Bookmark)tuple;
 
 			if(bookmark != null){
+				logger.debug("bookmark = " + bookmark.toString());
 				itemIdToDate.put(bookmark.getItemIdText(), bookmark.getCreatedOn());
+			}
+			else{
+				logger.debug("BookmarkRepositoryImpl#customfindItemIdsByUsername: bookmark is null");
 			}
 		}
 
+		logger.debug("BookmarkRepositoryImpl#customfindItemIdsByUsername: returning HashMap itemIdToDate = " + itemIdToDate);
 		return itemIdToDate;
 	}
 }

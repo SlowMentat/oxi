@@ -17,5 +17,5 @@ import java.util.UUID;
 public interface BookmarkRepositoryCustom /*extends PagingAndSortingRepository<Outfit, Long>*/{
 
 	//@Query(value="")  //This query is overriden in the implementation
-	HashMap<String, Date> customfindIdsByUsername(String username);
+	HashMap<String, Date> customfindItemIdsByUsername(String username);
 }

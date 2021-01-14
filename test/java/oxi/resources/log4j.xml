@@ -1,0 +1,21 @@
+<Configuration>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout
+                    pattern="%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n" />
+        </Console>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="oxi"  level="debug" additivity="false">
+             <AppenderRef ref="ConsoleAppender" />
+        </Logger>
+        <Logger name="oxi.repositories"  level="debug" additivity="false">
+             <AppenderRef ref="ConsoleAppender" />
+        </Logger>
+
+        <Root level="info">
+            <AppenderRef ref="Console" />
+        </Root>
+    </Loggers>
+</Configuration>

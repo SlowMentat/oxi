@@ -1,4 +1,4 @@
-package oxi;
+/*package oxi;
 
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -14,4 +14,4 @@ public class PropertyOverrideContextInitializer implements ApplicationContextIni
 
         TestPropertySourceUtils.addPropertiesFilesToEnvironment(configurableApplicationContext, "application-test.properties");
     }
-}
+}*/
