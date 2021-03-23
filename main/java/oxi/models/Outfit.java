@@ -74,6 +74,7 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 
 	@Column(name = "created_on", nullable=false, updatable = false)
 	private Date createdOn = new Date();
+	private String createdOnText = this.createdOn.toString();
 
 	@Column(name = "updated_on", nullable=true)
 	private Date updatedOn = null;
@@ -209,6 +210,7 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 	public UUID getPictureProfileId(){return this.pictureProfileId;}
 	public Date getUpdatedOn(){return this.updatedOn;}
 	public Date getCreatedOn(){return this.createdOn;}
+	public String getCreatedOnText(){return this.createdOn.toString();}
 	
 	//Auxillary methods
 	/*@Override

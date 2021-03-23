@@ -23,6 +23,7 @@ import oxi.models.Profile;
 import oxi.models.Company;
 import oxi.models.dto.CompanyDto;
 import oxi.models.UserVerificationToken;
+import oxi.models.UserPasswordVerificationToken;
 import oxi.models.CompanyVerificationToken;
 import oxi.models.User;
 import oxi.models.dto.UserDto;
@@ -33,6 +34,7 @@ import oxi.services.CompanyAccountService;
 
 import oxi.events.OnRegistrationCompleteEvent;
 import oxi.events.OnSendUserVerificationEvent;
+import oxi.events.OnSendUserPasswordVerificationEvent;
 import oxi.events.OnCompanyRegistrationCompleteEvent;
 import oxi.events.OnUserInviteEvent;
 
@@ -160,28 +162,45 @@ public class AccountController{
 	@Secured({"ROLE_USER"})
 	@RequestMapping(value = "/user/sendVerificationEmail", method=RequestMethod.GET)
 	public ResponseEntity<?> sendVerificationEmail(final Principal principal, final HttpServletRequest request){
+		UserVerificationToken existingUVT = userAccountService.getUvtByUsername(principal.getName());
+		
+		if(existingUVT == null) throw new IllegalStateException("No verification token found");
 
-		//try{
-			// Expired token may not have been deleted by cron job.  In that case 
-			UserVerificationToken existingUVT = userAccountService.getUvtByUsername(principal.getName());
-	
-			String appUrl = 
-				"https://" + 
-				request.getServerName() + ":" + 
-				//request.getServerPort() +  
-				request.getContextPath();
+		String appUrl = 
+			"https://" + 
+			request.getServerName() + ":" + 
+			//request.getServerPort() +  
+			request.getContextPath();
 
-			if(existingUVT == null) throw new IllegalStateException("No verification token found");
 
-			eventPublisher.publishEvent(new OnSendUserVerificationEvent(existingUVT, request.getLocale(), appUrl));
-			return new ResponseEntity<>(new GenericResponse("success"), HttpStatus.OK);
-		//}
-//
-		//catch(Exception e){
-		//	logger.error("", e);
-		//	return new ResponseEntity<>(new GenericResponse(e.toString()), HttpStatus.INTERNAL_SERVER_ERROR);
-		//}
+		eventPublisher.publishEvent(new OnSendUserVerificationEvent(existingUVT, request.getLocale(), appUrl));
+		return new ResponseEntity<>(new GenericResponse("success"), HttpStatus.OK);
 	}
+
+
+	/**
+	*Endpoint handling requests to resend verification emails
+	*<p>
+	*\/user\/sendPasswordVerificationEmail
+	*</p>
+	*@param token Current expired token sent in request parameter
+	*@return ResponseEntity<?> with Status 400 if token does not exist, otherwise status 200
+	*/
+	@Secured({"ROLE_USER"})
+	@RequestMapping(value = "/user/sendPasswordVerificationEmail", method=RequestMethod.GET)
+	public ResponseEntity<?> sendPasswordVerificationEmail(final Principal principal, final HttpServletRequest request){
+
+		User user = userAccountService.getUserByUsername(principal.getName());
+		String baseUrl = "https://" + request.getServerName() + ":";
+		String appUrl = baseUrl + request.getContextPath();
+		
+		logger.debug("registering OnSendUserPasswordVerificationEvent");
+
+		eventPublisher.publishEvent(new OnSendUserPasswordVerificationEvent(user, request.getLocale(), baseUrl, appUrl));
+
+		return new ResponseEntity<>(new GenericResponse("success"), HttpStatus.OK);
+	}
+
 
 	@Secured({"ROLE_ANONYMOUS"})
 	@RequestMapping(value = "/user/iniPassword", method=RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -199,12 +218,18 @@ public class AccountController{
 		return new ResponseEntity<>(new GenericResponse("success"), HttpStatus.OK);
 	}
 
-	@Secured({"ROLE_USER"})
+	//@Secured({"ROLE_USER"})
+	@Secured({"ROLE_ANONYMOUS"})
 	@RequestMapping(value = "/user/password", method=RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateUserPassword(@RequestParam(value="newPassword", required=true) String newPassword, @RequestBody String oldPassword, final Principal principal)
+	public ResponseEntity<?> updateUserPassword(
+		@RequestParam(value="newPassword", required=true) String newPassword, 
+		@RequestParam(value="token", required=true) String token
+		//@RequestBody String oldPassword, 
+		//final Principal principal
+	)
 	{		
-		userAccountService.updateAccountPassword(newPassword, oldPassword, principal.getName());
-		return new ResponseEntity<>(new GenericResponse("success"), HttpStatus.OK);
+		userAccountService.updateAccountPassword(newPassword, /*oldPassword,*/ token/*, principal.getName()*/);
+		return new ResponseEntity<>(new GenericResponse("Password updated."), HttpStatus.OK);
 	}
 
 	@Secured({"ROLE_RETAILER_ADMIN"})

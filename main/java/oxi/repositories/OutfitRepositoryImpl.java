@@ -600,9 +600,10 @@ public class OutfitRepositoryImpl implements OutfitRepositoryCustom {
 		PagedList<OutfitDto> outfitPage = cb.selectNew(OutfitDto.class.getConstructor(Outfit.class, PictureProfile.class))
 				.with("o")
 				.with("pp")
+			// return CriterionBuilder<Outfit.class>
 			.end()
 			.orderByDesc("o.id")
-			//.orderByDesc("o.createdOn")
+			.orderByDesc("o.createdOnText")
 			.page((cursor.getFirstId() == null || cursor.getLastId() == null ? null : cursor), cursor.getNextFirstResult(), cursor.getMaxResults())
 			.getResultList();
 

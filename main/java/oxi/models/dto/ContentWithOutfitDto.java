@@ -34,7 +34,7 @@ public class ContentWithOutfitDto implements Serializable, Identifiable<String>
 	//private List<OutfitDto> outfits;
 
 	public ContentWithOutfitDto(Content content, Outfit outfit, LikeCount likeCount){
-		if(content != null && outfit != null && likeCount != null){
+		if(content != null && outfit != null){
 			this.id = content.getIdText();
 			this.coverpicuri = content.getPicture().getSmalluri();
 			this.comments = outfit.getComments();
@@ -64,4 +64,24 @@ public class ContentWithOutfitDto implements Serializable, Identifiable<String>
 	public String getUsername(){return this.username;}
 	public String getOutfitId(){return this.outfitId;}
 	public LikeCountDto getLikeCount(){return this.likeCount;}
+
+	public String toString(int indents) {
+		String indent = "\n";
+		for(int i = 0; i < indents; i++){
+			indent += "    ";
+		}
+		StringBuilder sb = new StringBuilder(indent).append("id: ").append(((this.id == null) ? "null" : id))
+			.append(indent).append("coverpicuri: ").append(this.coverpicuri)
+			.append(indent).append("comments:").append(this.comments)
+			.append(indent).append("username:").append(this.username)
+			.append(indent).append("outfitId:").append(this.outfitId)
+			.append(indent).append("likeCount:").append(this.likeCount);
+		
+		return sb.toString();
+	}	
+
+    @Override
+    public String toString(){
+    	return toString(0);
+    }
 }

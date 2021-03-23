@@ -23,7 +23,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Table(name="company_verification_token")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=UserVerificationToken.class)
 public class CompanyVerificationToken extends BaseVerificationToken{
-	//private static final int EXPIRATION = 60 * 24;
+	private static final int EXPIRATION_PERIOD = 60 * 24;
 
 	//@Id
 	//@GeneratedValue(strategy = GenerationType.AUTO)
@@ -50,11 +50,11 @@ public class CompanyVerificationToken extends BaseVerificationToken{
 	}
 
 	public CompanyVerificationToken(final String token){
-		super(token);
+		super(token, EXPIRATION_PERIOD);
 	}
 
 	public CompanyVerificationToken(final String token, final Company company){
-		super(token);
+		super(token, EXPIRATION_PERIOD);
 		this.company = company;
 	}
 

@@ -19,25 +19,26 @@ import org.apache.logging.log4j.LogManager;
 import org.hibernate.annotations.GenericGenerator;
 
 @Entity
-@Table(name="user_verification_token")
-public class UserVerificationToken extends BaseVerificationToken{
-	// 24 hour token expiration period
-	private static final int EXPIRATION_PERIOD = 60 * 24;
+@Table(name="user_password_verification_token")
+public class UserPasswordVerificationToken extends BaseVerificationToken{
+
+	// 30 minute token expiration
+	private static final int EXPIRATION_PERIOD = 30;
 
 	@OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
 	@JoinColumn(nullable = false, name = "user_id")
 	private User user;
 
 	//Constructor/s
-	public UserVerificationToken(){
+	public UserPasswordVerificationToken(){
 		super();
 	}
 
-	public UserVerificationToken(final String token){
+	public UserPasswordVerificationToken(final String token){
 		super(token, EXPIRATION_PERIOD);
 	}
 
-	public UserVerificationToken(final String token, final User user){
+	public UserPasswordVerificationToken(final String token, final User user){
 		super(token, EXPIRATION_PERIOD);
 		this.user=user;
 	}

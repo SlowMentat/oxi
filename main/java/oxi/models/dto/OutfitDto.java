@@ -35,7 +35,7 @@ public class OutfitDto implements Serializable, Identifiable<String>
 	public Outfit getOutfit(){return this.outfit;}*/
 
 
-	//private static final Logger logger = LogManager.getLogger(OutfitDto.class);*/
+	//private static final Logger logger = LogManager.getLogger(OutfitDto.class);*/ 
 	@JsonProperty("id")
 	private String id;
 	private int likes;
@@ -51,6 +51,8 @@ public class OutfitDto implements Serializable, Identifiable<String>
 	private String profilePictureUri;
 	private LikeCountDto likeCountDto;
 
+	private String createdOn;
+
 	public OutfitDto(){}
 
 	public OutfitDto(Outfit outfit){
@@ -62,6 +64,7 @@ public class OutfitDto implements Serializable, Identifiable<String>
 		this.contents = new ArrayList<ContentDto>(outfit.getContents().size());
 		this.username = outfit.getUsername();
 		this.likeCountDto = outfit.getLikeCount() != null ? new LikeCountDto(outfit.getLikeCount()) : null;
+		this.createdOn = outfit.getCreatedOn() != null ? outfit.getCreatedOn().toString() : null;
 	}
 
 	public OutfitDto(Outfit outfit, Boolean isLiked){
@@ -74,6 +77,7 @@ public class OutfitDto implements Serializable, Identifiable<String>
 		this.username = outfit.getUsername();
 		this.likeCountDto = new LikeCountDto(outfit.getLikeCount());
 		this.isLiked = isLiked;
+		this.createdOn = outfit.getCreatedOn() != null ? outfit.getCreatedOn().toString() : null;
 	}
 
 	public OutfitDto(Outfit outfit, PictureProfile pp){
@@ -86,6 +90,7 @@ public class OutfitDto implements Serializable, Identifiable<String>
 		this.username = outfit.getUsername();
 		this.likeCountDto = outfit.getLikeCount() != null ? new LikeCountDto(outfit.getLikeCount()) : null;
 		this.profilePictureUri = pp != null ? pp.getSmalluri() : null;
+		this.createdOn = outfit.getCreatedOn() != null ? outfit.getCreatedOn().toString() : null;
 	}
 
 	public OutfitDto(String id, int likes, String comments, List<ContentDto> contents, String coverPictureId){
@@ -160,6 +165,7 @@ public class OutfitDto implements Serializable, Identifiable<String>
 	public LikeCountDto getLikeCount(){return this.likeCountDto;}
 	public Boolean getIsLiked(){return this.isLiked;}
 	public String getProfilePictureUri(){return this.profilePictureUri;}
+	public String getCreatedOn(){return this.createdOn;}
 
 	//Setters
 	public void setId(String id){this.id = id;}
@@ -172,6 +178,7 @@ public class OutfitDto implements Serializable, Identifiable<String>
 	public void setLikeCountDto(LikeCountDto likeCountDto){this.likeCountDto = likeCountDto;}
 	public void setIsLiked(Boolean isLiked){this.isLiked = isLiked;}
 	public void setProfilePictureUri(String profilePictureUri){this.profilePictureUri = profilePictureUri;}
+	public void setCreatedOn(String createdOn){ this.createdOn = createdOn; }
 
 	public String toString(int indents) {
 		String indent = "\n";
@@ -184,6 +191,7 @@ public class OutfitDto implements Serializable, Identifiable<String>
 			.append(indent).append("coverPictureId:").append(this.coverPictureId)
 			.append(indent).append("coverpicuri:").append(this.coverpicuri)
 			//.append(indent).append("likeCountDto:").append(Integer.toString(this.likeCountDto))
+			.append(indent).append("createdOn:").append(this.createdOn)
 			.append(indent).append("contents:")
 			.append(indent).append("[");
 			for (ContentDto content: this.contents) {

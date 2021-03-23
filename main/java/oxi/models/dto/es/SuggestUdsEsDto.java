@@ -32,7 +32,7 @@ import com.google.gson.GsonBuilder;
 *Suggest User Defined Size Elasticsearch Data Transfer Object
 */
 
-@Document(indexName = "uds", type = "doc")
+@Document(indexName = "uds")
 @JsonRootName(value = "uds")
 public class SuggestUdsEsDto implements Serializable, Identifiable<String>
 {

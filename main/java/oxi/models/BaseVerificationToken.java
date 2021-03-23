@@ -21,7 +21,8 @@ import org.hibernate.annotations.GenericGenerator;
 
 @MappedSuperclass
 public class BaseVerificationToken implements Serializable, Identifiable<UUID>{
-	private static final int EXPIRATION = 60 * 24;
+	//private static final int USER_VERIFICATION_EXPIRATION = 60 * 24;	// 24 hour expireation
+	//private static final int PASSWORD_VERIFICATION_EXPIRATION = 30;		// 30 minute expiration
 
 	//@Id
 	//@GeneratedValue(strategy = GenerationType.AUTO)
@@ -53,18 +54,11 @@ public class BaseVerificationToken implements Serializable, Identifiable<UUID>{
 		super();
 	}
 
-	public BaseVerificationToken(final String token){
+	public BaseVerificationToken(final String token, int expiration){
 		super();
 		this.token = token;
-		this.expiryDate = this.calculateExpiryDate(BaseVerificationToken.EXPIRATION);
+		this.expiryDate = this.calculateExpiryDate(expiration);
 	}
-
-	//public BaseVerificationToken(final String token, final User user){
-	//	super();
-	//	this.token=token;
-	//	this.user=user;
-	//	this.expiryDate=calculateExpiryDate(BaseVerificationToken.EXPIRATION);
-	//}
 
 	//Getters
 	public UUID getId(){return this.id;}
@@ -75,6 +69,6 @@ public class BaseVerificationToken implements Serializable, Identifiable<UUID>{
 	//Setters
 	public void setId(UUID id){this.id = id;}
 	public void setToken(final String token){this.token = token;}
-	public void resetExpiryDate(){this.expiryDate = this.calculateExpiryDate(BaseVerificationToken.EXPIRATION);}
+	public void resetExpiryDate(int expiration){this.expiryDate = this.calculateExpiryDate(expiration);}
 	//public void setUser(User user){this.user = user;}
 }

@@ -21,7 +21,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.GsonBuilder;
 
 
-@Document(indexName = "apparel_type", type = "doc")
+@Document(indexName = "apparel_type")
 @JsonRootName(value = "apparelTypeAvailable")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=ApparelTypeEsDto.class)
 public class ApparelTypeEsDto implements Serializable, Identifiable<Integer>

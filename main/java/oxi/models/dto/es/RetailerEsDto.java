@@ -33,7 +33,7 @@ import com.google.gson.GsonBuilder;
 * This is the dto returned when user agent selects the retailer drop down in the add-item modal.
 * The add-item modal is displayed when a consumer is tagging uploaded photos.
 */
-@Document(indexName = "retailer", type = "doc")
+@Document(indexName = "retailer")
 @JsonRootName(value = "availableRetailer")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="name", scope=RetailerEsDto.class)
 public class RetailerEsDto implements Serializable, Identifiable<String>

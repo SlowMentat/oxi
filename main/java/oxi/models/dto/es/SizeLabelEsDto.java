@@ -31,7 +31,7 @@ import com.google.gson.GsonBuilder;
 * This is the dto returned when user agent selects the size drop down in the add-item modal.
 * The add-item modal is displayed when a consumer is tagging uploaded photos.
 */
-@Document(indexName = "size_label", type = "doc")
+@Document(indexName = "size_label")
 @JsonRootName(value = "availableSizeLabel")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=SizeLabelEsDto.class)
 public class SizeLabelEsDto implements Serializable, Identifiable<Integer>

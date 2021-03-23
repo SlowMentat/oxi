@@ -148,7 +148,7 @@ public class ItemDto implements Serializable, Identifiable<String>
 		this.positionx = itemContent.getPositionx();
 		this.positiony = itemContent.getPositiony();
 		this.coverpicuri = item.getPicture() != null ? item.getPicture().getMediumuri() : null;
-		this.pictureId = item.getPicture().getId().toString();
+		this.pictureId = item.getPicture() != null ? item.getPicture().getId().toString() :  null;
 	}
 
 

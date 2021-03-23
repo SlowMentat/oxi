@@ -938,7 +938,7 @@ public class ConsumerService implements ClientService{
 			logStackTrace(e);
 			throw new Exception("Error getting outfits.");
 		}
-
+		
 		//return buildPagedResponse(cursor, pagedOutfitDtos, null);
 		String queryParams = cursor.getNextURI(pagedContentWithOutfitDto, cursor);
 
@@ -1150,6 +1150,7 @@ public class ConsumerService implements ClientService{
 	@Transactional
 	public ContentDto updateContent(ContentDto contentDto, String outfitId) /*throws Exception*/{
 		Content content = contentRep.findById(UUID.fromString(contentDto.getId())).get();
+		
 		// Update content coverpicuri
 		content.setCoverpicuri(contentDto.getCoverpicuri());
 		logger.debug("ConsumerService#updateContent: content = " + content.toString());
@@ -1163,6 +1164,7 @@ public class ConsumerService implements ClientService{
 			for(ItemDto itemDto : contentDto.getItems()){
 				Item item = copyToItem(itemDto);
 				ItemContent itemContent = new ItemContent(item, content);
+				
 				//add new itemContent association
 				itemContent.setPositionx(itemDto.getPositionx());
 				itemContent.setPositiony(itemDto.getPositiony());
@@ -1174,6 +1176,8 @@ public class ConsumerService implements ClientService{
 				itemDtos.add(iDto);		
 			}
 		}
+
+		content = entityManager.merge(content);
 
 		logger.debug("content after calls persist and setItems: " + content.toString());
 		PictureDto pictureDto = new PictureDto(content.getPicture());

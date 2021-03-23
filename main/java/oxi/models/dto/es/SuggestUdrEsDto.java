@@ -32,7 +32,7 @@ import com.google.gson.GsonBuilder;
 *Suggest User Defined Retailer Elasticsearch Data Transfer Object
 */
 
-@Document(indexName = "udr", type = "doc")
+@Document(indexName = "udr")
 @JsonRootName(value = "udr")
 public class SuggestUdrEsDto implements Serializable, Identifiable<String>
 {

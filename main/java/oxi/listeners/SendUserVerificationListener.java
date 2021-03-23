@@ -1,6 +1,6 @@
 package oxi.listeners;
 
-
+import oxi.models.User;
 import oxi.models.UserVerificationToken;
 import oxi.events.OnSendUserVerificationEvent;
 import oxi.services.UserAccountService;
@@ -54,7 +54,8 @@ class SendUserVerificationListener implements ApplicationListener<OnSendUserVeri
 	private void resetUserVerificationToken(OnSendUserVerificationEvent event){
 		try{
 			String existingToken = event.getUserVerificationToken().getToken();
-			String replacementToken = userAccountService.updateUserVerificationToken(existingToken).getToken();	
+			User user = event.getUserVerificationToken().getUser();
+			String replacementToken = userAccountService.updateUserVerificationToken(existingToken, user.getId()).getToken();	
 
 			if(Objects.equals(existingToken, replacementToken)){
 				logger.debug("existing UVT = " + existingToken);

@@ -24,7 +24,7 @@ import com.google.gson.GsonBuilder;
 
 
 
-@Document(indexName = "size_chart", type = "doc")
+@Document(indexName = "size_chart")
 @JsonRootName(value = "availableSizeGroup")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=SizeChartEsDto.class)
 public class SizeChartEsDto implements Serializable, Identifiable<Integer>

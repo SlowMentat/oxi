@@ -24,7 +24,7 @@ import com.google.gson.GsonBuilder;
 
 
 
-@Document(indexName = "size_group", type = "doc")
+@Document(indexName = "size_group")
 @JsonRootName(value = "availableSizeGroup")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=SizeGroupEsDto.class)
 public class SizeGroupEsDto implements Serializable, Identifiable<String>
