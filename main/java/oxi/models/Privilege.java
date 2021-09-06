@@ -18,7 +18,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Table(name="privilege")
-public class Privilege extends BasePrivilege{//} implements Serializable, Identifiable<Long>{
+public class Privilege extends BasePrivilege{//} implements Serializable/*, Identifiable<.*>*/{
  
     @ManyToMany(mappedBy = "privileges")
     private Collection<Role> roles;

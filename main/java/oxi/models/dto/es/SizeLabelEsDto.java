@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.io.Serializable;
 
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+//import org.springframework.hateoas.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -34,7 +34,7 @@ import com.google.gson.GsonBuilder;
 @Document(indexName = "size_label")
 @JsonRootName(value = "availableSizeLabel")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=SizeLabelEsDto.class)
-public class SizeLabelEsDto implements Serializable, Identifiable<Integer>
+public class SizeLabelEsDto implements Serializable/*, Identifiable<.*>*/
 {
 	@Id
 	@JsonProperty("id")
@@ -59,7 +59,7 @@ public class SizeLabelEsDto implements Serializable, Identifiable<Integer>
 	public void setName(String name){this.name = name;}
 	
 	//Getters
-	@Override
+	//@Override
 	public Integer getId(){return this.id;}
 	public String getName(){return this.name;}
 

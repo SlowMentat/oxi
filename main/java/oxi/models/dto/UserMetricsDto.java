@@ -22,7 +22,7 @@ import org.apache.logging.log4j.LogManager;
 import org.hibernate.annotations.GenericGenerator;
 
 
-public class UserMetricsDto implements Serializable, Identifiable<String>
+public class UserMetricsDto implements Serializable/*, Identifiable<.*>*/
 {
 	@Transient
 	private static final Logger logger = LogManager.getLogger(UserMetricsDto.class);
@@ -126,7 +126,7 @@ public class UserMetricsDto implements Serializable, Identifiable<String>
 	}*/
 	
 	//Getters
-	@Override
+	//@Override
 	public String getId(){return this.id;}
 	
 	public String getBodyShape(){return this.bodyShape;}

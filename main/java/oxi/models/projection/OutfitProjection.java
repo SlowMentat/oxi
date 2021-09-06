@@ -9,7 +9,7 @@ import java.util.UUID;
 import java.util.ArrayList;
 import java.io.Serializable;
 import org.springframework.data.rest.core.config.Projection;
-import org.springframework.hateoas.Identifiable;
+//import org.springframework.hateoas.Identifiable;
 
 @Projection(name="outfitProjection", types = {Outfit.class})
 public interface OutfitProjection /*extends Identifiable<Long>*/{

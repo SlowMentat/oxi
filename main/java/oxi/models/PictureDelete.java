@@ -21,7 +21,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Entity
 @Table(name="picture_delete")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=PictureDelete.class)
-public class PictureDelete extends RelatedEntity implements Serializable, Identifiable<UUID>{
+public class PictureDelete extends RelatedEntity implements Serializable/*, Identifiable<.*>*/{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(PictureDelete.class);
 	

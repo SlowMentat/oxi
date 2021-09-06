@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.io.Serializable;
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+//import org.springframework.hateoas.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 
 
 public class CompanyDto implements Serializable
@@ -48,8 +48,8 @@ public class CompanyDto implements Serializable
 	}
 
 	//Getters
-	//@Override
-	//public String getId(){return null;}
+	////@Override
+	public String getId(){return null;}
 	public String getEmail(){return this.email;}
 	public String getPassword(){return this.password;}
 	public String getCompanyName(){return this.companyName;}

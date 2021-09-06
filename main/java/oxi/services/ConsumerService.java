@@ -40,7 +40,7 @@ import org.springframework.hateoas.*;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.data.domain.*;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.core.convert.converter.*;
@@ -95,10 +95,11 @@ public class ConsumerService implements ClientService{
 	@Autowired private SizeGroupRepository sizeGroupRep;
 	@Autowired private ItemContentRepository itemContentRep;
 	@Autowired private LikeCountProfileRepository likeCountProfileRep;
+	@Autowired private LikeCountRepository likeCountRep;
 
 	@Autowired private PictureProfileRepository pictureProfileRep;
 
-	//Resource Assemblers
+	//EntityModel Assemblers
 	//@Autowired 
 	//private OutfitResourceAssembler outfitRA;
 	//@Autowired private ContentResourceAssembler contentRA;
@@ -107,7 +108,7 @@ public class ConsumerService implements ClientService{
 	//@Autowired private ProfileResourceAssembler profileRA;
 	//@Autowired private UserResourceAssembler userRA;
 
-	//Paged Resource Assemblers 
+	//Paged EntityModel Assemblers 
 	@Autowired private PagedResourcesAssembler<Outfit> outfitPRA;
 	@Autowired private PagedResourcesAssembler<OutfitDto> outfitPRAP;
 
@@ -156,6 +157,13 @@ public class ConsumerService implements ClientService{
 
 	public ConsumerService(){
 
+	}
+
+	//@Override
+	private <T extends Object> RepresentationModel toModel(T dto){		
+		//Link outfitLink = null;// links.linkForItemResource(dto).withRel("outfit");
+		//SLink selfLink = links.linkForItemResource(dto).withSelfRel();
+		return new EntityModel<T>(dto/*, null, selfLink*/);
 	}
 
 	private void logStackTrace(Exception e){
@@ -824,33 +832,33 @@ public class ConsumerService implements ClientService{
 	/*
 	Makes call to DAL retreiving outfit resource
 	@param Long specifying id of outfit to retreive
-	@return OutfitDto which extends ResourceSupport
+	@return OutfitDto which extends RepresentationModel
 	*/
 	public OutfitDto readOutfit(String outfitId){
 		return outfitRep.getOutfitById(UUID.fromString(outfitId));
 	}
 
 	// TDOD:  generalize this method for getContentsByItemId
-	private <T> Resource<CursorDto> buildPagedResponse(CursorDto cursor, PagedList<T> pagedDtoList, String filterQueryParam){
+	private <T> EntityModel<CursorDto> buildPagedResponse(CursorDto cursor, PagedList<T> pagedDtoList, String filterQueryParam){
 		String queryParams = cursor.getNextURI(pagedDtoList, cursor);
 
-		Link afterLink = ControllerLinkBuilder.linkTo(ConsumerController.class)
+		Link afterLink = WebMvcLinkBuilder.linkTo(ConsumerController.class)
 			.slash("outfits?filter=" + filterQueryParam + queryParams)
 			.withRel("after");
 
-		cursor.embedResource("outfitDtoes", new Resources<T>(pagedDtoList));
+		cursor.embedResource("outfitDtoes", new CollectionModel<T>(pagedDtoList));
 
-		return new Resource<CursorDto>(cursor, afterLink);
+		return new EntityModel<CursorDto>(cursor, afterLink);
 	}
 
-	public Resource<CursorDto> readOutfitsByUsername(String username, String callerName, CursorDto cursor, String filterQueryParam) throws Exception{
+	public EntityModel<CursorDto> readOutfitsByUsername(String username, String callerName, CursorDto cursor, String filterQueryParam) throws Exception{
 		//logger.debug("username = " + username);
 		//Profile profile = profileRep.findByUsername(username);
 		////Page<OutfitDto> outfits = outfitRep.findByProfileId(profile.getId(), pageable);
 		//List<OutfitDto> outfitDtos = outfitRep.findByProfileId(callerName, cursor, profile.getId().toString());
 		////logger.debug("outfits return from repository: \n" + outfitDtos);
-		////// Tell Paged Resource Assembler to use the user assembler for individual items.
-		////PagedResources<?> pagedOutfitResource = outfitPRAP.toResource(outfits, this::toResource);
+		////// Tell Paged EntityModel Assembler to use the user assembler for individual items.
+		////PagedModel<?> pagedOutfitResource = outfitPRAP.toModel(outfits, this::toModel);
 		////return pagedOutfitResource;
 		PagedList<OutfitDto> pagedOutfitDtos = null;
 
@@ -879,11 +887,11 @@ public class ConsumerService implements ClientService{
 			return new ResponseEntity<>(exception, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		return new ResponseEntity<>( outfits.stream().map(this::toResource).collect(Collectors.toList()), HttpStatus.OK );
+		return new ResponseEntity<>( outfits.stream().map(this::toModel).collect(Collectors.toList()), HttpStatus.OK );
 	}
 
-	//public PagedResources<?> readPagedOutfits(String filter, String callerName, Pageable pageable) throws Exception{
-	public Resource<CursorDto> readPagedOutfits(String filter, String callerName, CursorDto cursor, String filterQueryParam) throws Exception{
+	//public PagedModel<?> readPagedOutfits(String filter, String callerName, Pageable pageable) throws Exception{
+	public EntityModel<CursorDto> readPagedOutfits(String filter, String callerName, CursorDto cursor, String filterQueryParam) throws Exception{
 		//Page<OutfitDto> outfits = outfitRep.customFindAll(callerName, pageable);//outfitRep.getAllOutfitsWithUsername(pageable).map(this::convertToOutfitDto);
 
 		PagedList<OutfitDto> pagedOutfitDtos = null;
@@ -920,15 +928,15 @@ public class ConsumerService implements ClientService{
 
 	public List<?> readContents(String outfitId){
 		List<ContentDto> contents = contentRep.findByOutfitId(UUID.fromString(outfitId));
-		return contents.stream().map(this::toResource).collect(Collectors.toList());
+		return contents.stream().map(this::toModel).collect(Collectors.toList());
 	}
 
-	//public PagedResources<?> getContentsByItemId(String itemId, Pageable pageable){
+	//public PagedModel<?> getContentsByItemId(String itemId, Pageable pageable){
 	//	Page<ContentWithOutfitDto> contentWithOutfitDto = contentRep.getContentWithOutfitByItemId(UUID.fromString(itemId), pageable);
-	//	return contentWithOutfitPRAP.toResource(contentWithOutfitDto, this::toResource);
+	//	return contentWithOutfitPRAP.toModel(contentWithOutfitDto, this::toModel);
 	//}
 
-	public Resource<CursorDto> getContentsByItemId(String itemId, CursorDto cursor) throws Exception{
+	public EntityModel<CursorDto> getContentsByItemId(String itemId, CursorDto cursor) throws Exception{
 		PagedList<ContentWithOutfitDto> pagedContentWithOutfitDto = null;
 
 		try{
@@ -942,13 +950,13 @@ public class ConsumerService implements ClientService{
 		//return buildPagedResponse(cursor, pagedOutfitDtos, null);
 		String queryParams = cursor.getNextURI(pagedContentWithOutfitDto, cursor);
 
-		Link afterLink = ControllerLinkBuilder.linkTo(ConsumerController.class)
+		Link afterLink = WebMvcLinkBuilder.linkTo(ConsumerController.class)
 			.slash("contents/items/" + itemId + queryParams)
 			.withRel("after");
 
-		cursor.embedResource("contentWithOutfitDtoes", new Resources<ContentWithOutfitDto>(pagedContentWithOutfitDto));
+		cursor.embedResource("contentWithOutfitDtoes", new CollectionModel<ContentWithOutfitDto>(pagedContentWithOutfitDto));
 
-		return new Resource<CursorDto>(cursor, afterLink);
+		return new EntityModel<CursorDto>(cursor, afterLink);
 	}
 
 
@@ -1257,9 +1265,9 @@ public class ConsumerService implements ClientService{
 	}
 
 	@Transactional
-	//public PagedResources<?> getFilteredItems(String username, String filter, Pageable pageable){
-	//public PagedResources<?> getFilteredItems(String username, String filter, CursorDto cursor){
-	public Resource<CursorDto> getFilteredItems(String username, String filter, CursorDto cursor){
+	//public PagedModel<?> getFilteredItems(String username, String filter, Pageable pageable){
+	//public PagedModel<?> getFilteredItems(String username, String filter, CursorDto cursor){
+	public EntityModel<CursorDto> getFilteredItems(String username, String filter, CursorDto cursor){
 		switch(filter){
 			case "all":
 				/*Page<ItemDto> itemDtos = itemRep.findAll(pageable).map(new Converter<Item, ItemDto>(){
@@ -1287,14 +1295,14 @@ public class ConsumerService implements ClientService{
 				//logger.debug("ConsumerController.class = " + ConsumerController.class);
 
 				//// Build "after" link.
-				//Link afterLink = ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(ConsumerController.class))
+				//Link afterLink = WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(ConsumerController.class))
 				//	.slash(itemDtos.getContent().get(itemDtos.getSize()))
 				//	//.toURI( .getId() )
 				//	.withRel("after");
 
 				// Build "after" link.
 
-				//Link afterLink = ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(ConsumerController.class, itemDtos.get(itemDtos.size()-1).getId() ))
+				//Link afterLink = WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(ConsumerController.class, itemDtos.get(itemDtos.size()-1).getId() ))
 				//	//.slash(itemDtos.get(itemDtos.size()-1))
 				//	//.toURI( .getId() )
 				//	.withRel("after");
@@ -1330,9 +1338,9 @@ public class ConsumerService implements ClientService{
 				//	itemDtos.get(itemDtos.size()-1).getId()
 				//);
 
-				Link afterLink = ControllerLinkBuilder.linkTo(ConsumerController.class)
+				Link afterLink = WebMvcLinkBuilder.linkTo(ConsumerController.class)
 					.slash("items?filter=all" + queryParams)
-				//Link afterLink = ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(ConsumerController.class).getFilteredItems(null, new CursorDto(), null))
+				//Link afterLink = WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(ConsumerController.class).getFilteredItems(null, new CursorDto(), null))
 					//.slash(itemDtos.get(itemDtos.size()-1).getId())
 					//.addParameters(
 					//	QueryParameters.required("size"),
@@ -1343,15 +1351,15 @@ public class ConsumerService implements ClientService{
 
 				//CursorDto prevCursor = cursor;new Resourc<>(cursor, afterLink);
 				//cursor.add(afterLink);
-				cursor.embedResource("items", new Resources<ItemDto>(pagedItemDtos));
+				cursor.embedResource("items", new CollectionModel<ItemDto>(pagedItemDtos));
 
 				// Build "after" link.
 				//Link beforLink = linkTo(methodOn(ConsumerController.class)).getFilteredItems( itemDtos.get(0).getId() ).withRel("before");
 				
-				//return new Resources<ItemDto>(pagedItemDtos, afterLink);
-				return new Resource<CursorDto>(cursor, afterLink);
+				//return new CollectionModel<ItemDto>(pagedItemDtos, afterLink);
+				return new EntityModel<CursorDto>(cursor, afterLink);
 
-				//return itemPRAP.toResource(itemDtos, this::toResource, afterLink);
+				//return itemPRAP.toModel(itemDtos, this::toModel, afterLink);
 			//case "bookmarked":
 
 			default:
@@ -1478,7 +1486,7 @@ public class ConsumerService implements ClientService{
 	/*
 	Makes call to DAL retreiving profile resource
 	@param Long specifying id of profile to retreive
-	@return ProfileDto which extends ResourceSupport
+	@return ProfileDto which extends RepresentationModel
 	*/
 
 	public ProfileDto readProfile(String username, String owner) throws Exception{
@@ -1639,7 +1647,7 @@ public class ConsumerService implements ClientService{
 
 	//=====================================================================================
 
-	public PagedResources<?> readBrands(Pageable pageable){
+	public PagedModel<?> readBrands(Pageable pageable){
 		/*Page<BrandDto> brands = brandRep.findAll(pageable).map(new Converter<Brand, BrandDto>(){
 			@Override
 			public BrandDto convert(Brand brand){
@@ -1648,16 +1656,16 @@ public class ConsumerService implements ClientService{
 		});*/
 		Page<BrandDto> brands = brandRep.findAll(pageable).map(this::convertToBrandDto);
 		logger.debug("brands return from repository: \n" + brands);
-		return brandPRAP.toResource(brands, this::toResource);
+		return brandPRAP.toModel(brands);
 	}
 
-	public PagedResources<?> getApparelTypes(Pageable pageable){		
+	public PagedModel<?> getApparelTypes(Pageable pageable){		
 		Page<ApparelTypeDto> apparelTypes = apparelTypeRep.findAll(pageable).map(this::convertToApparelTypeDto);
 		logger.debug("apparelTypes return from repository: \n" + apparelTypes);
-		return apparelTypePRAP.toResource(apparelTypes, this::toResource);
+		return apparelTypePRAP.toModel(apparelTypes);
 	}
 
-	//public PagedResources<?> readRetailers(Pageable pageable){
+	//public PagedModel<?> readRetailers(Pageable pageable){
 	//	/*Page<RetailerDto> retailers = retailerRep.findAll(pageable).map(new Converter<Retailer, RetailerDto>(){
 	//		@Override
 	//		public RetailerDto convert(Retailer retailer){
@@ -1666,7 +1674,7 @@ public class ConsumerService implements ClientService{
 	//	});*/
 	//	Page<RetailerDto> retailers = retailerRep.findAll(pageable).map(this::convertToRetailerDto);
 	//	logger.debug("retailers return from repository: \n" + retailers);
-	//	return retailerPRAP.toResource(retailers, this::toResource);
+	//	return retailerPRAP.toModel(retailers, this::toModel);
 	//}
 
 	/*public List<SizeLabel> readSizes(){
@@ -1760,7 +1768,8 @@ public class ConsumerService implements ClientService{
 	}
 
 	/**
-	*deletes a one or more outfits (including child images) identified by the user
+	*Deletes one or more outfits identified by the user.
+	*Note: Child picture entities are marked for later deletion by creating deletePicutre entity.  
 	*<p>
 	*\/user\/sendVerificationEmail
 	*</p>
@@ -1770,48 +1779,75 @@ public class ConsumerService implements ClientService{
 	@Transactional
 	public void deleteOutfits(String username, List<String> outfitIds) {
 		logger.debug("in deleteOutfits");
-		try{
-			List<Outfit> outfits = null;
+		if(outfitIds.size() > 0){
+			try{	
+				if(outfitIds.size() > 50) throw new IllegalStateException("delete request limit reached.");
 	
-			if(outfitIds.size() > 50){
-				throw new IllegalStateException("delete request limit reached");
-			}
-			logger.debug("invoking getOutfitsByIds");
-			outfits = outfitRep.getOutfitsByIds(outfitIds);
-			logger.debug("outfits size = " + outfits.size());
-			List<PictureDelete> pictureDeletes = new ArrayList<PictureDelete>();	
-	
-			// Check if each content entity belongs to the user
-			for(Outfit outfit : outfits){
-				if(!outfit.getUsername().equals(username)){
-					throw new IllegalStateException("Unauthorized action");
-				}
-	
-				// Make record entry in deleted picture database
-				for(Content content : outfit.getContents()){
-					// copy exiting Picture entity to a PictureDelete entity
-					PictureDelete pd = new PictureDelete(content.getPicture());
-					pictureDeletes.add(pd);
-					// delete all records in join table with reference to this contents record
-					logger.debug("ConsumerService#deleteOutfits: content item count = " + content.getItems().size());
-					if(content.getItems() != null && content.getItems().size() > 0) itemContentRep.deleteInBatch(content.getItems());
-				}
-			}
+				List<PictureDelete> pictureDeletes = new ArrayList<PictureDelete>();
+				List<Content> contents = new ArrayList<Content>();
+				List<Picture> pictures = new ArrayList<Picture>();
+				List<Item> items = null;
+				List<UUID> contentIds = new ArrayList<UUID>();
+				List<UUID> pictureIds = new ArrayList<UUID>();
+				Set<ItemContent> itemContents = new HashSet<ItemContent>();
+				List<Outfit> outfits = outfitRep.getOutfitsByIds(outfitIds);
+				Profile profile = outfits.get(0).getProfile();
+				List<LikeCount> likeCounts = likeCountRep.findByOutfitIds(outfitIds);				
+				List<LikeCountProfileId> likeCountProfileIds = likeCounts.stream().map(likeCount -> new LikeCountProfileId(likeCount.getId(), profile.getId())).collect(Collectors.toList());				
+				List<LikeCountProfile> likeCountProfiles = likeCountProfileRep.findByIds(likeCountProfileIds);
+				int count = 0;
 
-			if (outfitIds.size() > 0){
-				logger.debug("Deleting likeCountProfile record from profile belonging to outfit: " + outfits.get(0).getProfile().getLikeCounts().size());
-				likeCountProfileRep.deleteInBatch(outfits.get(0).getProfile().getLikeCounts());
-			}
-			
-			logger.debug("Batch deleting outfits");
-			outfitRep.deleteInBatch(outfits);
-			// insert all deleted picture records, and delete outfits from database
-			pictureDeleteRep.saveAll(pictureDeletes);
+				for(Outfit outfit : outfits){
+					logger.debug("Iteration {}", count);
+					
+					if(!outfit.getUsername().equals(username)) throw new IllegalStateException("Unauthorized action.");
+					contents.addAll(outfit.getContents());
+		
+					for(Content content : outfit.getContents()){
+						// Copy exiting Picture entity to a PictureDelete entity
+						PictureDelete pd = new PictureDelete(content.getPicture());
+						pictureDeletes.add(pd);
 
-			return;
-		}
-		catch(Exception e){
-			logger.debug("Something went wrong: " + e.toString());
+						logger.debug("ConsumerService#deleteOutfits: content item count = " + content.getItems().size());
+
+						if(content.getItems() != null && content.getItems().size() > 0){
+							//itemContentRep.deleteInBatch(content.getItems());
+							itemContents.addAll(content.getItems());
+						}
+
+						if(content.getPicture() != null){
+							pictures.add(content.getPicture());
+							pictureIds.add(content.getPicture().getId());
+						}
+
+						//content.setOutfit(null);
+					}
+
+					//outfit.setProfile(null);
+					outfit.getContents().clear();
+					count++;
+				}
+
+				items = itemRep.findByPictureIds(pictureIds);
+				items.stream().forEach(item -> item.setPicture(null));
+				likeCountProfiles.stream().forEach(likeCountProfile -> likeCountProfile.setLikeCount(null));
+				likeCounts.stream().forEach(likeCount -> likeCount.setOutfit(null));
+				
+				entityManager.flush();
+				
+				itemContentRep.deleteInBatch(itemContents);
+				//likeCountProfileRep.deleteInBatch(likeCountProfiles);				
+				//likeCountRep.deleteInBatch(likeCounts);
+				pictureRep.deleteInBatch(pictures);
+				contentRep.deleteInBatch(contents);
+				outfitRep.deleteInBatch(outfits);
+				pictureDeleteRep.saveAll(pictureDeletes);
+	
+				return;
+			}
+			catch(Exception e){
+				logger.debug("Something went wrong: " + e.toString());
+			}
 		}
 	}
 
@@ -1885,11 +1921,5 @@ public class ConsumerService implements ClientService{
 			logger.debug(e);
 		}
 		return image;
-	}
-
-	private <T extends Identifiable<?>> ResourceSupport toResource(T dto){		
-		//Link outfitLink = null;// links.linkForSingleResource(dto).withRel("outfit");
-		//SLink selfLink = links.linkForSingleResource(dto).withSelfRel();
-		return new Resource<T>(dto/*, null, selfLink*/);
 	}
 }

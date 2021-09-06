@@ -23,7 +23,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Table(name="following")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="Bookmark_id")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope=Following.class)
-public class Following extends RelatedEntity implements Serializable, Identifiable<FollowingId>{
+public class Following extends RelatedEntity implements Serializable/*, Identifiable<.*>*/{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Following.class);
 

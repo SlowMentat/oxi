@@ -43,6 +43,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+//import javax.annotation.EntityModel;
 import javax.annotation.Resource;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -253,13 +254,15 @@ public class SecurityConfiguration{
 					.authorizeRequests()
 						//.antMatchers("/").permitAll()
 						.antMatchers("/account/user/login").permitAll()
-						.antMatchers("/consumer/login").permitAll()
-						.antMatchers("/admin/login").permitAll()
-						.antMatchers("/account/user/confirm").permitAll()
-						.antMatchers("/account/verification/user/failedRegistration").permitAll()
-						.antMatchers("/account/user/register").permitAll()
+						.antMatchers("/account/user/forgotPassword").permitAll()
 						.antMatchers("/account/user/iniPassword").permitAll()
+						.antMatchers("/account/user/password").permitAll()
+						.antMatchers("/account/user/confirm").permitAll()
+						.antMatchers("/account/user/register").permitAll()
+						.antMatchers("/account/verification/user/failedRegistration").permitAll()
+						.antMatchers("/consumer/login").permitAll()
 						.antMatchers("/consumer/image/**").permitAll()
+						.antMatchers("/admin/login").permitAll()
 						.anyRequest().authenticated();//.hasRole("USER");
 					//	.and()
 					//.formLogin()

@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.io.Serializable;
 import javax.persistence.*;
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+//import org.springframework.hateoas.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 import org.springframework.data.rest.core.annotation.*;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.*;
@@ -19,7 +19,7 @@ import java.util.UUID;
 
 
 
-public class ToleranceDto extends RelatedEntity implements Serializable, Identifiable<String>
+public class ToleranceDto extends RelatedEntity implements Serializable/*, Identifiable<.*>*/
 {
 	@Transient
 	private static final Logger logger = LogManager.getLogger(ToleranceDto.class);
@@ -233,7 +233,7 @@ public class ToleranceDto extends RelatedEntity implements Serializable, Identif
 
 	
 	//Getters
-	@Override
+	//@Override
 	public String getId(){return this.id;}
 
 	public float getHeight(){return this.height;}

@@ -19,7 +19,7 @@ import java.util.Date;
 @Entity
 @Table(name="size_label")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=SizeLabel.class)
-public class SizeLabel extends RelatedEntity implements Serializable, Identifiable<Integer>{
+public class SizeLabel extends RelatedEntity implements Serializable/*, Identifiable<.*>*/{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(SizeLabel.class);
 	

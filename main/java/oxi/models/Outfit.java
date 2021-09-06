@@ -26,7 +26,7 @@ import oxi.models.projection.OutfitProjection;
 @Table(name="outfit")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=Outfit.class)
 //@JsonDeserialize(contentUsing=CustomOutfitDeserializer.class) 
-public class Outfit extends RelatedEntity implements Serializable, Identifiable<UUID>
+public class Outfit extends RelatedEntity implements Serializable/*, Identifiable<UUID>*/
 {
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Outfit.class);
@@ -143,9 +143,10 @@ public class Outfit extends RelatedEntity implements Serializable, Identifiable<
 	public void setProfile(Profile profile){
 		
 		/*//Check if there is already a Profile Object associated with this Order Object.
-		//If so remove Remove this outfit object from the refereced Profile object's List<Outfit>
-		//and reference this OUtfit object to the passed Profile Object.  If the passed Profile Object is not null,
-		//add this Outfit object to the referenced Profile Object's List<Outfit>.
+		//If so remove this outfit object from the refereced Profile object's List<Outfit>
+		//and reference this Outfit object to the passed Profile Object.  
+		//If the passed Profile Object is not null, add this Outfit object to the referenced Profile Object's List<Outfit>.
+		
 		if(this.profile != null){
 			logger.warn("Removing Outfit from List<Order> property of Profile object");
 			this.profile.internalRemoveOutfit(this);

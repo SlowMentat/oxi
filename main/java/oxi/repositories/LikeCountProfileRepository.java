@@ -19,4 +19,7 @@ public interface LikeCountProfileRepository extends JpaRepository<LikeCountProfi
 
 	//@Query("SELECT likeCount FROM LikeCount AS likeCount WHERE likeCount.outfit.id = ?1")
 	//LikeCount findByOutfitId(UUID outfitId);
+	
+	@Query( "select lcp FROM LikeCountProfile lcp WHERE id IN :ids" )
+	List<LikeCountProfile> findByIds(@Param("ids") List<LikeCountProfileId> ids);
 } 

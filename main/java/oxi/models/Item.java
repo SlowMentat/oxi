@@ -27,7 +27,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Entity(name = "Item")
 @Table(name = "item")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=Item.class)
-public class Item extends RelatedEntity implements Serializable, Identifiable<UUID>{
+public class Item extends RelatedEntity implements Serializable/*, Identifiable<.*>*/{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Item.class);
 	
@@ -91,12 +91,12 @@ public class Item extends RelatedEntity implements Serializable, Identifiable<UU
 	//@Column(name = "uds",  columnDefinition="VARCHAR(12)")
 	//private String userDefinedSize;
 
-	@OneToMany(/*cascade = CascadeType.ALL,*/ orphanRemoval= true, mappedBy = "item")
+	@OneToMany(/*cascade = CascadeType.ALL,*/ orphanRemoval = true, mappedBy = "item")
 	@RestResource(rel="client_0")	
 	@JsonIdentityReference(alwaysAsId=true)
 	private Set<ItemContent> contents = new HashSet<ItemContent>();
 
-	@OneToMany(/*cascade = CascadeType.ALL,*/ orphanRemoval= true, mappedBy = "item")
+	@OneToMany(/*cascade = CascadeType.ALL,*/ orphanRemoval = true, mappedBy = "item")
 	@RestResource(rel="client_0")	
 	@JsonIdentityReference(alwaysAsId=true)
 	private Set<LikeCountItem> likeCounts = new HashSet<LikeCountItem>();

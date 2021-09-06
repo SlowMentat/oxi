@@ -53,7 +53,7 @@ import org.apache.logging.log4j.LogManager;
 import com.blazebit.persistence.CriteriaBuilderFactory;
 import com.blazebit.persistence.PagedList;
 import com.blazebit.persistence.PagedArrayList;
-import com.blazebit.persistence.spi.CriteriaBuilderConfiguration;
+//import com.blazebit.persistence.spi.CriteriaBuilderConfiguration;
 //import com.blazebit.persistence.deltaspike.data.KeysetAwarePage;
 import com.blazebit.persistence.spring.data.base.query.KeysetAwarePageImpl;
 
@@ -124,6 +124,7 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom{
 		logger.debug("nextFirstResult = " + cursor.getNextFirstResult());
 		//String itemQ = "select {i.*}, {o.*} from item i join outfit o on o.id = i.outfit_id";
 
+
 		/*
 		*  2 things preventing me from using this:
 		*    Don't know how to perform join on 
@@ -144,6 +145,8 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom{
 			.orderByDesc("i.id")
 			.orderByDesc("i.createdOn")
 			.page((cursor.getFirstId() == null || cursor.getLastId() == null ? null : cursor), cursor.getNextFirstResult(), cursor.getMaxResults())
+			// comment
+			// comment
 			.getResultList();
 		
 		//int direction = cursor.getDirection() == 0 ? 1 : cursor.getDirection();

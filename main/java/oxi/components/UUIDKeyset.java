@@ -11,9 +11,9 @@ import java.io.Serializable;
 import javax.persistence.Tuple;
 import javax.xml.bind.DatatypeConverter;
 import org.javatuples.Pair;
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+//import org.springframework.hateoas.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 
 import com.blazebit.persistence.Keyset;
 import java.util.Date;

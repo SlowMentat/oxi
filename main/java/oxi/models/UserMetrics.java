@@ -26,7 +26,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Entity
 @Table(name="user_metrics")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=UserMetrics.class)
-public class UserMetrics implements Serializable, Identifiable<UUID>
+public class UserMetrics implements Serializable/*, Identifiable<.*>*/
 {
 	@Transient
 	private static final Logger logger = LogManager.getLogger(UserMetrics.class);
@@ -142,7 +142,7 @@ public class UserMetrics implements Serializable, Identifiable<UUID>
 	}
 	
 	//Getters
-	@Override
+	//@Override
 	public UUID getId(){return this.id;}
 
 	public String getIdText(){return this.idText;}

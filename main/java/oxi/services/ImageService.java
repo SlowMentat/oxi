@@ -22,16 +22,28 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.AffineTransformOp;
 import java.awt.geom.AffineTransform;
-import java.io.*;
+//import java.io.*;
 import java.io.IOException;
 import java.io.FileNotFoundException;
-import java.lang.IllegalArgumentException;
-import java.util.ArrayList;
-import java.util.UUID;
 import java.util.Optional;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.PrintWriter;
+import java.io.FileOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.BufferedOutputStream;
+import java.io.OutputStream;
+import java.io.InputStream;
+import java.io.File;
+
+import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.attribute.UserPrincipalLookupService;
+import java.nio.file.*;
+
+import java.lang.IllegalArgumentException;
+import java.util.ArrayList;
+import java.util.UUID;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -68,6 +80,7 @@ public class ImageService{
 	private static final String mediumFolder = "/usr/images/medium";
 	private static final String smallFolder = "/usr/images/small";
 	private static final String thumbnailFolder = "/usr/images/thumbnail";
+	private final String user = "root";
 	private String aspect_ratio;
 
 	@Autowired
@@ -225,6 +238,31 @@ public class ImageService{
         ImageIO.write(bufferedImage, formatName, outputStream);
     }
 
+
+	/**
+     * Converts existing File object to a nio compatible Path object from which to set file owner
+     * @param java.io.File object
+     * @param name of the file owner
+     * @return A java.nio.file.Path
+     */
+    private File updateFileOwner(File file, String user) throws IOException{
+    	java.nio.file.Path nioPath = null;
+    	UserPrincipal userPrincipal = null;
+
+    	try{
+			// Retreiv a java.nio.file.Path object
+			nioPath = file.toPath();
+	
+			UserPrincipalLookupService lookupService = nioPath.getFileSystem().getUserPrincipalLookupService();
+			userPrincipal = lookupService.lookupPrincipalByName(user);
+		}
+		catch(Exception e){
+			throw new IOException("Could not update file owner", e);
+		}
+
+		return java.nio.file.Files.setOwner(nioPath, userPrincipal).toFile();    	
+    }
+
 	/**
      * If necessary, saveOriginalImage rotates the passed jpg image data and saves to the filesystem.
      * @param data Byte array representation of the image.
@@ -232,18 +270,20 @@ public class ImageService{
      * @return An instance of BuffereImage representing the rotated rotated original image.
      */
     private BufferedImage saveOriginalImage(byte[] data, double rotation, String[] oglFilenameRef) throws IOException{
-		File originalImagePath = null;
+		File originalImageFile = null;
 
 		try{
-			originalImagePath = File.createTempFile("ogl", ".jpg", new File(originalFolder));
-		}catch(Exception e){
-			throw new IOException("Could not create temp file");
+			originalImageFile = File.createTempFile("ogl", ".jpg", new File(originalFolder));
+			//originalImageFile = updateFileOwner(File.createTempFile("ogl", ".jpg", new File(originalFolder)), this.user);
+		}
+		catch(Exception e){
+			throw new IOException("Could not create temp file", e);
 		}
 
-		String oglFilename = FilenameUtils.getBaseName(originalImagePath.getName());
+		String oglFilename = FilenameUtils.getBaseName(originalImageFile.getName());
 		// Allow the generated filename to be accessed outside of this method
 		oglFilenameRef[0] = oglFilename;
-		OutputStream originalBos = new BufferedOutputStream(new FileOutputStream(originalImagePath));
+		OutputStream originalBos = new BufferedOutputStream(new FileOutputStream(originalImageFile));
 
 		//rotate original image
 		InputStream oglInputStream = new ByteArrayInputStream(data);
@@ -251,7 +291,7 @@ public class ImageService{
 		BufferedImage oglRotBI = rotateImage(oglBI, rotation);
 
         // Write rotated ImageBuffer to file via originalBOS.
-		writeBufferedImageToOutputStream(originalImagePath, oglRotBI, originalBos);
+		writeBufferedImageToOutputStream(originalImageFile, oglRotBI, originalBos);
 		// Save BufferedOutputStreams to disk.
 		originalBos.close();
 		oglBI = null;
@@ -276,38 +316,43 @@ public class ImageService{
 		long thumbnailImageWidth = 26L;
 		float aspectRatio = 0.75f;
 
-		File largeImagePath = null;
-		File mediumImagePath = null;
-		File smallImagePath = null;
-		File thumbnailImagePath = null;
+		File largeImageFile = null;
+		File mediumImageFile = null;
+		File smallImageFile = null;
+		File thumbnailImageFile = null;
 
 		ObjectMapper mapper = new ObjectMapper();
 
 		//First save original image
 		try{
-			largeImagePath = File.createTempFile("lrg", ".jpg", new File(largeFolder));
-			mediumImagePath = File.createTempFile("med", ".jpg", new File(mediumFolder));
-			smallImagePath = File.createTempFile("sml", ".jpg", new File(smallFolder));
-			thumbnailImagePath = File.createTempFile("tnl", ".jpg", new File(thumbnailFolder));
+			largeImageFile = File.createTempFile("lrg", ".jpg", new File(largeFolder));
+			mediumImageFile = File.createTempFile("med", ".jpg", new File(mediumFolder));
+			smallImageFile = File.createTempFile("sml", ".jpg", new File(smallFolder));
+			thumbnailImageFile = File.createTempFile("tnl", ".jpg", new File(thumbnailFolder));
+
+			//largeImageFile = updateFileOwner(File.createTempFile("lrg", ".jpg", new File(largeFolder)), this.user);
+			//mediumImageFile = updateFileOwner(File.createTempFile("med", ".jpg", new File(mediumFolder)), this.user);
+			//smallImageFile = updateFileOwner(File.createTempFile("sml", ".jpg", new File(smallFolder)), this.user);
+			//thumbnailImageFile = updateFileOwner(File.createTempFile("tnl", ".jpg", new File(thumbnailFolder)), this.user);
 		}
 		catch(Exception e){
 			throw new IOException("Could not create temp file");
 		}
 
-		String largeFilename = FilenameUtils.getBaseName(largeImagePath.getName());
-		String mediumFilename = FilenameUtils.getBaseName(mediumImagePath.getName());
-		String smallfilename = FilenameUtils.getBaseName(smallImagePath.getName());
-		String thumbnailFilename = FilenameUtils.getBaseName(thumbnailImagePath.getName());
+		String largeFilename = FilenameUtils.getBaseName(largeImageFile.getName());
+		String mediumFilename = FilenameUtils.getBaseName(mediumImageFile.getName());
+		String smallfilename = FilenameUtils.getBaseName(smallImageFile.getName());
+		String thumbnailFilename = FilenameUtils.getBaseName(thumbnailImageFile.getName());
 
 		//Write image bytes to file system
 		//ByteArrayInputStream bis = new ByteArrayInputStream(data);		
-		OutputStream largeBos = new BufferedOutputStream(new FileOutputStream(largeImagePath));
-		OutputStream mediumBos = new BufferedOutputStream(new FileOutputStream(mediumImagePath));
-		OutputStream smallBos = new BufferedOutputStream(new FileOutputStream(smallImagePath));
-		OutputStream thumbnailBos = new BufferedOutputStream(new FileOutputStream(thumbnailImagePath));
+		OutputStream largeBos = new BufferedOutputStream(new FileOutputStream(largeImageFile));
+		OutputStream mediumBos = new BufferedOutputStream(new FileOutputStream(mediumImageFile));
+		OutputStream smallBos = new BufferedOutputStream(new FileOutputStream(smallImageFile));
+		OutputStream thumbnailBos = new BufferedOutputStream(new FileOutputStream(thumbnailImageFile));
 
 		// Crop the rotated original image writing the cropped result to largeBOS.
-		writeBufferedImageToOutputStream(largeImagePath, cropImage(oglRotBI, crop), largeBos);
+		writeBufferedImageToOutputStream(largeImageFile, cropImage(oglRotBI, crop), largeBos);
 		largeBos.close();
 
 		logger.debug("smallImageWidth = " + smallImageWidth);
@@ -333,12 +378,12 @@ public class ImageService{
 		logger.debug("thumbnailScaleWidth: " + thumbnailScaleWidth);
 		logger.debug("thumbnailScaleHeight: " + thumbnailScaleHeight);
 
-		BufferedImage largeBI = readFromFile(largeImagePath);
+		BufferedImage largeBI = readFromFile(largeImageFile);
 
 		// Resize cropped original
-		writeBufferedImageToOutputStream(largeImagePath, resize(largeBI, smallScaleWidth, smallScaleHeight, crop), smallBos);
-		writeBufferedImageToOutputStream(largeImagePath, resize(largeBI, mediumScaleWidth, mediumScaleHeight, crop), mediumBos);
-		writeBufferedImageToOutputStream(largeImagePath, resize(largeBI, thumbnailScaleWidth, thumbnailScaleHeight, crop), thumbnailBos);
+		writeBufferedImageToOutputStream(largeImageFile, resize(largeBI, smallScaleWidth, smallScaleHeight, crop), smallBos);
+		writeBufferedImageToOutputStream(largeImageFile, resize(largeBI, mediumScaleWidth, mediumScaleHeight, crop), mediumBos);
+		writeBufferedImageToOutputStream(largeImageFile, resize(largeBI, thumbnailScaleWidth, thumbnailScaleHeight, crop), thumbnailBos);
 
 		// Save all resized images
 		smallBos.close();
@@ -529,7 +574,7 @@ public class ImageService{
 	}
 
 	/**
-	* saves jpeg data to filesystem
+	* saves .jpg data to filesystem
 	* @param MulitpartHttpServletRequest data 
 	* @return String indicating generated filename.
 	*/
@@ -575,7 +620,8 @@ public class ImageService{
 				logger.error("",e);
 				return null;
 			}
-		}else{
+		}
+		else{
 			return null;
 		}
 	}

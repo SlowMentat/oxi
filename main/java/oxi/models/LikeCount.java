@@ -28,7 +28,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Table(name="like_count")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="Like_id")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope=LikeCount.class)
-public class LikeCount extends RelatedEntity implements Serializable, Identifiable<UUID>{
+public class LikeCount extends RelatedEntity implements Serializable/*, Identifiable<.*>*/{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(LikeCount.class);
 
@@ -81,12 +81,13 @@ public class LikeCount extends RelatedEntity implements Serializable, Identifiab
 	public void setId(UUID id){this.id = id;}
 	public void setUpdatedOn(Date updatedOn){this.updatedOn = updatedOn;}	
 	public void setOutfit(Outfit outfit){
-		if(outfit != null){
+		//if(outfit != null){
 			this.outfit = outfit;
-			if(this.outfit.getLikeCount() != this) this.outfit.setLikeCount(this);
-		}else{
-			logger.warn("outfit parameter is null");
-		}
+			if(outfit != null && this.outfit.getLikeCount() != this) this.outfit.setLikeCount(this);
+		//}
+		//else{
+		//	logger.warn("outfit parameter is null");
+		//}
 	}
 	
 	

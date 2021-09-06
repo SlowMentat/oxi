@@ -16,4 +16,5 @@ import oxi.models.dto.*;
 public interface LikeCountRepositoryCustom {
 
 	LikeCount customFindByOutfitId(UUID outfitId) throws Exception;
+
 }

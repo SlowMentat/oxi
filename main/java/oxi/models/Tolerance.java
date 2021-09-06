@@ -25,7 +25,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Entity
 @Table(name="tolerance")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=Tolerance.class)
-public class Tolerance extends RelatedEntity implements Serializable, Identifiable<UUID>
+public class Tolerance extends RelatedEntity implements Serializable/*, Identifiable<.*>*/
 {
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Tolerance.class);
@@ -248,7 +248,7 @@ public class Tolerance extends RelatedEntity implements Serializable, Identifiab
 
 	
 	//Getters
-	@Override
+	//@Override
 	public UUID getId(){return this.id;}
 
 	public String getIdText(){return this.idText;}

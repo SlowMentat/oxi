@@ -11,9 +11,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.io.Serializable;
 
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+//import org.springframework.hateoas.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -34,7 +34,7 @@ import com.google.gson.GsonBuilder;
 
 @Document(indexName = "udr")
 @JsonRootName(value = "udr")
-public class SuggestUdrEsDto implements Serializable, Identifiable<String>
+public class SuggestUdrEsDto implements Serializable/*, Identifiable<.*>*/
 {
 	@Id
 	private String id;
@@ -53,7 +53,7 @@ public class SuggestUdrEsDto implements Serializable, Identifiable<String>
 	public void setData(Map<String, Object> data){this.data = data;}
 	
 	//Getters
-	@Override
+	//@Override
 	public String getId(){return this.id;}
 	public Map<String, Object> getData(){return this.data;}
 

@@ -9,14 +9,14 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.io.Serializable;
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+//import org.springframework.hateoas.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 import com.fasterxml.jackson.annotation.*;
 
 @JsonRootName(value = "sizeChart")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=SizeChartDto.class)
-public class SizeChartDto implements Serializable, Identifiable<String>
+public class SizeChartDto implements Serializable/*, Identifiable<.*>*/
 {
 	@JsonProperty("id")
 	private String id;
@@ -55,7 +55,7 @@ public class SizeChartDto implements Serializable, Identifiable<String>
 	public void setAffectedProductIds(List<String> affectedProductIds){this.affectedProductIds = affectedProductIds;}
 	
 	//Getters
-	@Override
+	//@Override
 	public String getId(){return this.id;}
 	public String getChartName(){return this.name;}
 	public List<SizeGroupDto> getSizeGroupDtos(){return this.sizeGroupDtos;}

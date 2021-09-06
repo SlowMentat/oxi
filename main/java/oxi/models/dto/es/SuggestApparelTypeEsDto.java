@@ -7,9 +7,9 @@ import java.util.Map;
 import java.io.Serializable;
 import com.fasterxml.jackson.annotation.*;
 
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+//import org.springframework.hateoas.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -24,7 +24,7 @@ import com.google.gson.GsonBuilder;
 
 @JsonRootName(value = "suggestApparelType")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=ApparelTypeEsDto.class)
-public class SuggestApparelTypeEsDto implements Serializable, Identifiable<Integer>
+public class SuggestApparelTypeEsDto implements Serializable/*, Identifiable<.*>*/
 {
 	@Id
 	private Integer id;
@@ -45,7 +45,7 @@ public class SuggestApparelTypeEsDto implements Serializable, Identifiable<Integ
 	public void setData(Map<String, Object> data){this.data = data;}
 	
 	//Getters
-	@Override
+	//@Override
 	public Integer getId(){return this.id;}
 	public Map<String, Object> getData(){return this.data;}
 

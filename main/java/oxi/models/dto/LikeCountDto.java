@@ -4,15 +4,15 @@ import oxi.models.projection.*;
 import oxi.models.*;
 import java.lang.*;
 import java.io.Serializable;
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+//import org.springframework.hateoas.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.annotation.*;
 
 
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=LikeCountDto.class)
-public class LikeCountDto implements Serializable, Identifiable<String>
+public class LikeCountDto implements Serializable/*, Identifiable<.*>*/
 {
 	@JsonProperty("id")
 	private String id;
@@ -39,7 +39,7 @@ public class LikeCountDto implements Serializable, Identifiable<String>
 	public void setCount(int count){this.count = count;}
 	
 	//Getters
-	@Override
+	//@Override
 	public String getId(){return (this.id == null) ? null : this.id.toLowerCase();}
 	public int getCount(){return this.count;}
 }

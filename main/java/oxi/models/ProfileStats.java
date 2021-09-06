@@ -26,7 +26,7 @@ import java.util.Date;
 @Entity
 @Table(name="profile_stats")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=ProfileStats.class)
-public class ProfileStats extends RelatedEntity implements Serializable, Identifiable<UUID>
+public class ProfileStats extends RelatedEntity implements Serializable/*, Identifiable<.*>*/
 {
 	@Transient
 	private static final Logger logger = LogManager.getLogger(ProfileStats.class);
@@ -84,7 +84,7 @@ public class ProfileStats extends RelatedEntity implements Serializable, Identif
 	}
 	
 	//Getters
-	@Override
+	//@Override
 	public UUID getId(){return this.id;}
 	public String getIdText(){return this.idText;}
 	public long getFollowing(){return this.following;}

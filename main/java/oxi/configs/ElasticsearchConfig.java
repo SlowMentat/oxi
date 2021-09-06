@@ -82,6 +82,9 @@ public class ElasticsearchConfig /*extends AbstractElasticsearchConfiguration*/{
 	@Value("${elasticsearch.cluster.name:elasticsearch}")
 	private String clusterName;
 
+	@Value("${spring.data.elasticsearch.cluster-nodes}")
+	private String clusterHostname;
+
 	@Bean
 	public SuggestEsRepositoryCustom suggestEsRepositoryCustom(){
 		return new SuggestEsRepositoryImpl();
@@ -95,7 +98,8 @@ public class ElasticsearchConfig /*extends AbstractElasticsearchConfiguration*/{
 		//RestHighLevelClient client = null;
 
 		final ClientConfiguration clientConfiguration = ClientConfiguration.builder()
-			.connectedTo("li295-137.members.linode.com:9200")
+			//.connectedTo("li295-137.members.linode.com:9200")
+			.connectedTo(clusterHostname)
 			.build();
 		
 		//try{

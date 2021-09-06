@@ -9,14 +9,14 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.io.Serializable;
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+//import org.springframework.hateoas.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 import com.fasterxml.jackson.annotation.*;
 
 @JsonRootName(value = "product")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=ProductDto.class)
-public class ProductDto implements Serializable, Identifiable<String>
+public class ProductDto implements Serializable/*, Identifiable<.*>*/
 {
 	@JsonProperty("id")
 	private String id;
@@ -77,7 +77,7 @@ public class ProductDto implements Serializable, Identifiable<String>
 	public void setProductData(String productData){this.productData = productData;}
 
 	//Getters
-	@Override
+	//@Override
 	public String getId(){return this.id;}
 	public String getProductId(){return this.productId;}	
 	public Integer getApparelType(){return this.apparelType;}	

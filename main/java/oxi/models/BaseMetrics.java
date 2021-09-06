@@ -16,7 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.hibernate.annotations.GenericGenerator;
 
 @MappedSuperclass
-public class BaseMetrics implements Serializable, Identifiable<UUID>
+public class BaseMetrics implements Serializable/*, Identifiable<.*>*/
 {
 	
 	@Id
@@ -80,7 +80,7 @@ public class BaseMetrics implements Serializable, Identifiable<UUID>
 	public void setCalf(float calf){this.calf = calf;}
 	
 	//Getters
-	@Override
+	//@Override
 	public UUID getId(){return this.id;}
 
 	public String getIdText(){return this.idText;}

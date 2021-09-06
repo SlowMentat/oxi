@@ -11,9 +11,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.io.Serializable;
 
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+//import org.springframework.hateoas.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 
 
 import org.springframework.data.annotation.Id;
@@ -36,7 +36,7 @@ import com.google.gson.GsonBuilder;
 */
 @JsonRootName(value = "suggestRetailerName")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="name", scope=SuggestRetailerEsDto.class)
-public class SuggestRetailerEsDto implements Serializable, Identifiable<Integer>
+public class SuggestRetailerEsDto implements Serializable/*, Identifiable<.*>*/
 {
 	@Id
 	private Integer id;
@@ -56,7 +56,7 @@ public class SuggestRetailerEsDto implements Serializable, Identifiable<Integer>
 	public void setData(Map<String, Object> data){this.data = data;}
 	
 	//Getters
-	@Override
+	//@Override
 	public Integer getId(){return this.id;}
 	public Map<String, Object> getData(){return this.data;}
 

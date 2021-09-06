@@ -7,6 +7,8 @@ import org.springframework.data.rest.core.annotation.*;
 import org.springframework.data.domain.*;
 import java.util.*;
 
+import org.springframework.data.repository.query.Param;
+
 //@RepositoryRestResource(collectionResourceRel="Item", path="item")
 public interface ItemRepository extends JpaRepository<Item, UUID>, ItemRepositoryCustom{
 	
@@ -19,4 +21,7 @@ public interface ItemRepository extends JpaRepository<Item, UUID>, ItemRepositor
 	//Item findById(UUID id); 
 
 	//List<Item> findByProductOwner(String productOwner);
+
+	@Query(value="SELECT i FROM Item i where i.picture.id in :pictureIds")
+	List<Item> findByPictureIds(@Param("pictureIds") List<UUID> pictureIds);
 } 

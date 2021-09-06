@@ -15,9 +15,9 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.io.Serializable;
 import org.springframework.data.rest.core.annotation.*;
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+//import org.springframework.hateoas.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 import com.fasterxml.jackson.annotation.*;
 import org.hibernate.annotations.GenericGenerator;
 import java.util.Date;
@@ -26,7 +26,7 @@ import java.util.Date;
 @Entity
 @Table(name="size_group")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=SizeGroup.class)
-public class SizeGroup extends RelatedEntity implements Serializable, Identifiable<UUID>
+public class SizeGroup extends RelatedEntity implements Serializable/*, Identifiable<.*>*/
 {
 	@Id
 	@GeneratedValue(generator = "uuid2")

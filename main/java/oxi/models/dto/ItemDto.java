@@ -10,15 +10,15 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.io.Serializable;
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+//import org.springframework.hateoas.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.*;
 
 
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=ItemDto.class)
-public class ItemDto implements Serializable, Identifiable<String>
+public class ItemDto implements Serializable/*, Identifiable<.*>*/
 {
 	@JsonProperty("id")
 	private String id;
@@ -168,7 +168,7 @@ public class ItemDto implements Serializable, Identifiable<String>
 	//public void setUserDefinedRetailer(String udr){this.userDefinedRetailer = udr;}
 	
 	//Getters
-	@Override
+	//@Override
 	public String getId(){return (this.id == null) ? this.id : this.id.toLowerCase();}
 	public Float getPositionx(){return this.positionx;}
 	public Float getPositiony(){return this.positiony;}	

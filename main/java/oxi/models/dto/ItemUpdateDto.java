@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.io.Serializable;
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+//import org.springframework.hateoas.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 
 
 public class ItemUpdateDto extends ItemDto
@@ -25,6 +25,6 @@ public class ItemUpdateDto extends ItemDto
 	public void setId(String contentId){this.contentId = contentId;}
 	
 	//Getters
-	@Override
+	//@Override
 	public String getId(){return (this.contentId == null) ? this.contentId : this.contentId.toLowerCase();}
 }

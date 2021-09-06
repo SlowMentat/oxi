@@ -19,7 +19,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Entity
 @Table(name="retailer")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=Retailer.class)
-public class Retailer extends RelatedEntity implements Serializable, Identifiable<Integer>{
+public class Retailer extends RelatedEntity implements Serializable/*, Identifiable<.*>*/{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Retailer.class);
 	

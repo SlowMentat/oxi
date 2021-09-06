@@ -22,7 +22,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Entity
 @Table(name="apparel_type")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope=ApparelType.class)
-public class ApparelType extends RelatedEntity implements Serializable, Identifiable<Integer>{
+public class ApparelType extends RelatedEntity implements Serializable/*, Identifiable<.*>*/{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(ApparelType.class);
 

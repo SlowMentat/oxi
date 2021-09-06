@@ -7,14 +7,14 @@ import java.lang.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.io.Serializable;
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+//import org.springframework.hateoas.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 import com.fasterxml.jackson.annotation.*;
 import java.util.stream.Collectors;
 
 
-public class ProfileDto extends RelatedEntity implements Serializable, Identifiable<String>
+public class ProfileDto extends RelatedEntity implements Serializable/*, Identifiable<.*>*/
 {
 	//private Long Id;
 	@JsonProperty("id")
@@ -104,7 +104,7 @@ public class ProfileDto extends RelatedEntity implements Serializable, Identifia
 	
 	
 	//Getters
-	@Override
+	//@Override
 	public String getId(){return (this.id == null) ? this.id : this.id.toLowerCase();}
 
 	public String getUsername(){return this.username;}

@@ -331,7 +331,7 @@ public class ConsumerController{
 	@RequestMapping(value="/brands", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getBrands(@PageableDefault Pageable pageable){
 		try{
-			return new ResponseEntity<PagedResources<?>>(consumerService.readBrands(pageable), HttpStatus.OK);
+			return new ResponseEntity<PagedModel<?>>(consumerService.readBrands(pageable), HttpStatus.OK);
 		}catch(Exception e){
 			return new ResponseEntity<String>(defaultExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -347,7 +347,7 @@ public class ConsumerController{
 	@RequestMapping(value="/apparelTypes", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getApparelTypes(@PageableDefault Pageable pageable){
 		try{
-			return new ResponseEntity<PagedResources<?>>(consumerService.getApparelTypes(pageable), HttpStatus.OK);
+			return new ResponseEntity<PagedModel<?>>(consumerService.getApparelTypes(pageable), HttpStatus.OK);
 		}catch(Exception e){
 			return new ResponseEntity<String>(defaultExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -364,7 +364,7 @@ public class ConsumerController{
 	//@RequestMapping(value="/retailers", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	//public ResponseEntity<?> getRetailers(@PageableDefault Pageable pageable){
 	//	try{
-	//		return new ResponseEntity<PagedResources<?>>(consumerService.readRetailers(pageable), HttpStatus.OK);
+	//		return new ResponseEntity<PagedModel<?>>(consumerService.readRetailers(pageable), HttpStatus.OK);
 	//	}catch(Exception e){
 	//		logger.debug(e.toString());
 	//		return new ResponseEntity<String>(defaultExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -419,34 +419,35 @@ public class ConsumerController{
 	}
 
 	//@PreAuthorize("#name == principal.username")
-	@Secured({"READ_PRIVILEGE", "WRITE_PRIVILEGE"})
+
+	@Secured({"READ_PRIVILEGE", "WRITE_PRIVILEGE"}) 
 	@RestResource(exported = true)
-	@CrossOrigin(origins = "https://oxisalechannel.com")
+	//@CrossOrigin(origins = "https://fitscene.app")
 	@RequestMapping(value="/outfit/{id}", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public HttpEntity<?> getSingleOutfit(@PathVariable("id") String id){
-		return new ResponseEntity<>(consumerService.readOutfit(id), HttpStatus.OK);
+		return new ResponseEntity<>(consumerService.readOutfit(id), HttpStatus.OK); 
 	}
 
 	//@PreAuthorize("#name == principal.username")
 	//@Secured({"READ_PRIVILEGE"})
 	//@RestResource(exported = true)
-	//@CrossOrigin(origins = "https://oxisalechannel.com")
+	////@CrossOrigin(origins = "https://fitscene.app")
 	//@RequestMapping(value="/outfits", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	//public HttpEntity<?> readOutfits(@RequestBody List<String> outfitIds){
 	//	return consumerService.readOutfitsByIds(outfitIds);
 	//}
 
 	@RestResource(exported = true)
-	@CrossOrigin(origins = "https://oxisalechannel.com")
+	//@CrossOrigin(origins = "https://fitscene.app")
 	@RequestMapping(value = "/outfits/{username}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getOutfitsByUsername(final Principal principal, @PathVariable("username") String username, CursorDto cursor/*@PageableDefault Pageable pageable*/) throws Exception{
 		logger.debug("username = <" + username + ">");
-		//return new ResponseEntity<PagedResources<?>>(consumerService.readOutfits(username, pageable), HttpStatus.OK);
-		return new ResponseEntity<Resource<CursorDto>>(consumerService.readOutfitsByUsername(username, principal.getName(), cursor, ""), HttpStatus.OK);
+		//return new ResponseEntity<PagedModel<?>>(consumerService.readOutfits(username, pageable), HttpStatus.OK);
+		return new ResponseEntity<EntityModel<CursorDto>>(consumerService.readOutfitsByUsername(username, principal.getName(), cursor, ""), HttpStatus.OK);
 	}
 
 	@RestResource(exported = true)
-	@CrossOrigin(origins = "https://oxisalechannel.com")
+	//@CrossOrigin(origins = "https://fitscene.app")
 	@RequestMapping(value = "/outfits", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)	
 	public ResponseEntity<?> getFilteredOutfits(
 		final Principal principal, 
@@ -462,7 +463,7 @@ public class ConsumerController{
 			String username = principal.getName();
 		//	logger.debug("username = <" + username + ">");
 		//	logger.debug("Principal Name: " + principal.getName());
-		//	response = new ResponseEntity<PagedResources<?>>(consumerService.readOutfits(username, pageable), HttpStatus.OK);
+		//	response = new ResponseEntity<PagedModel<?>>(consumerService.readOutfits(username, pageable), HttpStatus.OK);
 		//else{
 		final String All_FILTER_PARAM = "all";
 		final String IDS_FILTER_PARAM = "ids";
@@ -470,7 +471,7 @@ public class ConsumerController{
 
 		switch (filter){
 			case "all":
-				response = new ResponseEntity<Resource<CursorDto>>(consumerService.readPagedOutfits(filter, principal.getName(), cursor, All_FILTER_PARAM), HttpStatus.OK);
+				response = new ResponseEntity<EntityModel<CursorDto>>(consumerService.readPagedOutfits(filter, principal.getName(), cursor, All_FILTER_PARAM), HttpStatus.OK);
 				break;
 
 			case "ids":
@@ -479,8 +480,8 @@ public class ConsumerController{
 
 			//Default behavior is retreive paged outfits
 			default:
-				//response = new ResponseEntity<PagedResources<?>>(consumerService.readOutfits(username, pageable), HttpStatus.OK);
-				response = new ResponseEntity<Resource<CursorDto>>(consumerService.readOutfitsByUsername(username, principal.getName(), cursor, EMPTY_FILTER_PARAM), HttpStatus.OK);
+				//response = new ResponseEntity<PagedModel<?>>(consumerService.readOutfits(username, pageable), HttpStatus.OK);
+				response = new ResponseEntity<EntityModel<CursorDto>>(consumerService.readOutfitsByUsername(username, principal.getName(), cursor, EMPTY_FILTER_PARAM), HttpStatus.OK);
 				break;
 		}
 		//}
@@ -562,12 +563,12 @@ public class ConsumerController{
 	//@RestResource(exported = true)
 	//@RequestMapping(value = "/contents/items/{itemId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	//public ResponseEntity<?> getContents(final Principal principal, @PathVariable("itemId") String itemId, @PageableDefault Pageable pageable){
-	//	return new ResponseEntity<PagedResources<?>>(consumerService.getContentsByItemId(itemId, pageable), HttpStatus.OK);
+	//	return new ResponseEntity<PagedModel<?>>(consumerService.getContentsByItemId(itemId, pageable), HttpStatus.OK);
 	//}
 	@RestResource(exported = true)
 	@RequestMapping(value = "/contents/items/{itemId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getContents(final Principal principal, @PathVariable("itemId") String itemId, CursorDto cursor) throws Exception{
-		return new ResponseEntity<Resource<CursorDto>>(consumerService.getContentsByItemId(itemId, cursor), HttpStatus.OK);
+		return new ResponseEntity<EntityModel<CursorDto>>(consumerService.getContentsByItemId(itemId, cursor), HttpStatus.OK);
 	}
 
 	@RestResource(exported = true)
@@ -603,7 +604,7 @@ public class ConsumerController{
 	//			pageable.getOffset() 
 	//		);
 
-	//		return new ResponseEntity<PagedResources<?>>(consumerService.getFilteredItems(username, filter, pageable), HttpStatus.OK);
+	//		return new ResponseEntity<PagedModel<?>>(consumerService.getFilteredItems(username, filter, pageable), HttpStatus.OK);
 	//	/*}catch(Exception e){
 	//		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 	//	}*/
@@ -624,14 +625,14 @@ public class ConsumerController{
 				cursor.getDate() 
 			);
 
-			//PagedResources<?> result = consumerService.getFilteredItems(username, filter, cursor);
-			Resource<CursorDto> result = consumerService.getFilteredItems(username, filter, cursor);
+			//PagedModel<?> result = consumerService.getFilteredItems(username, filter, cursor);
+			EntityModel<CursorDto> result = consumerService.getFilteredItems(username, filter, cursor);
 			// Publish event to inject cursor data in response headers
 			// TODO:  This should be injected into the respoonse body
 			//eventPublisher.publishEvent(new CursorResultsRetrievedEvent<ItemDto>(ItemDto.class, uriBuilder, result, cursor));
 
-			//return new ResponseEntity<PagedResources<?>>(result, HttpStatus.OK);
-			return new ResponseEntity<Resource<CursorDto>>(result, HttpStatus.OK);
+			//return new ResponseEntity<PagedModel<?>>(result, HttpStatus.OK);
+			return new ResponseEntity<EntityModel<CursorDto>>(result, HttpStatus.OK);
 		/*}catch(Exception e){
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}*/

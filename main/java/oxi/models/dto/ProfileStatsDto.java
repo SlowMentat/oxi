@@ -7,15 +7,15 @@ import java.lang.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.io.Serializable;
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+//import org.springframework.hateoas.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 import com.fasterxml.jackson.annotation.*;
 import java.util.Date;
 
 
 
-public class ProfileStatsDto implements Serializable, Identifiable<String>
+public class ProfileStatsDto implements Serializable/*, Identifiable<.*>*/
 {
 	//private Long Id;
 	@JsonProperty("id")
@@ -54,7 +54,7 @@ public class ProfileStatsDto implements Serializable, Identifiable<String>
 	public void setLastUpdated(Date lastUpdate){this.lastUpdate = lastUpdate;}
 
 	//Getters
-	@Override
+	//@Override
 	public String getId(){return (this.id == null) ? this.id : this.id.toLowerCase();}
 	public long getFollowing(){return this.following;}
 	public long getLikes(){return this.likes;}

@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.io.Serializable;
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+//import org.springframework.hateoas.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 import com.fasterxml.jackson.annotation.*;
 
 
@@ -20,7 +20,7 @@ import org.apache.logging.log4j.LogManager;
 
 
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=ContentWithOutfitDto.class)
-public class ContentWithOutfitDto implements Serializable, Identifiable<String>
+public class ContentWithOutfitDto implements Serializable/*, Identifiable<.*>*/
 {
 	private static final Logger logger = LogManager.getLogger(ContentDto.class);
 	@JsonProperty("id")
@@ -57,7 +57,7 @@ public class ContentWithOutfitDto implements Serializable, Identifiable<String>
 	public void setOutfitId(String outfitId){this.outfitId = outfitId;}
 	
 	//Getters==========================================================================	
-	@Override
+	//@Override
 	public String getId(){return (this.id == null) ? this.id : this.id.toLowerCase();}
 	public String getCoverpicuri(){return this.coverpicuri;}
 	public String getComments(){return this.comments;}

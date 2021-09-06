@@ -61,7 +61,7 @@ public class ValueService{
 	@Autowired private ProfileRepository profileRep;
 	@Autowired private OutfitRepository outfitRep;
 
-	//Paged Resource Assemblers 
+	//Paged EntityModel Assemblers 
 	@Autowired private PagedResourcesAssembler<Bookmark> bookmarPRA;
 	//@Autowired private PagedResourcesAssembler<BookmarkDto> bookmarkPRAP; //TODO:  create this class
 
@@ -193,10 +193,10 @@ public class ValueService{
 	//	return new LikeCountDto(outfitRep.findByUsername(targetUserName).getLikeCount())//;
 	//}
 
-	private <T extends Identifiable<String>> ResourceSupport toResource(T dto){	
+	private <T extends Object> RepresentationModel toModel(T dto){	
 
-		//Link outfitLink = null;// links.linkForSingleResource(dto).withRel("outfit");
-		//SLink selfLink = links.linkForSingleResource(dto).withSelfRel();
-		return new Resource<T>(dto/*, null, selfLink*/);
+		//Link outfitLink = null;// links.linkForItemResource(dto).withRel("outfit");
+		//SLink selfLink = links.linkForItemResource(dto).withSelfRel();
+		return new EntityModel<T>(dto/*, null, selfLink*/);
 	}
 }

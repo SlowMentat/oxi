@@ -2,7 +2,7 @@ package oxi.models.dto;
 
 import oxi.models.retailer.RetailerAccount;
 import oxi.components.UUIDKeyset;
-import oxi.components.HALResource;
+import oxi.components.HALEntityModel;
 import java.lang.*;
 import java.util.List;
 import java.util.ArrayList;
@@ -12,9 +12,9 @@ import java.util.Calendar;
 import java.sql.Timestamp;
 import java.io.Serializable;
 import javax.persistence.Transient;
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+//import org.springframework.hateoas.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.blazebit.persistence.PagedList;
@@ -28,7 +28,7 @@ import org.apache.logging.log4j.LogManager;
 /*
 *  DTO model used during seek type pageination
 */
-public class CursorDto extends HALResource implements KeysetPage
+public class CursorDto extends HALEntityModel implements KeysetPage
 {
 	@Transient
 	private static final Logger logger = LogManager.getLogger(CursorDto.class);

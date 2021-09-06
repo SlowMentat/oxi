@@ -10,9 +10,7 @@ public class RelatedEntity implements Relational
 	private static final Logger logger = LogManager.getLogger(RelatedEntity.class);
 	
 	/**
-	 * Helper method for modifying an Entity property with a 
-	 * ManyToOne relation.  Updates the state of the parent 
-	 * Entity to reflect the new child object.
+	 * Helper method for modifying an Entity property with a ManyToOne relation.  Updates the state of the parent Entity to reflect the new child object.
 	 *
 	 * @param  parent  			The new parent object with which to update OneToMany annotated property in the Child object.
 	 * @Param  currentParent	This is the Parent object to which the Child Object currently references.
@@ -28,20 +26,22 @@ public class RelatedEntity implements Relational
 			logger.debug("Removing Child object from List<Child> property of Parent object");
 			currentParent.internalRemoveChild(childEntity);
 		}
+
 		logger.warn("Referencing Child.parent to Parent object");
 		//currentParent = parent;
+
 		if(parent != null){
 			logger.debug("Parent reference (before adding child):  " + parent.toString());
 			logger.debug("Adding Child to List<Child> property of Parent object");
 			parent.internalAddChild(childEntity);
 			logger.debug("Parent reference (after adding child):  " + parent.toString());
 		}
+
 		return parent;
 	}
 	
 	/**
-	* Method for modifying the Entity property having a ManyToMany relaiton.
-	* This method updates the state of the parent Entity to reflect the addition of the child object.
+	* Method for modifying the Entity property having a ManyToMany relation.  This method updates the state of the parent Entity to reflect the addition of the child object.
 	*
 	* @param  parents  			The List<Relational> of parent objects with which to update ManyToMany annotated property of the Child object.
 	* @Param  currentParents	This List<Relational> of parent objects to which the Child Object currently references.
@@ -55,24 +55,30 @@ public class RelatedEntity implements Relational
 					logger.debug("Removing Child object from List<Child> property of Parent object");
 					currentParent.internalRemoveChild(childEntity);
 				}
+
 				logger.debug("currentParent is NULL");
 			}
 		}
+
 		logger.debug("currentParents List is NULL");
 		logger.debug("Referencing Child.parent to Parent object");
+
 		if(parents != null){
 			for(T parent : parents){
 				logger.debug("Adding childEntity to parents");
 				//logger.debug("Parent reference (before adding child):  " + parent.toString());
 				//logger.debug("Adding Child to List<Child> property of Parent object");
+				
 				if(parent != null){
 					parent.internalAddChild(childEntity);
-				}else{
+				}
+				else{
 					logger.debug("parent element in parents is null" );
 				}
 				//logger.debug("Parent reference (after adding child):  " + parent.toString());
 			}
 		}
+
 		return parents;
 	}
 	

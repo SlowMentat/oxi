@@ -35,19 +35,18 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
+import javax.persistence.PersistenceContext;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 @Configuration
-//@EnableEntityViews(basePackages = { "${package}.view"})
 @EnableJpaRepositories(basePackages = "oxi.repository", repositoryFactoryBeanClass = BlazePersistenceRepositoryFactoryBean.class)
 public class BlazePersistenceConfiguration {
 
     private static final Logger logger = LogManager.getLogger(BlazePersistenceConfiguration.class);
 
     @PersistenceUnit
-    //@Autowired
     private EntityManagerFactory entityManagerFactory;
 
     @Bean
@@ -56,13 +55,6 @@ public class BlazePersistenceConfiguration {
     public CriteriaBuilderFactory createCriteriaBuilderFactory() {
         logger.debug("*building CriteriaBuilderFactory Bean");
         CriteriaBuilderConfiguration config = Criteria.getDefault();
-        return config.createCriteriaBuilderFactory(entityManagerFactory);
+        return config.createCriteriaBuilderFactory(entityManagerFactory);  
     }
-
-    //@Bean
-    //@Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
-    //@Lazy(false)
-    //public EntityViewManager createEntityViewManager(CriteriaBuilderFactory cbf, EntityViewConfiguration entityViewConfiguration) {
-    //    return entityViewConfiguration.createEntityViewManager(cbf);
-    //}
 }

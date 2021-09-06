@@ -160,7 +160,7 @@ public class RetailerController{
 	@RequestMapping(value="/brands", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getBrands(@PageableDefault Pageable pageable){
 		try{
-			return new ResponseEntity<PagedResources<?>>(retailerService.readBrands(pageable), HttpStatus.OK);
+			return new ResponseEntity<PagedModel<?>>(retailerService.readBrands(pageable), HttpStatus.OK);
 		}catch(Exception e){
 			return new ResponseEntity<String>(defaultExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -176,7 +176,7 @@ public class RetailerController{
 	@RequestMapping(value="/retailers", method=RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getRetailers(@PageableDefault Pageable pageable){
 		try{
-			return new ResponseEntity<PagedResources<?>>(retailerService.readRetailers(pageable), HttpStatus.OK);
+			return new ResponseEntity<PagedModel<?>>(retailerService.readRetailers(pageable), HttpStatus.OK);
 		}catch(Exception e){
 			logger.debug(e.toString());
 			return new ResponseEntity<String>(defaultExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -231,7 +231,7 @@ public class RetailerController{
 	@RequestMapping(value = "/outfits/{username}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> readOutfits(@PathVariable("username") String username, @PageableDefault Pageable pageable){
 		logger.debug("username = <" + username + ">");
-		return new ResponseEntity<PagedResources<?>>(retailerService.readOutfits(username, pageable), HttpStatus.OK);
+		return new ResponseEntity<PagedModel<?>>(retailerService.readOutfits(username, pageable), HttpStatus.OK);
 	}
 
 	@RestResource(exported = true)
@@ -242,9 +242,9 @@ public class RetailerController{
 			String username = principal.getName();
 			logger.debug("username = <" + username + ">");
 			logger.debug("Principal Name: " + principal.getName());
-			return new ResponseEntity<PagedResources<?>>(retailerService.readOutfits(username, pageable), HttpStatus.OK);
+			return new ResponseEntity<PagedModel<?>>(retailerService.readOutfits(username, pageable), HttpStatus.OK);
 		}else{
-			return new ResponseEntity<PagedResources<?>>(retailerService.readPagedOutfits(filter, pageable), HttpStatus.OK);
+			return new ResponseEntity<PagedModel<?>>(retailerService.readPagedOutfits(filter, pageable), HttpStatus.OK);
 		}
 	}
 
@@ -322,7 +322,7 @@ public class RetailerController{
 	@RestResource(exported = true)
 	@RequestMapping(value = "/contents/items/{itemId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getContents(final Principal principal, @PathVariable("itemId") String itemId, @PageableDefault Pageable pageable){
-		return new ResponseEntity<PagedResources<?>>(retailerService.getContentsByItemId(itemId, pageable), HttpStatus.OK);
+		return new ResponseEntity<PagedModel<?>>(retailerService.getContentsByItemId(itemId, pageable), HttpStatus.OK);
 	}
 
 	@RestResource(exported = true)
@@ -349,7 +349,7 @@ public class RetailerController{
 		try{
 			filter = filter == null ? "" : filter;
 			String username = principal.getName();		
-			return new ResponseEntity<PagedResources<?>>(retailerService.getProducts(username, filter, pageable), HttpStatus.OK);
+			return new ResponseEntity<PagedModel<?>>(retailerService.getProducts(username, filter, pageable), HttpStatus.OK);
 		}catch(Exception e){
 			return new ResponseEntity<String>(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}

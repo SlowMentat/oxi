@@ -29,4 +29,5 @@ public interface ItemRepositoryCustom /*extends JpaRepository<Item, UUID>*/{
 
 	//List<Item> findByProductOwner(String productOwner);
 	Item findByExistingCustomItem(String udr, String uds, Integer apparel_type_id);
+
 } 

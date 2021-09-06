@@ -71,7 +71,8 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 	@Override
 	public List<SuggestItemEsDto> itemSuggest(String prefix, String context){
 		final String FIELD = "suggest";
-		final String CONTEXT_CAT = "retailer_name";
+		//final String CONTEXT_CAT = "retailer_name";
+		final String CONTEXT_CAT = "conjunction";
 		final String SUGGEST_NAME = "item-suggest-1";
 
 		Map<String, String> inclusionProps;
@@ -102,7 +103,7 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 		List<SuggestItemEsDto> suggestedItems = new ArrayList<SuggestItemEsDto>();
 
 		try{
-			searchResponse = client.search(searchRequest, null);
+			searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
 			logger.debug("searchResponse: " + searchResponse.toString());
 			logger.debug("REST status: " + RestStatus.fromCode(searchResponse.status().getStatus()));
@@ -257,7 +258,7 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 		List<SuggestUDItemESDTO> suggestedItems = new ArrayList<SuggestUDItemESDTO>();
 
 		try{
-			searchResponse = client.search(searchRequest, null);
+			searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
 			logger.debug("searchResponse: " + searchResponse.toString());
 			logger.debug("REST status: " + RestStatus.fromCode(searchResponse.status().getStatus()));
@@ -395,7 +396,7 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 		List<SuggestRetailerEsDto> suggestedNames = new ArrayList<SuggestRetailerEsDto>();
 
 		try{
-			searchResponse = client.search(searchRequest, null);
+			searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
 			logger.debug("searchResponse: " + searchResponse.toString());
 			logger.debug("REST status: " + RestStatus.fromCode(searchResponse.status().getStatus()));
@@ -453,7 +454,7 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 		List<SuggestUdrEsDto> suggestedNames = new ArrayList<SuggestUdrEsDto>();
 
 		try{
-			searchResponse = client.search(searchRequest, null);
+			searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
 			logger.debug("searchResponse: " + searchResponse.toString());
 			logger.debug("REST status: " + RestStatus.fromCode(searchResponse.status().getStatus()));
@@ -495,18 +496,18 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 
 		SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder()
 			.fetchSource(new String[]{
-				"name"
+				"size"
 			}, null)
 			.suggest(suggestionBuilder);
 
-		SearchRequest searchRequest = new SearchRequest(new String[]{"size_label"}, searchSourceBuilder);
+		SearchRequest searchRequest = new SearchRequest(new String[]{"uds"}, searchSourceBuilder);
 
 		//extends ActionResponse 
 		SearchResponse searchResponse;
 		List<SuggestUdsEsDto> suggestedNames = new ArrayList<SuggestUdsEsDto>();
 
 		try{
-			searchResponse = client.search(searchRequest, null);
+			searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 			logger.debug("searchResponse: " + searchResponse.toString());
 			logger.debug("REST status: " + RestStatus.fromCode(searchResponse.status().getStatus()));
 			logger.debug("suggestion: " + searchResponse.getSuggest().toString());
@@ -560,7 +561,7 @@ public class SuggestEsRepositoryImpl implements SuggestEsRepositoryCustom{
 		List<SuggestApparelTypeEsDto> suggestedNames = new ArrayList<SuggestApparelTypeEsDto>();
 
 		try{
-			searchResponse = client.search(searchRequest, null);
+			searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 			logger.debug("searchResponse: " + searchResponse.toString());
 			logger.debug("REST status: " + RestStatus.fromCode(searchResponse.status().getStatus()));
 			logger.debug("suggestion: " + searchResponse.getSuggest().toString());

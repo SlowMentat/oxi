@@ -10,9 +10,9 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.io.Serializable;
 
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+//import org.springframework.hateoas.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -35,7 +35,7 @@ import com.google.gson.GsonBuilder;
 @Document(indexName = "item"/*, type = "doc"*/)
 @JsonRootName(value = "availableItem")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=ItemEsDto.class)
-public class ItemEsDto implements Serializable, Identifiable<String>
+public class ItemEsDto implements Serializable/*, Identifiable<.*>*/
 {
 	private String id;
 	private ApparelTypeEsDto apparelType;
@@ -63,7 +63,7 @@ public class ItemEsDto implements Serializable, Identifiable<String>
 	public void setApparelType(ApparelTypeEsDto apparelType){this.apparelType = apparelType;}
 	
 	//Getters
-	@Override
+	//@Override
 	public String getId(){return this.id;}
 	public String getSizeChartId(){return this.sizeChartId;}
 	public SizeGroupEsDto getSizeGroup(){return this.sizeGroup;}

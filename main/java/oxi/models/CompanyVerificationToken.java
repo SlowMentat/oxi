@@ -67,7 +67,7 @@ public class CompanyVerificationToken extends BaseVerificationToken{
 //@Entity
 //@Table(name="company_verification_token")
 ////@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=CompanyVerificationToken.class)
-//public class CompanyVerificationToken implements Serializable, Identifiable<Long>{
+//public class CompanyVerificationToken implements Serializable/*, Identifiable<.*>*/{
 //	private static final int EXPIRATION = 60 * 24;
 //
 //	@Id

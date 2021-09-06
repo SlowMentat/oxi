@@ -17,7 +17,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Table(name="role")
-public class Role extends RelatedEntity implements Serializable, Identifiable<Long>{  
+public class Role extends RelatedEntity implements Serializable/*, Identifiable<.*>*/{  
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;

@@ -20,7 +20,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope=ApparelTypeDto.class)
-public class ApparelTypeDto implements Serializable, Identifiable<Integer>{
+public class ApparelTypeDto implements Serializable/*, Identifiable<.*>*/{
 	//@Transient
 	//private static final Logger logger = LogManager.getLogger(ApparelTypeDto.class);
 	@JsonProperty("id")
@@ -60,7 +60,7 @@ public class ApparelTypeDto implements Serializable, Identifiable<Integer>{
 	
 	
 	//Getters==========================================================================	
-	@Override
+	//@Override
 	public Integer getId(){return this.id;}
 	public String getName(){return this.name;}
 	public String getIconName(){return this.iconName;}

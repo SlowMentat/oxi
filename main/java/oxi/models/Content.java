@@ -30,7 +30,7 @@ import oxi.models.projection.ContentProjection;
 @Table(name="content")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="content_id")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope=Content.class)
-public class Content extends RelatedEntity implements Serializable, Identifiable<UUID>{
+public class Content extends RelatedEntity implements Serializable/*, Identifiable<.*>*/{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Content.class);
 
@@ -96,10 +96,12 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 			this.outfit.getContents().add(this);
 		}*/
 		this.outfit = (Outfit)this.setManyToOneParent(outfit, this.outfit, this);
+		if(this.outfit == null) logger.debug("Content#setOutfit:  Parent outfit is null.");
 	}	
 	public void setPicture(Picture picture){
 		logger.warn("SETTING PICURE");
 		this.picture = picture;
+
 		if (this.picture != null){		
 			logger.warn("Picture POJO Not NULL");
 			if(this.picture.getContent() != this){
@@ -161,11 +163,14 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 	public void removeItem(String itemId){
 		for(Iterator<ItemContent> iterator = items.iterator(); iterator.hasNext();){
 			ItemContent itemContent = iterator.next();
+
 			logger.debug("Content#removeItem: content equal = " + itemContent.getContent().equals(this));
 			logger.debug("\nContent#removeItem:  itemContent#getItem() = \"" + itemContent.getItem().getId() + "\", \nitemId parameter = \"" + itemId + "\"\n");
 			logger.debug("Content#removeItem: item ids equal = " + itemContent.getItem().getId().toString().equalsIgnoreCase(itemId));
-			if(itemContent.getContent().equals(this) && itemContent.getItem().getId().toString().equals(itemId)){
+			
+			if(itemContent.getContent().equals(this) && itemContent.getItem().getId().toString().equals(itemId)){				
 				logger.debug("Content#removeItem: itemContent = \n" + itemContent.toString());
+
 				iterator.remove();
 				itemContent.getItem().getContents().remove(itemContent);  //Needed for bi-directional mapping
 				itemContent.setContent(null);
@@ -176,6 +181,7 @@ public class Content extends RelatedEntity implements Serializable, Identifiable
 
 	public void removeItems(List<Integer> excludedIndices){
 		int ind = 0;
+
 		for(ItemContent itemContent : items){
 			if(excludedIndices.contains(ind)) break;
 			items.remove(ind);

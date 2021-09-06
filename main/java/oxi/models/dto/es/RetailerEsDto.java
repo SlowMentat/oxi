@@ -10,9 +10,9 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.io.Serializable;
 
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+//import org.springframework.hateoas.core.*;
+import org.springframework.hateoas.RepresentationModel;
+//import org.springframework.hateoas.Identifiable;
 
 
 import org.springframework.data.annotation.Id;
@@ -36,7 +36,7 @@ import com.google.gson.GsonBuilder;
 @Document(indexName = "retailer")
 @JsonRootName(value = "availableRetailer")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="name", scope=RetailerEsDto.class)
-public class RetailerEsDto implements Serializable, Identifiable<String>
+public class RetailerEsDto implements Serializable/*, Identifiable<.*>*/
 {
 	@Id
 	private String name;
@@ -59,7 +59,7 @@ public class RetailerEsDto implements Serializable, Identifiable<String>
 	public void setHomePageUrl(String homePageUrl){this.homePageUrl = homePageUrl;}
 	
 	//Getters
-	@Override
+	//@Override
 	public String getId(){return this.name;}
 	public String getLogoUrl(){return this.logoUrl;}
 	public String getHomePageUrl(){return this.homePageUrl;}

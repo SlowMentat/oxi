@@ -110,7 +110,7 @@ import org.springframework.http.*;
 //		try{
 //			filter = filter == null ? "" : filter;
 //			String username = principal.getName();		
-//			return new ResponseEntity<PagedResources<?>>(retailerService.getProducts(username, filter, pageable), HttpStatus.OK);
+//			return new ResponseEntity<PagedModel<?>>(retailerService.getProducts(username, filter, pageable), HttpStatus.OK);
 //		}catch(Exception e){
 //			return new ResponseEntity<String>(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
 //		}

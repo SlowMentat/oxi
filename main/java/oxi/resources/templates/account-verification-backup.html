@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+    <head>
+        <title>Sending Email with Thymeleaf HTML Template Example</title>
+    
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+        <link href="http://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans|Roboto" rel="stylesheet">
+    </head>
+    <body>
+        <table style="border-spacing: 0px; width:25vw; margin-left: 72px; margin-top: 24px;">
+            <tbody style="background-color: #304244;">
+                <tr style="background-color: #ffffff; height: 180px">
+                    <td style="
+                  padding-left: 20px;
+                   border-left: solid 1px #c3c3c3;
+                   border-top: solid 1px #c3c3c3;
+                   border-top-left-radius: 4px;"
+               >
+                        <span style="
+                            width: 85px;
+                            margin: auto;
+                            height: 75px;
+                            display: block;
+                            padding-top: calc(.25*75px);"
+                        >
+                            <img src="https://oxisalechannel.com/Graphics/Full_lockup/logo_lockup_3_color_031420.png" width="85">
+                        </span>
+                    </td>
+                    <td style="
+                        height: 22px;
+                        line-height: 22px;
+                        font-family: 'Open Sans', sans-serif;
+                        font-size: 22px;
+                        color: #304244;
+                        padding-left: 40px;
+                        width: calc(100% - 40px);
+                        padding-right: 20px;
+                   border-right: solid 1px #c3c3c3;
+                   border-top: solid 1px #c3c3c3;
+                   border-top-right-radius: 4px;"
+                    >
+                        <span th:text="#{message.emailVer.header}"></span>
+                    </td>
+                </tr> 
+                <tr>
+                    <td colspan="2" style="padding-left: 20px;">
+                        <span th:utext="#{message.emailVer.body}" style="
+                            margin-top: 40px;
+                            display: block;
+                            margin-left: 0px;
+                            font-size: 16px;  
+                            line-height: 20px;
+                            font-family: 'Open Sans', sans-serif;
+                            height: 20px;
+                            color: #ece0dc;
+                            letter-spacing: 0.02rem;"  
+                        >                     
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="padding-left: 20px;position: relative;">
+                        <table style="border-spacing: 0px; margin-top: 41px;">
+                            <tbody>
+                                <span th:te
+                                <a th:href="@{${verifyLink}}" style="
+                                    display:block;
+                                    position: absolute;
+                                    width: 82px;
+                                    height: 37px;
+                                    border-radius: 4px;
+                                    bottom: 0px;"
+                                ></a>
+                                <table style="border-spacing: 0px; margin-right: unset;">
+                                    <tbody>
+                                        <a th:text="#{label.verifyEmail}" th:href="@{${verifyLink}}" style="
+
+                                            margin-top: 40px;
+                                            display: block;
+                                            width: 80px;
+                                            height: 35px;
+                                            line-height: 35px;
+                                            border-radius: 4px;
+                                            bottom: 0px;
+                                            cursor: pointer;
+                                            font-family: 'Roboto', sans-serif;
+                                            background-color: #ece0dc;
+                                            color: #071719;
+                                            letter-spacing: 1px;
+                                            text-align: center;
+                                            position:relative;"
+                                        ></a>
+                                    </tbody>
+                                </table> 
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="/* padding-left: 20px; */">
+                        <span style="display: block; margin-top: 120px;">footer</span>
+                    </td>
+                </tr>   
+            </tbody>
+        </table>
+    </body>
+</html>

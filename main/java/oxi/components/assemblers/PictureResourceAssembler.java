@@ -7,7 +7,7 @@ import oxi.models.Picture;
 import oxi.models.dto.PictureDto;
 import oxi.controllers.ConsumerController;
 
-import org.springframework.hateoas.mvc.ResourceAssemblerSupport;
+import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.stereotype.*;
 import org.springframework.data.domain.*;
 
@@ -22,7 +22,7 @@ public class PictureResourceAssembler extends ResourceAssemblerSupport<Picture, 
 	}
 
 	@Override
-	public PictureDto toResource(Picture picture){
+	public PictureDto toModel(Picture picture){
 		PictureDto resource = createResourceWithId(picture.getId(), picture);
 		logger.debug("PictureDto resource:  " + resource);
 

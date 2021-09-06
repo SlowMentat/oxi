@@ -11,15 +11,17 @@
         <link href="https://fonts.googleapis.com/css?family=Open+Sans|Roboto" rel="stylesheet">
     </head>
     <body>
-        <table style="border-spacing: 0px; width:25vw; margin-left: 72px; margin-top: 24px;">
-            <tbody style="background-color: #304244;">
+        <table style="
+            border-spacing: 0px; 
+            width:25vw; 
+            min-width: 360px;
+            margin-top: 24px;
+        ">
+            <tbody style="background-color: #faf7f6;">
                 <tr style="background-color: #ffffff; height: 180px">
                     <td style="
-                  padding-left: 20px;
-                   border-left: solid 1px #c3c3c3;
-                   border-top: solid 1px #c3c3c3;
-                   border-top-left-radius: 4px;"
-               >
+                        padding-left: 20px;
+                    ">
                         <span style="
                             width: 85px;
                             margin: auto;
@@ -39,61 +41,90 @@
                         padding-left: 40px;
                         width: calc(100% - 40px);
                         padding-right: 20px;
-                   border-right: solid 1px #c3c3c3;
-                   border-top: solid 1px #c3c3c3;
-                   border-top-right-radius: 4px;"
-                    >
+                        font-weight: bold;
+                    ">
                         <span th:text="#{message.emailVer.header}"></span>
                     </td>
                 </tr> 
                 <tr>
-                    <td colspan="2" style="padding-left: 20px;">
+                    <td colspan="2" style="">
                         <span th:utext="#{message.emailVer.body}" style="
                             margin-top: 40px;
-                            display: block;
+                            display: flex;
+                            justify-content: center;
                             margin-left: 0px;
                             font-size: 16px;  
                             line-height: 20px;
                             font-family: 'Open Sans', sans-serif;
-                            height: 20px;
-                            color: #ece0dc;
-                            letter-spacing: 0.02rem;"  
-                        >                     
+                            height: 20px;   
+                            color: #444444;
+                            letter-spacing: 0.02rem;
+                            text-align: center;
+                            padding: 0px 40px;
+                            height: auto;
+                        " >                     
                         </span>
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2" style="padding-left: 20px;position: relative;">
-                        <table style="border-spacing: 0px; margin-top: 41px;">
-                            <tbody>
-                                <span th:te
+                    <td colspan="2" style="
+                        position: relative;
+                    ">
+                        <span style="
+                            height: 48px;
+                            display: flex;
+                            align-items: center;
+                            text-align: center;
+                            justify-content: center;
+                        ">
+                            <img src="">
+                            <img src="">
+                        </span>
+                    </td>
+                    <td colspan="2" style="
+                        position: relative;
+                    ">
+                        <table style="
+                            border-spacing: 0px; 
+                            margin: auto;
+                        ">
+                            <tbody style="
+                                width: 100%;
+                            ">
                                 <a th:href="@{${verifyLink}}" style="
                                     display:block;
                                     position: absolute;
-                                    width: 82px;
+                                    width: auto;
                                     height: 37px;
                                     border-radius: 4px;
-                                    bottom: 0px;"
-                                ></a>
-                                <table style="border-spacing: 0px; margin-right: unset;">
+                                    bottom: 0px;
+                                "></a>
+                                <table style="
+                                    border-spacing: 0px; 
+                                    margin-right: unset;
+                                ">
                                     <tbody>
                                         <a th:text="#{label.verifyEmail}" th:href="@{${verifyLink}}" style="
 
                                             margin-top: 40px;
                                             display: block;
-                                            width: 80px;
-                                            height: 35px;
+                                            width: 200px;
                                             line-height: 35px;
                                             border-radius: 4px;
                                             bottom: 0px;
                                             cursor: pointer;
-                                            font-family: 'Roboto', sans-serif;
-                                            background-color: #ece0dc;
-                                            color: #071719;
-                                            letter-spacing: 1px;
+                                            font-family: 'Roboto', sans-serif;                                            
+                                            background-color: #2f4345;
+                                            color: white;
                                             text-align: center;
-                                            position:relative;"
-                                        ></a>
+                                            text-decoration:unset;
+                                            font-weight: bold;
+                                            font-size: 1.2rem;
+                                            position:relative;
+                                            height: auto;
+                                        ">
+                                            
+                                        </a>
                                     </tbody>
                                 </table> 
                             </tbody>
@@ -102,7 +133,34 @@
                 </tr>
                 <tr>
                     <td colspan="2" style="/* padding-left: 20px; */">
-                        <span style="display: block; margin-top: 120px;">footer</span>
+                        <span style="
+                            display: block; 
+                            margin-top: 120px;
+                            padding: 0px 24px;
+                            text-align: center;
+                            font-size: 0.9rem;
+                        ">
+                            <a th:text="#{label.terms}" th:href="@{${termsLink}}" style="
+                                color: gray;
+                                text-decoration: unset;
+                            ">
+                                
+                            </a>
+                            |
+                            <a th:text="#{label.privacy}" th:href="@{${privacyLink}}" style="
+                                color: gray;
+                                text-decoration: unset;
+                            ">
+                                
+                            </a>
+                            |
+                            <a th:text="#{label.about}" th:href="@{${aboutLink}}" style="
+                                color: gray;
+                                text-decoration: unset;
+                            ">
+                                
+                            </a>
+                        </span>
                     </td>
                 </tr>   
             </tbody>

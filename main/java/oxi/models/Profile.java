@@ -6,6 +6,8 @@ import javax.persistence.CascadeType;
 import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 import java.io.Serializable;
@@ -23,7 +25,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Entity
 @Table(name="profile")
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=Profile.class)
-public class Profile extends RelatedEntity implements Serializable, Identifiable<UUID>
+public class Profile extends RelatedEntity implements Serializable/*, Identifiable<.*>*/
 {
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Profile.class);
@@ -69,6 +71,10 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	//@JsonBackReference
 	//@JsonDeserialize(contentUsing=CustomOutfitDeserializer.class) 
 	private List<Outfit> outfits;
+
+	//@Ignore
+	//// Track the index of outfit in List<Outfit>
+	//private Map<UUID, Integer> outfitIndex;
 	
 	/*@OneToMany(cascade=CascadeType.ALL, mappedBy="profile")
 	@RestResource(rel="vendor_1")
@@ -80,10 +86,11 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	@RestResource(rel="vendor_3")
 	private User user;
 
+	// TODO:  Do we need to set orphanRemoval attribute to true in OneToMany annotation
 	@OneToMany(orphanRemoval= true, mappedBy = "profile")
 	@RestResource(rel="client_0")	
 	@JsonIdentityReference(alwaysAsId=true)
-	private List<LikeCountProfile> likeCounts = new ArrayList<>();
+	private Set<LikeCountProfile> likeCounts = new HashSet<LikeCountProfile>();
 
 	//Constructor
 	public Profile(){
@@ -160,7 +167,7 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 	
 	
 	//Getters
-	@Override
+	//@Override
 	public UUID getId(){return this.id;}
 
 	public String getIdText(){return this.idText;}
@@ -197,9 +204,16 @@ public class Profile extends RelatedEntity implements Serializable, Identifiable
 
 	public void removeOutfit(Outfit outfit){
 		outfit.setProfile(null);
+		//this.outfits.remove(this.outfitIndex(outfit.getId()));
 	}
 
-	public List<LikeCountProfile> getLikeCounts(){return this.likeCounts;}
+	public void removeOutfits(List<Outfit> outfits){
+		for(Outfit outfit : outfits){
+			removeOutfit(outfit);
+		}
+	}
+
+	public Set<LikeCountProfile> getLikeCounts(){return this.likeCounts;}
 
 	public PictureProfile getPictureProfile(){ return this.pictureProfile; }
 	

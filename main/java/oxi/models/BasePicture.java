@@ -19,7 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.hibernate.annotations.GenericGenerator;
 
 @MappedSuperclass
-public abstract class BasePicture extends RelatedEntity implements Serializable, Identifiable<UUID>{
+public abstract class BasePicture extends RelatedEntity implements Serializable/*, Identifiable<.*>*/{
 	
 	@Id
 	@GeneratedValue(generator = "uuid2")

@@ -449,8 +449,18 @@ public class UserAccountService /*implements IAccountService<IVerificationToken>
 
 	public User getUserByUsername(String username){
 		User user = userRep.findByUsername(username);
+		
+		// Check that user exists
+		if(user == null) throw new IllegalStateException("Something went wrong with your request");
 
-		if(user == null) throw new IllegalStateException("User does not exist.");
+		return user;
+	}
+
+	public User getUserByEmail(String email){
+		logger.debug("email = " + email);
+		User user = userRep.findByEmail(email);
+
+		if(user == null) throw new IllegalStateException("Something went wrong with your request");
 
 		return user;
 	}

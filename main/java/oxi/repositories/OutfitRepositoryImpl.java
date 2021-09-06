@@ -58,7 +58,7 @@ import com.blazebit.persistence.CriteriaBuilderFactory;
 import com.blazebit.persistence.CriteriaBuilder;
 import com.blazebit.persistence.PagedList;
 import com.blazebit.persistence.PagedArrayList;
-import com.blazebit.persistence.spi.CriteriaBuilderConfiguration;
+//import com.blazebit.persistence.spi.CriteriaBuilderConfiguration;
 //import com.blazebit.persistence.deltaspike.data.KeysetAwarePage;
 import com.blazebit.persistence.spring.data.base.query.KeysetAwarePageImpl;
 //import org.apache.spark.sql.types.LongType;

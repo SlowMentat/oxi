@@ -201,6 +201,33 @@ public class AccountController{
 		return new ResponseEntity<>(new GenericResponse("success"), HttpStatus.OK);
 	}
 
+	/**
+	*Endpoint handling requests to reset user password if it was forgotten.
+	*<p>
+	*Note the user is not logged in during this request, so principal is not present.  Here the user provides their email to continue the call flow.
+	*</p>
+	*<p>
+	*\/user\/sendPasswordVerificationEmail
+	*</p>
+	*@param request Current expired token sent in request parameter
+	*@return ResponseEntity<?> with Status 400 if token does not exist, otherwise status 200
+	*/
+	//@Secured({"ROLE_ANONYMOUS"})
+	@RequestMapping(value = "/user/forgotPassword", method=RequestMethod.POST)
+	public ResponseEntity<?> forgotPassword(@RequestParam(value="email", required=true) String email, final HttpServletRequest request){
+		//User user = new ObjectMapper().readValue(request.getInputStream(), User.class);
+		User user = userAccountService.getUserByEmail(email);
+
+		String baseUrl = "https://" + request.getServerName() + ":";
+		String appUrl = baseUrl + request.getContextPath();
+		
+		logger.debug("registering OnSendUserPasswordVerificationEvent");
+
+		eventPublisher.publishEvent(new OnSendUserPasswordVerificationEvent(user, request.getLocale(), baseUrl, appUrl));
+
+		return new ResponseEntity<>(new GenericResponse("Password reset link was emailed to the provided address."), HttpStatus.OK);
+	}
+
 
 	@Secured({"ROLE_ANONYMOUS"})
 	@RequestMapping(value = "/user/iniPassword", method=RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)

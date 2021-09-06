@@ -23,7 +23,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Table(name="bookmark")
 //@JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="Bookmark_id")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope=Bookmark.class)
-public class Bookmark extends RelatedEntity implements Serializable, Identifiable<UUID>{
+public class Bookmark extends RelatedEntity implements Serializable/*, Identifiable<.*>*/{
 	@Transient
 	private static final Logger logger = LogManager.getLogger(Bookmark.class);
 

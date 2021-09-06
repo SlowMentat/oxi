@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.io.Serializable;
-import org.springframework.hateoas.core.*;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Identifiable;
+//import org.springframework.hateoas.core.*;
+//import org.springframework.hateoas.ResourceSupport;
+//import org.springframework.hateoas.Identifiable;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.annotation.*;
 //import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,7 +21,7 @@ import lombok.Data;
 
 
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id", scope=OutfitDto.class)
-public class OutfitDto implements Serializable, Identifiable<String>
+public class OutfitDto implements Serializable/*, Identifiable<.*>*/
 {
 	private static final Logger logger = LogManager.getLogger(OutfitDto.class);
 	/*private final Outfit outfit;
@@ -153,7 +153,7 @@ public class OutfitDto implements Serializable, Identifiable<String>
 
 
 	//Getters
-	@Override
+	//@Override
 	public String getId(){return (this.id == null) ? this.id : this.id.toLowerCase();}
 	public int getLikes(){return this.likes;}
 	public String getComments(){return this.comments;}

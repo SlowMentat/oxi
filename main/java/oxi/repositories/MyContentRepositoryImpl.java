@@ -52,7 +52,7 @@ import com.blazebit.persistence.CriteriaBuilderFactory;
 import com.blazebit.persistence.CriteriaBuilder;
 import com.blazebit.persistence.PagedList;
 import com.blazebit.persistence.PagedArrayList;
-import com.blazebit.persistence.spi.CriteriaBuilderConfiguration;
+//import com.blazebit.persistence.spi.CriteriaBuilderConfiguration;
 //import org.apache.spark.sql.types.LongType;
 
 //import org.springframework.data.domain.Page;
